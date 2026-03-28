@@ -1,0 +1,204 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --primary: #E2D4BA;
+  --secondary: #AF7A6D;
+  --accent: #AF7A6D;
+  --dark: #653239;
+  --dark2: #7A3D44;
+  --dark3: #4A2530;
+  --bg: #FAF7F2;
+  --bg2: #F5EDE3;
+  --bg3: #EDE0D0;
+  --bone: #CCC7B9;
+  --white: #FFFFFF;
+  --shadow-card: 0 8px 32px rgba(101,50,57,0.08);
+  --shadow-modal: 0 40px 100px rgba(101,50,57,0.18);
+  --radius-card: 20px;
+  --radius-btn: 50px;
+  --transition: all 0.3s ease;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--dark);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+h1,h2,h3,h4,h5 { font-family: 'Cormorant Garamond', serif; }
+img { display: block; max-width: 100%; }
+button { cursor: pointer; font-family: 'DM Sans', sans-serif; }
+a { text-decoration: none; color: inherit; }
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 2px; }
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(100px);
+  transition: opacity 1.3s cubic-bezier(0.16, 1, 0.3, 1), transform 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.fade-up.visible { opacity: 1; transform: translateY(0); }
+
+.section-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 60px;
+}
+
+@media (max-width: 768px) {
+  .section-inner { padding: 0 24px; }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes slideUp {
+  0% { transform: translateY(100%); opacity: 0; }
+  15% { transform: translateY(0); opacity: 1; }
+  85% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-100%); opacity: 0; }
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0) translateX(-50%); }
+  50% { transform: translateY(8px) translateX(-50%); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Smooth link underline */
+a, button { transition: all 0.25s ease; }
+
+/* Custom cursor feel */
+* { cursor: default; }
+button, a, [role="button"] { cursor: pointer; }
+
+/* Selection color */
+::selection {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--dark);
+}
+
+/* Better image rendering */
+img {
+  image-rendering: -webkit-optimize-contrast;
+  will-change: auto;
+}
+
+/* Smoother font rendering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Remove tap highlight on mobile */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Better focus styles */
+button:focus-visible, a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Prevent text size adjust on mobile */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Smooth image load */
+img {
+  transition: opacity 0.3s ease;
+}
+
+/* Section spacing consistency */
+section {
+  position: relative;
+}
+
+/* Better button reset */
+button {
+  -webkit-appearance: none;
+  appearance: none;
+  outline: none;
+}
+
+/* Prevent layout shift on scrollbar appear */
+html {
+  scrollbar-gutter: stable;
+}
+
+/* ── SECTION ALTERNATING BACKGROUNDS ── */
+
+/* Force clear background contrast on every section */
+#hero { background: var(--dark) !important; }
+
+.tagline-section,
+section[class*="tagline"] { background: var(--white) !important; }
+
+.marquee-section {
+  background: var(--white) !important;
+  border-top: 1px solid rgba(209,178,157,0.2);
+  border-bottom: 1px solid rgba(209,178,157,0.2);
+}
+
+#programs { background: var(--dark) !important; }
+
+#healing { background: var(--bg2) !important; }
+
+.stats-section { background: var(--dark3) !important; }
+
+#services { background: var(--bg) !important; }
+
+.whyus-section { background: var(--bg3) !important; }
+
+.testimonials-section { background: var(--dark) !important; }
+
+#blogs { background: var(--bg2) !important; }
+
+.cta-section { background: var(--dark) !important; }
+
+.faq-section { background: var(--dark3) !important; }
+
+/* ── GLOBAL SPACING FIXES ── */
+
+/* Prevent Framer Motion from adding layout gaps */
+[data-framer-component-type] {
+  margin: 0 !important;
+}
+
+/* Fix any motion.div wrappers that add height */
+main > [style*="opacity"] {
+  margin: 0 !important;
+}
+
+/* Prevent body margin issues */
+body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* About page sections flush */
+.about-page section + section {
+  margin-top: 0 !important;
+}
+
+/* BookDemo page sections flush */
+.bookdemo-page section + section {
+  margin-top: 0 !important;
+}

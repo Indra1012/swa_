@@ -1,0 +1,458 @@
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { TECHNIQUES } from '../constants/techniques'
+import { FiUser } from 'react-icons/fi'
+
+export default function Navbar() {
+  const [scrolled, setScrolled] = useState(false)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [servicesOpen, setServicesOpen] = useState(false)
+  const [healingOpen, setHealingOpen] = useState(false)
+  const [drawerServicesOpen, setDrawerServicesOpen] = useState(false)
+  const [drawerHealingOpen, setDrawerHealingOpen] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
+  const servicesTimer = useRef(null)
+  const healingTimer = useRef(null)
+
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 50)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
+  // Close drawer on route change
+  useEffect(() => {
+    setDrawerOpen(false)
+    setServicesOpen(false)
+    setHealingOpen(false)
+  }, [location.pathname])
+
+  const goHome = useCallback(() => {
+    setDrawerOpen(false)
+    if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      navigate('/')
+    }
+  }, [navigate, location.pathname])
+
+  const goToService = useCallback((tab) => {
+    setDrawerOpen(false)
+    setServicesOpen(false)
+    navigate(`/services/${tab}`)
+  }, [navigate])
+
+  const goToTechnique = useCallback((technique) => {
+    setDrawerOpen(false)
+    setHealingOpen(false)
+    navigate(`/healing-techniques/${technique.id}`)
+  }, [navigate])
+
+  const handleServicesEnter = () => {
+    clearTimeout(servicesTimer.current)
+    setServicesOpen(true)
+  }
+  const handleServicesLeave = () => {
+    servicesTimer.current = setTimeout(() => setServicesOpen(false), 200)
+  }
+  const handleHealingEnter = () => {
+    clearTimeout(healingTimer.current)
+    setHealingOpen(true)
+  }
+  const handleHealingLeave = () => {
+    healingTimer.current = setTimeout(() => setHealingOpen(false), 200)
+  }
+
+  const navLinkStyle = { // Retained for mobile drawer usage
+    color: 'var(--dark)',
+    fontSize: '15px',
+    fontWeight: 500,
+    cursor: 'pointer',
+    padding: '8px 0',
+    background: 'none',
+    border: 'none',
+    fontFamily: 'DM Sans, sans-serif',
+    letterSpacing: '0.2px'
+  }
+
+  return (
+    <>
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+        height: '76px',
+        display: 'flex', alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 60px',
+        background: 'rgba(250,247,242,0.95)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: scrolled ? '1px solid rgba(204,199,185,0.3)' : '1px solid transparent',
+        boxShadow: scrolled
+          ? '0 8px 24px rgba(101,50,57,0.04)'
+          : 'none',
+        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+      }}>
+
+        {/* LEFT — Logo */}
+        <div
+          onClick={goHome}
+          className="logo-container"
+          style={{
+            display: 'flex', alignItems: 'center',
+            gap: '12px', cursor: 'pointer', flexShrink: 0
+          }}
+        >
+          <img
+            src="/swa-logo.png"
+            alt="SWA"
+            style={{ 
+              width: '44px', height: '44px', 
+              objectFit: 'cover', 
+              borderRadius: '12px', 
+              boxShadow: '0 4px 12px rgba(0,0,0,0.06)' 
+            }}
+          />
+          <div style={{
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: '24px', fontWeight: 700,
+            color: 'var(--dark)', lineHeight: 1,
+            letterSpacing: '0.5px'
+          }}>
+            SWA
+          </div>
+        </div>
+
+        {/* CENTER — Desktop nav */}
+        <ul style={{
+          display: 'flex', alignItems: 'center',
+          gap: '48px', listStyle: 'none',
+          margin: 0, padding: 0
+        }} className="desktop-nav">
+
+          {/* Home */}
+          <li>
+            <button
+              className="desktop-nav-link"
+              onClick={goHome}
+            >
+              Home
+            </button>
+          </li>
+
+          {/* Healing Techniques link (No Dropdown) */}
+          <li>
+            <button
+              className="desktop-nav-link"
+              onClick={() => navigate('/healing-techniques')}
+            >
+              Healing Techniques
+            </button>
+          </li>
+
+          {/* Services link (no dropdown) */}
+          <li>
+            <button
+              className="desktop-nav-link"
+              onClick={() => navigate('/services')}
+            >
+              Services
+            </button>
+          </li>
+
+          {/* About Us */}
+          <li>
+            <button
+              className="desktop-nav-link"
+              onClick={() => navigate('/about')}
+            >
+              About Us
+            </button>
+          </li>
+        </ul>
+
+        {/* RIGHT */}
+        <div style={{
+          display: 'flex', alignItems: 'center',
+          gap: '12px', flexShrink: 0
+        }}>
+          <button
+            onClick={() => navigate('/book-demo')}
+            className="desktop-nav"
+            style={{
+              background: 'var(--dark)', color: 'var(--white)',
+              border: 'none', borderRadius: '50px',
+              padding: '11px 24px', fontSize: '14px',
+              fontWeight: 600, cursor: 'pointer',
+              transition: 'all 0.3s ease',
+              fontFamily: 'DM Sans, sans-serif',
+              boxShadow: '0 4px 20px rgba(101,50,57,0.2)'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--dark2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--dark)'}
+          >
+            Book a Demo
+          </button>
+
+          <button
+            onClick={() => navigate('/admin/login')}
+            className="desktop-nav"
+            title="Admin"
+            style={{
+              background: 'none',
+              border: '1px solid rgba(204,199,185,0.4)',
+              borderRadius: '50%',
+              width: '36px', height: '36px',
+              display: 'flex', alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: 'var(--secondary)',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'var(--dark)'
+              e.currentTarget.style.color = 'var(--white)'
+              e.currentTarget.style.borderColor = 'var(--dark)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'none'
+              e.currentTarget.style.color = 'var(--secondary)'
+              e.currentTarget.style.borderColor = 'rgba(204,199,185,0.4)'
+            }}
+          >
+            <FiUser size={15} />
+          </button>
+
+          {/* Hamburger */}
+          <button
+            className="mobile-only"
+            onClick={() => setDrawerOpen(true)}
+            style={{
+              background: 'none', border: 'none',
+              cursor: 'pointer', padding: '8px',
+              display: 'flex', flexDirection: 'column',
+              gap: '5px'
+            }}
+          >
+            {[0,1,2].map(i => (
+              <span key={i} style={{
+                display: 'block', width: '22px', height: '2px',
+                background: 'var(--dark)', borderRadius: '2px'
+              }} />
+            ))}
+          </button>
+        </div>
+      </nav>
+
+      {/* MOBILE DRAWER OVERLAY */}
+      {drawerOpen && (
+        <div
+          onClick={() => setDrawerOpen(false)}
+          style={{
+            position: 'fixed', inset: 0,
+            background: 'rgba(0,0,0,0.4)',
+            zIndex: 1500
+          }}
+        />
+      )}
+
+      {/* MOBILE DRAWER */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0,
+        width: '300px', height: '100vh',
+        background: 'var(--bg)', zIndex: 1600,
+        transform: drawerOpen ? 'translateX(0)' : 'translateX(100%)',
+        transition: 'transform 0.3s ease',
+        overflowY: 'auto', padding: '24px',
+        boxShadow: '-4px 0 40px rgba(101,50,57,0.15)'
+      }}>
+        <div style={{
+          display: 'flex', justifyContent: 'space-between',
+          alignItems: 'center', marginBottom: '32px'
+        }}>
+          <span style={{
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: '20px', fontWeight: 700,
+            color: 'var(--dark)'
+          }}>
+            Menu
+          </span>
+          <button
+            onClick={() => setDrawerOpen(false)}
+            style={{
+              background: 'none', border: 'none',
+              fontSize: '22px', cursor: 'pointer',
+              color: 'var(--dark)', lineHeight: 1
+            }}
+          >
+            ✕
+          </button>
+        </div>
+
+        <div style={{
+          display: 'flex', flexDirection: 'column', gap: '2px'
+        }}>
+          {/* Home */}
+          <button
+            style={{
+              ...navLinkStyle, textAlign: 'left',
+              padding: '14px 0', width: '100%',
+              borderBottom: '1px solid rgba(204,199,185,0.25)'
+            }}
+            onClick={goHome}
+          >
+            Home
+          </button>
+
+          {/* Healing Techniques (Mobile) */}
+          <button
+            style={{
+              ...navLinkStyle, textAlign: 'left',
+              padding: '14px 0', width: '100%',
+              borderBottom: '1px solid rgba(204,199,185,0.25)'
+            }}
+            onClick={() => { navigate('/healing-techniques'); setDrawerOpen(false) }}
+          >
+            Healing Techniques
+          </button>
+
+          {/* Services (Mobile) */}
+          <button
+            style={{
+              ...navLinkStyle, textAlign: 'left',
+              padding: '14px 0', width: '100%',
+              borderBottom: '1px solid rgba(204,199,185,0.25)'
+            }}
+            onClick={() => { navigate('/services'); setDrawerOpen(false) }}
+          >
+            Services
+          </button>
+
+          {/* About */}
+          <button
+            style={{
+              ...navLinkStyle, textAlign: 'left',
+              padding: '14px 0', width: '100%',
+              borderBottom: '1px solid rgba(204,199,185,0.25)'
+            }}
+            onClick={() => { navigate('/about'); setDrawerOpen(false) }}
+          >
+            About Us
+          </button>
+        </div>
+
+        <button
+          onClick={() => { navigate('/book-demo'); setDrawerOpen(false) }}
+          style={{
+            marginTop: '28px', width: '100%',
+            background: 'var(--dark)', color: 'var(--white)',
+            border: 'none', borderRadius: '50px',
+            padding: '14px', fontSize: '15px',
+            fontWeight: 600, cursor: 'pointer',
+            fontFamily: 'DM Sans, sans-serif'
+          }}
+        >
+          Book a Demo
+        </button>
+
+        <div style={{ textAlign: 'center', marginTop: '16px' }}>
+          <button
+            onClick={() => { navigate('/admin/login'); setDrawerOpen(false) }}
+            title="Admin"
+            style={{
+              background: 'none',
+              border: '1px solid rgba(204,199,185,0.4)',
+              borderRadius: '50%',
+              width: '36px', height: '36px',
+              display: 'inline-flex', alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              color: 'var(--secondary)'
+            }}
+          >
+            <FiUser size={15} />
+          </button>
+        </div>
+      </div>
+
+      <style>{`
+        .desktop-nav { display: flex !important; }
+        .mobile-only { display: none !important; }
+        
+        /* Glass effect clean styles */
+        .desktop-nav-link {
+          color: var(--dark);
+          font-size: 15px;
+          font-weight: 500;
+          cursor: pointer;
+          padding: 8px 18px;
+          background: transparent;
+          border: none;
+          border-radius: 12px;
+          font-family: 'DM Sans', sans-serif;
+          letter-spacing: 0.3px;
+          transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+          position: relative;
+        }
+        
+        .desktop-nav-link::after {
+          content: '';
+          position: absolute;
+          bottom: 0px;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 0;
+          height: 3px;
+          background: var(--secondary);
+          border-radius: 2px;
+          transition: width 0.3s ease;
+          opacity: 0;
+        }
+
+        .desktop-nav-link:hover {
+          color: var(--secondary);
+          background: rgba(101,50,57,0.04);
+        }
+
+        .desktop-nav-link:hover::after {
+          width: 24px;
+          opacity: 1;
+        }
+
+        .dropdown-arrow {
+          font-size: 10px;
+          transition: transform 0.3s ease;
+        }
+
+        .desktop-nav-link:hover .dropdown-arrow {
+          transform: rotate(180deg);
+        }
+
+        .dropdown-item {
+          padding: 12px 18px;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.25s ease;
+          background: transparent;
+        }
+
+        .dropdown-item:hover {
+          background: rgba(101,50,57,0.04);
+          padding-left: 24px;
+        }
+        
+        .logo-container {
+          transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .logo-container:hover {
+          transform: scale(1.04);
+        }
+
+        @media (max-width: 768px) {
+          .desktop-nav { display: none !important; }
+          .mobile-only { display: flex !important; }
+        }
+      `}</style>
+    </>
+  )
+}

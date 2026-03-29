@@ -47,10 +47,11 @@ export default function ServicesSection() {
   const headerScale = useTransform(scrollYProgress, [0, 0.2, 0.7, 1], [0.92, 1, 1, 0.95])
 
   return (
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
     <section
       ref={sectionRef}
       style={{
-        background: 'var(--bg)',
+        background: 'transparent',
         padding: '80px 40px',
         position: 'relative',
         overflow: 'hidden'
@@ -83,9 +84,9 @@ export default function ServicesSection() {
             marginBottom: '32px'
           }}>
             <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-            <span style={{ 
-              fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px',
-              textTransform: 'uppercase', fontWeight: 700 
+            <span style={{
+              fontSize: '13px', color: 'var(--dark)', letterSpacing: '3px',
+              textTransform: 'uppercase', fontWeight: 700
             }}>
               Our Expertise & The Core Challenge
             </span>
@@ -101,7 +102,7 @@ export default function ServicesSection() {
             marginBottom: '32px',
             whiteSpace: 'nowrap'
           }}>
-            Wellness <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>for every</span> environment.
+            Wellness <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>for every</span> environment.
           </h2>
         </motion.div>
 
@@ -308,5 +309,6 @@ export default function ServicesSection() {
         }
       `}</style>
     </section>
+    </div>
   )
 }

@@ -9,6 +9,7 @@ import { TECHNIQUES } from '../constants/techniques'
 // Pure Editorial Minimalist Approach (No Cards)
 function TechniqueEditorial({ tech, index }) {
   const isReversed = index % 2 !== 0
+  const [cardHovered, setCardHovered] = useState(false)
 
   const validImages = tech.images && tech.images.length > 0 ? tech.images : [tech.image].filter(Boolean)
   const blockRef = useRef(null)
@@ -35,11 +36,14 @@ function TechniqueEditorial({ tech, index }) {
       style={{
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'center',
         flexDirection: isReversed ? 'row-reverse' : 'row',
-        gap: '60px', 
         width: '100%',
+        cursor: 'default' // Add a cursor so it feels interactive
       }}
       className="editorial-row"
+      onMouseEnter={() => setCardHovered(true)}
+      onMouseLeave={() => setCardHovered(false)}
     >
       {/* 
         Smaller, Portrait Image Block
@@ -50,12 +54,17 @@ function TechniqueEditorial({ tech, index }) {
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: index * 0.4 }}
         style={{
           flexShrink: 0,
-          width: '360px', 
-          height: '480px', 
+          width: '320px', 
+          height: '450px', 
           borderRadius: '16px',
           overflow: 'hidden',
-          boxShadow: '0 30px 60px rgba(0,0,0,0.06)',
-          position: 'relative'
+          boxShadow: cardHovered ? '0 40px 80px rgba(0,0,0,0.25)' : '0 30px 60px rgba(0,0,0,0.15)',
+          position: 'relative',
+          zIndex: 10,
+          transition: 'box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+          // Fixes the sharp corner bleeding on hover zoom in webkit browsers
+          WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+          isolation: 'isolate'
         }} 
         className="editorial-image"
       >
@@ -66,64 +75,84 @@ function TechniqueEditorial({ tech, index }) {
             style={{
               position: 'absolute', inset: 0,
               width: '100%', height: '100%', 
-              objectFit: 'cover'
+              objectFit: 'cover',
+              transform: cardHovered ? 'scale(1.06)' : 'scale(1)',
+              transition: 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
           />
         )}
       </motion.div>
 
-      {/* 
-        Pure Text Column 
-        Now linked directly to scroll up/down speed
-      */}
-      <motion.div 
+      <motion.div
+        animate={{ y: [0, -18, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: index * 0.4 }}
+        whileHover={{ 
+          scale: 1.02, 
+          boxShadow: '0 40px 80px rgba(101, 50, 57, 0.25)' 
+        }}
         style={{
-          flex: 1, 
+          width: '340px',
+          maxWidth: '100%',
+          height: '470px',
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          y: textY
-        }} 
+          background: 'rgba(250, 248, 245, 0.95)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          borderRadius: '24px',
+          padding: '32px',
+          paddingLeft: isReversed ? '28px' : '82px',
+          paddingRight: isReversed ? '82px' : '28px',
+          marginLeft: isReversed ? '0' : '-60px',
+          marginRight: isReversed ? '-60px' : '0',
+          marginTop: '60px',
+          boxShadow: '0 20px 60px rgba(101, 50, 57, 0.15)',
+          border: '1px solid rgba(255, 255, 255, 0.4)',
+          position: 'relative',
+          zIndex: 1,
+          transition: 'box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}
         className="editorial-content"
       >
         <span style={{
           display: 'inline-block',
-          fontSize: '11px',
+          fontSize: '10px',
           fontWeight: 700,
-          color: 'var(--accent)',
+          color: 'var(--dark)',
           letterSpacing: '3px',
           textTransform: 'uppercase',
-          marginBottom: '16px',
+          marginBottom: '10px',
         }}>
           0{index + 1} &mdash; Modality
         </span>
         
         <h2 style={{
           fontFamily: 'Cormorant Garamond, serif',
-          fontSize: 'clamp(28px, 3.5vw, 42px)', 
+          fontSize: 'clamp(20px, 2.5vw, 30px)', 
           fontWeight: 500,
           color: 'var(--dark)',
           lineHeight: 1.1,
           letterSpacing: '-1px',
-          marginBottom: '20px'
+          marginBottom: '12px'
         }}>
           {tech.title} {tech.subtitle}
         </h2>
         
         <p style={{
-          fontSize: '16px', color: 'var(--secondary)', fontWeight: 400, lineHeight: 1.6, marginBottom: '28px'
+          fontSize: '14px', color: 'var(--secondary)', fontWeight: 400, lineHeight: 1.5, marginBottom: '16px', marginTop: 0
         }}>
           <span style={{ color: 'var(--dark)', fontWeight: 600 }}>Focus:</span> {tech.focus}
         </p>
 
-        <div style={{ marginBottom: '36px' }}>
+        <div style={{ marginBottom: '20px' }}>
           <ul style={{
-            listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '10px'
+            listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px'
           }}>
             {tech.techniques.map((t, idx) => (
               <li key={idx} style={{
-                position: 'relative', paddingLeft: '24px', fontSize: '15px', color: 'var(--secondary)', lineHeight: 1.4, fontWeight: 500
+                position: 'relative', paddingLeft: '18px', fontSize: '13px', color: 'var(--secondary)', lineHeight: 1.4, fontWeight: 500
               }}>
                 <div style={{
-                  position: 'absolute', left: 0, top: '9px', width: '20px', height: '1px', background: 'var(--accent)', opacity: 0.6
+                  position: 'absolute', left: 0, top: '8px', width: '12px', height: '1px', background: 'var(--accent)', opacity: 0.6
                 }} />
                 {t}
               </li>
@@ -134,20 +163,19 @@ function TechniqueEditorial({ tech, index }) {
         {/* Minimalist Purpose Block - Italics purely */}
         <div>
           <h5 style={{ 
-            fontSize: '11px', color: 'var(--dark)', fontWeight: 700, 
-            textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '8px',
+            fontSize: '10px', color: 'var(--dark)', fontWeight: 700, 
+            textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px',
             opacity: 0.6
           }}>
             Purpose
           </h5>
           <p style={{ 
-            margin: 0, fontSize: '22px', color: 'var(--dark)', 
-            lineHeight: 1.5, fontStyle: 'italic', fontFamily: 'Cormorant Garamond, serif' 
+            margin: 0, fontSize: '18px', color: 'var(--dark)', 
+            lineHeight: 1.3, fontStyle: 'italic', fontFamily: 'Cormorant Garamond, serif' 
           }}>
             "{tech.purpose}"
           </p>
         </div>
-
       </motion.div>
     </motion.div>
   )
@@ -155,7 +183,6 @@ function TechniqueEditorial({ tech, index }) {
 
 export default function HealingTechniquesPage() {
   const { hash } = useLocation()
-
   // Hash scrolling logic, highly precise with setTimeout
   useEffect(() => {
     if (hash) {
@@ -174,10 +201,12 @@ export default function HealingTechniquesPage() {
   }, [hash])
 
   return (
-    <main style={{ 
+    <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
+    <div style={{ position: 'relative', zIndex: 1 }}>
+    <main style={{
       position: 'relative',
-      background: 'var(--bg)', 
-      minHeight: '100vh', paddingTop: '100px', paddingBottom: '100px', overflow: 'hidden' 
+      background: 'transparent',
+      minHeight: '100vh', paddingTop: '100px', paddingBottom: '100px', overflow: 'hidden'
     }}>
       
       {/* Ambient Luxury Lighting Gradients */}
@@ -222,7 +251,7 @@ export default function HealingTechniquesPage() {
             transition: { staggerChildren: 0.2, delayChildren: 0.1 }
           }
         }}
-        style={{ padding: '80px 40px', textAlign: 'center', maxWidth: '1000px', margin: '0 auto', marginBottom: '40px' }}
+        style={{ paddingTop: '40px', paddingBottom: '20px', paddingLeft: '40px', paddingRight: '40px', textAlign: 'center', maxWidth: '1000px', margin: '0 auto', marginBottom: '40px' }}
       >
         <motion.div
           variants={{
@@ -237,9 +266,9 @@ export default function HealingTechniquesPage() {
           }}
         >
           <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-          <span style={{ 
-            fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px',
-            textTransform: 'uppercase', fontWeight: 700 
+          <span style={{
+            fontSize: '13px', color: 'var(--dark)', letterSpacing: '3px',
+            textTransform: 'uppercase', fontWeight: 700
           }}>
             Our Core Modalities
           </span>
@@ -261,7 +290,7 @@ export default function HealingTechniquesPage() {
             whiteSpace: 'nowrap'
           }}
         >
-          The SWA Healing <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>Techniques</span>
+          The SWA Healing <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>Techniques</span>
         </motion.h1>
 
         <motion.p 
@@ -278,20 +307,30 @@ export default function HealingTechniquesPage() {
       </motion.section>
 
       {/* Techniques Scrolling Blocks */}
-      <div style={{ 
-        maxWidth: '960px', /* Much tighter, incredibly sleek and small */
-        margin: '0 auto', 
-        display: 'flex', 
-        flexDirection: 'column', 
-        gap: '120px', /* Large gap between sections for breathing room */
-        padding: '0 40px' 
-      }}>
+      <div className="techniques-grid">
         {TECHNIQUES.map((tech, i) => (
           <TechniqueEditorial key={tech.id} tech={tech} index={i} />
         ))}
       </div>
 
       <style>{`
+        .techniques-grid {
+          max-width: 1400px;
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 100px 40px;
+          padding: 0 40px;
+        }
+
+        @media (max-width: 1360px) {
+          .techniques-grid {
+            grid-template-columns: 1fr;
+            max-width: 800px;
+            gap: 80px;
+          }
+        }
+
         @media (max-width: 900px) {
           .editorial-row { 
             flex-direction: column !important; 
@@ -303,10 +342,15 @@ export default function HealingTechniquesPage() {
           }
           .editorial-content { 
             width: 100% !important; 
+            height: auto !important;
+            margin: 0 !important;
+            padding: 40px !important;
           }
         }
       `}</style>
       </div>
     </main>
+    </div>
+    </div>
   )
 }

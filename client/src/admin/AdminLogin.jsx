@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowLeft } from 'react-icons/fi'
@@ -75,14 +75,14 @@ export default function AdminLogin() {
   const inputStyle = (focused) => ({
     width: '100%',
     padding: '13px 16px 13px 44px',
-    border: `1.5px solid ${focused ? 'var(--secondary)' : 'rgba(204,199,185,0.35)'}`,
-    borderRadius: '10px',
+    border: `1.5px solid ${focused ? 'var(--dark)' : 'rgba(204,199,185,0.4)'}`,
+    borderRadius: '12px',
     fontSize: '14px',
     fontFamily: 'DM Sans, sans-serif',
     outline: 'none',
-    background: 'var(--bg)',
+    background: 'rgba(255, 255, 255, 0.8)',
     color: 'var(--dark)',
-    transition: 'border-color 0.25s ease'
+    transition: 'all 0.25s ease'
   })
 
   const [emailFocused, setEmailFocused] = useState(false)
@@ -91,11 +91,11 @@ export default function AdminLogin() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'var(--bg2)',
+      background: 'transparent',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      padding: '20px',
+      padding: '100px 20px 40px', // Added extra top padding to push it safely below the navbar
       margin: 0
     }}>
       <motion.div
@@ -103,17 +103,19 @@ export default function AdminLogin() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
         style={{
-          background: 'var(--white)',
-          borderRadius: '24px',
-          padding: '52px 48px',
-          maxWidth: '440px',
+          background: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          borderRadius: '36px',
+          padding: '36px 40px',
+          maxWidth: '400px',
           width: '100%',
-          boxShadow: '0 20px 60px rgba(60,47,47,0.1)',
-          border: '1px solid rgba(204,199,185,0.2)'
+          boxShadow: '0 30px 60px rgba(0,0,0,0.15)',
+          border: '1px solid rgba(255, 255, 255, 0.5)'
         }}
       >
         {/* Logo + Brand */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
           <img
             src="/swa-logo.png"
             alt="SWA"
@@ -131,20 +133,13 @@ export default function AdminLogin() {
           }}>
             SWA™
           </h1>
-          <p style={{
-            fontSize: '12px', color: 'var(--secondary)',
-            fontStyle: 'italic', marginTop: '4px',
-            letterSpacing: '0.5px'
-          }}>
-            Admin Portal
-          </p>
         </div>
 
         {/* Divider */}
         <div style={{
           height: '1px',
           background: 'rgba(204,199,185,0.25)',
-          marginBottom: '32px'
+          marginBottom: '20px'
         }} />
 
         {/* Google Sign In */}
@@ -162,7 +157,7 @@ export default function AdminLogin() {
             color: 'var(--dark)', cursor: 'pointer',
             transition: 'var(--transition)',
             fontFamily: 'DM Sans, sans-serif',
-            marginBottom: '24px'
+            marginBottom: '16px'
           }}
           onMouseEnter={e => {
             e.currentTarget.style.borderColor = 'var(--secondary)'
@@ -188,7 +183,7 @@ export default function AdminLogin() {
         {/* OR separator */}
         <div style={{
           display: 'flex', alignItems: 'center',
-          gap: '12px', marginBottom: '24px'
+          gap: '12px', marginBottom: '16px'
         }}>
           <div style={{ flex: 1, height: '1px', background: 'rgba(204,199,185,0.25)' }} />
           <span style={{ fontSize: '12px', color: 'rgba(101,50,57,0.4)', fontWeight: 500 }}>or</span>
@@ -196,7 +191,7 @@ export default function AdminLogin() {
         </div>
 
         {/* Email field */}
-        <div style={{ marginBottom: '16px' }}>
+        <div style={{ marginBottom: '12px' }}>
           <label style={{
             display: 'block', fontSize: '13px',
             fontWeight: 600, color: 'var(--dark)',
@@ -273,7 +268,7 @@ export default function AdminLogin() {
         </div>
 
         {/* Forgot password */}
-        <div style={{ textAlign: 'right', marginBottom: '24px' }}>
+        <div style={{ textAlign: 'right', marginBottom: '16px' }}>
           <button
             onClick={handleForgotPassword}
             style={{
@@ -333,7 +328,7 @@ export default function AdminLogin() {
             fontWeight: 600, cursor: loading ? 'not-allowed' : 'pointer',
             transition: 'var(--transition)',
             fontFamily: 'DM Sans, sans-serif',
-            marginBottom: '24px'
+            marginBottom: '16px'
           }}
           onMouseEnter={e => {
             if (!loading) e.currentTarget.style.background = 'var(--dark2)'

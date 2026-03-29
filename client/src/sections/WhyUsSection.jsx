@@ -86,10 +86,11 @@ export default function WhyUsSection() {
   const headerScale = useTransform(scrollYProgress, [0, 0.3, 0.8, 1], [0.96, 1, 1, 0.98])
 
   return (
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
     <section
       ref={sectionRef}
       style={{
-        background: 'var(--bg3)',
+        background: 'transparent',
         padding: '80px 40px',
         position: 'relative',
         overflow: 'hidden',
@@ -122,9 +123,9 @@ export default function WhyUsSection() {
             marginBottom: '32px'
           }}>
             <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-            <span style={{ 
-              fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px',
-              textTransform: 'uppercase', fontWeight: 700 
+            <span style={{
+              fontSize: '13px', color: 'var(--dark)', letterSpacing: '3px',
+              textTransform: 'uppercase', fontWeight: 700
             }}>
               Our Core Philosophy
             </span>
@@ -140,7 +141,7 @@ export default function WhyUsSection() {
             marginBottom: '32px',
             whiteSpace: 'nowrap'
           }}>
-            True wellness is a <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>continuous journey.</span>
+            True wellness is a <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>continuous journey.</span>
           </h2>
 
           <p style={{
@@ -320,5 +321,6 @@ export default function WhyUsSection() {
         }
       `}</style>
     </section>
+    </div>
   )
 }

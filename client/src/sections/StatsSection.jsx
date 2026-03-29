@@ -52,7 +52,7 @@ function StatItem({ stat, index, isInView }) {
         fontFamily: 'Cormorant Garamond, serif',
         fontSize: 'clamp(48px, 5vw, 64px)',
         fontWeight: 600,
-        color: 'var(--primary)',
+        color: 'var(--white)',
         lineHeight: 1,
         marginBottom: '12px',
         letterSpacing: '-1px'

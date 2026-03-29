@@ -174,7 +174,7 @@ function ServiceFullWidthSection({ data, index }) {
       >
         <span style={{
           display: 'inline-block',
-          fontSize: '11px', fontWeight: 700, color: 'var(--accent)',
+          fontSize: '11px', fontWeight: 700, color: 'var(--dark)',
           letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px',
           background: 'rgba(201, 138, 68, 0.08)', padding: '6px 14px', borderRadius: '50px'
         }}>
@@ -265,7 +265,7 @@ function ServiceFullWidthSection({ data, index }) {
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {data.offerings.map((offering, idx) => (
               <li key={idx} style={{ position: 'relative', paddingLeft: '32px', fontSize: '17px', color: 'var(--dark)', fontWeight: 500 }}>
-                <FiCheckCircle size={18} color="var(--accent)" style={{ position: 'absolute', left: 0, top: '4px' }} />
+                <FiCheckCircle size={18} color="var(--dark2)" style={{ position: 'absolute', left: 0, top: '4px' }} />
                 {offering}
               </li>
             ))}
@@ -298,7 +298,7 @@ function ServiceFullWidthSection({ data, index }) {
           border: '1px solid rgba(255,255,255,1)', backdropFilter: 'blur(20px)'
         }}
       >
-        <h5 style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '36px' }}>
+        <h5 style={{ fontSize: '12px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '36px' }}>
           Outcomes {data.id === 'community' ? '' : 'You Can Expect'}
         </h5>
         
@@ -391,62 +391,6 @@ export default function ServicesPage() {
       />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Page Intro Hero */}
-        <motion.section 
-          initial="hidden"
-          animate="show"
-          variants={{
-            hidden: { opacity: 0 },
-            show: { opacity: 1, transition: { staggerChildren: 0.2, delayChildren: 0.1 } }
-          }}
-          style={{ padding: '40px 40px 80px 40px', textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}
-        >
-          <motion.div
-            variants={{
-              hidden: { opacity: 0, y: -40 },
-              show: { opacity: 1, y: 0, transition: { duration: 1.3, ease: [0.16, 1, 0.3, 1] } }
-            }}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '32px'
-            }}
-          >
-            <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-            <span style={{ 
-              fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 700 
-            }}>
-              Our Deep Integrations
-            </span>
-          </motion.div>
-
-          <motion.h1 
-            variants={{
-              hidden: { opacity: 0, y: -40 },
-              show: { opacity: 1, y: 0, transition: { duration: 1.3, ease: [0.16, 1, 0.3, 1] } }
-            }}
-            style={{
-              fontFamily: 'Cormorant Garamond, serif',
-              fontSize: 'clamp(32px, 4.5vw, 60px)', 
-              fontWeight: 400,
-              color: 'var(--dark)',
-              lineHeight: 1.1,
-              letterSpacing: '-1px',
-              marginBottom: '32px'
-            }}
-          >
-            Wellness <span style={{ fontStyle: 'italic', color: 'var(--secondary)' }}>for every</span> environment.
-          </motion.h1>
-
-          <motion.p 
-            variants={{
-              hidden: { opacity: 0, y: -40 },
-              show: { opacity: 1, y: 0, transition: { duration: 1.3, ease: [0.16, 1, 0.3, 1] } }
-            }}
-            style={{ fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7, fontWeight: 400 }}
-          >
-            We deploy robust, customized wellness systems across corporate, educational, and community environments.
-          </motion.p>
-        </motion.section>
-
         {/* Render Full-Width Sections */}
         <div>
           {SERVICES_DATA.map((service, i) => (

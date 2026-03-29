@@ -8,10 +8,10 @@ function ExpandableCard({ title, delay, children }) {
   const [isOpen, setIsOpen] = useState(false)
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-50px' }}
-      transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay }}
+      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay }}
       style={{
         background: 'var(--white)',
         borderRadius: '24px',
@@ -172,37 +172,59 @@ function ServiceFullWidthSection({ data, index }) {
     >
       {/* 1. Header Stack (Centered) */}
       <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: '-50px' }}
-        transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: false, amount: 0.15 }}
+        variants={{
+          hidden: {},
+          visible: { transition: { staggerChildren: 0.25 } }
+        }}
         style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px' }}
       >
-        <span style={{
-          display: 'inline-block',
-          fontSize: '11px', fontWeight: 700, color: 'var(--accent)',
-          letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px',
-          background: 'rgba(201, 138, 68, 0.08)', padding: '6px 14px', borderRadius: '50px'
+        <motion.div variants={{
+          hidden: { opacity: 0, x: -30 },
+          visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
         }}>
-          {data.tag}
-        </span>
-        <h2 style={{
-          fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(36px, 4vw, 56px)', 
-          fontWeight: 700, color: 'var(--dark)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: '24px'
-        }}>
+          <span style={{
+            display: 'inline-block',
+            fontSize: '11px', fontWeight: 700, color: 'var(--dark)',
+            letterSpacing: '3px', textTransform: 'uppercase', marginBottom: '16px',
+            background: 'rgba(201, 138, 68, 0.08)', padding: '6px 14px', borderRadius: '50px'
+          }}>
+            {data.tag}
+          </span>
+        </motion.div>
+
+        <motion.h2 
+          variants={{
+            hidden: { opacity: 0, x: 30 },
+            visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
+          }}
+          style={{
+            fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(36px, 4vw, 56px)',
+            fontWeight: 700, color: 'var(--dark)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: '24px'
+          }}
+        >
           {data.headlinePre}
-          <span style={{ 
-            fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic', 
-            color: 'var(--accent)', fontWeight: 500
+          <span style={{
+            fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
+            color: 'var(--dark2)', fontWeight: 500
           }}>
             {data.headlineAccent}
           </span>
-        </h2>
-        <p style={{
-          fontSize: '18px', color: 'var(--secondary)', fontWeight: 400, lineHeight: 1.6, opacity: 0.9
-        }}>
+        </motion.h2>
+
+        <motion.p 
+          variants={{
+            hidden: { opacity: 0, x: -30 },
+            visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
+          }}
+          style={{
+            fontSize: '18px', color: 'var(--secondary)', fontWeight: 400, lineHeight: 1.6, opacity: 0.9
+          }}
+        >
           {data.subheadline}
-        </p>
+        </motion.p>
       </motion.div>
 
       {/* 2. Massive Parallax Image Box */}
@@ -210,7 +232,7 @@ function ServiceFullWidthSection({ data, index }) {
         initial={{ opacity: 0, y: 60 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
-        transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
         style={{
           width: '100%', height: '460px', borderRadius: '32px', overflow: 'hidden', position: 'relative',
           marginBottom: '48px', boxShadow: '0 30px 60px rgba(0,0,0,0.08)'
@@ -228,13 +250,13 @@ function ServiceFullWidthSection({ data, index }) {
       }}>
         {/* Challenge Card */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           style={{
             background: 'var(--white)', padding: '50px', borderRadius: '24px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.03)', borderTop: '4px solid var(--accent)'
+            boxShadow: '0 10px 40px rgba(0,0,0,0.03)', borderBottom: '4px solid var(--accent)'
           }}
         >
           <h5 style={{ fontSize: '11px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px', opacity: 0.6 }}>
@@ -247,13 +269,13 @@ function ServiceFullWidthSection({ data, index }) {
 
         {/* Approach Card */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 50 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
           style={{
             background: 'var(--white)', padding: '50px', borderRadius: '24px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.03)', borderTop: '4px solid var(--accent)'
+            boxShadow: '0 10px 40px rgba(0,0,0,0.03)', borderBottom: '4px solid var(--accent)'
           }}
         >
           <h5 style={{ fontSize: '11px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '24px', opacity: 0.6 }}>
@@ -277,7 +299,7 @@ function ServiceFullWidthSection({ data, index }) {
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {data.offerings.map((offering, idx) => (
               <li key={idx} style={{ position: 'relative', paddingLeft: '32px', fontSize: '17px', color: 'var(--dark)', fontWeight: 500 }}>
-                <FiCheckCircle size={18} color="var(--accent)" style={{ position: 'absolute', left: 0, top: '4px' }} />
+                <FiCheckCircle size={18} color="var(--dark2)" style={{ position: 'absolute', left: 0, top: '4px' }} />
                 {offering}
               </li>
             ))}
@@ -300,17 +322,17 @@ function ServiceFullWidthSection({ data, index }) {
 
       {/* 5. Outcomes Banner & Centered CTA (Light Aesthetics) */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        whileInView={{ opacity: 1, scale: 1 }}
+        initial={{ opacity: 0, scale: 0.98, y: 30 }}
+        whileInView={{ opacity: 1, scale: 1, y: 0 }}
         viewport={{ once: true, margin: '-50px' }}
-        transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
+        transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         style={{
           background: 'rgba(255,255,255,0.7)', padding: '60px', borderRadius: '32px', color: 'var(--dark)',
           position: 'relative', overflow: 'hidden', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.03)',
           border: '1px solid rgba(255,255,255,1)', backdropFilter: 'blur(20px)'
         }}
       >
-        <h5 style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '36px' }}>
+        <h5 style={{ fontSize: '12px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '36px' }}>
           Outcomes {data.id === 'community' ? '' : 'You Can Expect'}
         </h5>
         
@@ -358,7 +380,6 @@ function ServiceFullWidthSection({ data, index }) {
 
 export default function ServicesPage() {
   const { hash } = useLocation()
-
   // Hash scrolling logic, highly precise with setTimeout
   useEffect(() => {
     if (hash) {
@@ -376,9 +397,11 @@ export default function ServicesPage() {
   }, [hash])
 
   return (
+    <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
+    <div style={{ position: 'relative', zIndex: 1 }}>
     <main style={{
       position: 'relative',
-      background: 'var(--bg)',
+      background: 'transparent',
       minHeight: '100vh', paddingTop: '72px', overflow: 'hidden'
     }}>
       
@@ -403,64 +426,6 @@ export default function ServicesPage() {
       />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Page Intro Hero */}
-        <motion.section
-          initial="hidden"
-          animate="show"
-          variants={{
-            hidden: { opacity: 0 },
-            show: { opacity: 1, transition: { staggerChildren: 0.2, delayChildren: 0.1 } }
-          }}
-          style={{ padding: '40px 40px 60px', textAlign: 'center' }}
-        >
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <motion.div
-            variants={{
-              hidden: { opacity: 0, y: -40 },
-              show: { opacity: 1, y: 0, transition: { duration: 1.3, ease: [0.16, 1, 0.3, 1] } }
-            }}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '32px'
-            }}
-          >
-            <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-            <span style={{ 
-              fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 700 
-            }}>
-              Our Deep Integrations
-            </span>
-          </motion.div>
-
-          <motion.h1 
-            variants={{
-              hidden: { opacity: 0, y: -40 },
-              show: { opacity: 1, y: 0, transition: { duration: 1.3, ease: [0.16, 1, 0.3, 1] } }
-            }}
-            style={{
-              fontFamily: 'Cormorant Garamond, serif',
-              fontSize: 'clamp(32px, 4.5vw, 60px)', 
-              fontWeight: 700,
-              color: 'var(--dark)',
-              lineHeight: 1.1,
-              letterSpacing: '-0.5px',
-              marginBottom: '32px'
-            }}
-          >
-            Wellness <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>for every</span> environment.
-          </motion.h1>
-
-          <motion.p 
-            variants={{
-              hidden: { opacity: 0, y: -40 },
-              show: { opacity: 1, y: 0, transition: { duration: 1.3, ease: [0.16, 1, 0.3, 1] } }
-            }}
-            style={{ fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7, fontWeight: 400 }}
-          >
-            We deploy robust, customized wellness systems across corporate, educational, and community environments.
-          </motion.p>
-        </div>
-        </motion.section>
-
         {/* Render Full-Width Sections */}
         <div>
           {SERVICES_DATA.map((service, i) => (
@@ -469,5 +434,7 @@ export default function ServicesPage() {
         </div>
       </div>
     </main>
+    </div>
+    </div>
   )
 }

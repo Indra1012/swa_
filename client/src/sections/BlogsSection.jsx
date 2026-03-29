@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import { FiArrowRight } from 'react-icons/fi'
@@ -136,7 +136,7 @@ export default function BlogsSection() {
       <section
         id="blogs"
         style={{
-          background: 'var(--bg2)',
+          background: 'transparent',
           padding: '80px 60px',
           margin: 0
         }}
@@ -157,7 +157,7 @@ export default function BlogsSection() {
               color: 'var(--dark)',
               letterSpacing: '-0.5px'
             }}>
-              Latest from <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>SWA</span>
+              Latest from <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>SWA</span>
             </h2>
           </motion.div>
 

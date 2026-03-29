@@ -13,8 +13,9 @@ export default function MarqueeSection() {
   const trackRef = useRef(null)
 
   return (
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
     <section style={{
-      background: 'var(--white)',
+      background: 'transparent',
       padding: '60px 0 70px',
       borderTop: '1px solid rgba(204,199,185,0.4)',
       borderBottom: '1px solid rgba(204,199,185,0.4)',
@@ -76,5 +77,6 @@ export default function MarqueeSection() {
         </div>
       </div>
     </section>
+    </div>
   )
 }

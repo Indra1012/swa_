@@ -1,4 +1,4 @@
-﻿import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { FiLinkedin, FiInstagram, FiYoutube, FiFacebook } from 'react-icons/fi'
 
 export default function Footer() {
@@ -23,8 +23,8 @@ export default function Footer() {
 
   return (
     <footer style={{
-      background: 'var(--bg3)',
-      borderTop: '1px solid rgba(204,199,185,0.35)',
+      background: 'transparent',
+      borderTop: '1px solid rgba(204,199,185,0.2)',
       padding: '60px 60px 0',
       margin: 0,
       marginTop: 0
@@ -102,7 +102,7 @@ export default function Footer() {
               { label: 'Community Wellness', path: '/services/community' }
             ].map(item => (
               <button key={item.label} style={linkStyle} onClick={() => navigate(item.path)}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--dark2)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--secondary)'}
               >{item.label}</button>
             ))}
@@ -112,16 +112,16 @@ export default function Footer() {
           <div>
             <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '16px', fontWeight: 700, color: 'var(--dark)', marginBottom: '18px' }}>Company</h4>
             <button style={linkStyle} onClick={() => navigate('/about')}
-              onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--dark2)'}
               onMouseLeave={e => e.currentTarget.style.color = 'var(--secondary)'}
             >About Us</button>
             <button style={linkStyle} onClick={() => navigate('/book-demo')}
-              onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--dark2)'}
               onMouseLeave={e => e.currentTarget.style.color = 'var(--secondary)'}
             >Book a Demo</button>
             {['Careers','Our Experts'].map(item => (
               <button key={item} style={linkStyle}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--dark2)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--secondary)'}
               >{item}</button>
             ))}
@@ -132,7 +132,7 @@ export default function Footer() {
             <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '16px', fontWeight: 700, color: 'var(--dark)', marginBottom: '18px' }}>Legal</h4>
             {['Terms and Conditions','Privacy Policy','Cookie Policy'].map(item => (
               <button key={item} style={linkStyle}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--dark2)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--secondary)'}
               >{item}</button>
             ))}

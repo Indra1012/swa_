@@ -1,7 +1,18 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(bun --version)",
+      "Bash(powershell -c \"irm bun.sh/install.ps1 | iex\" 2>&1)",
+      "Bash($env:PATH = \"$env:USERPROFILE\\\\.bun\\\\bin;$env:PATH\")",
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@canary init -d)",
+      "Bash(grep:*)",
+      "Bash(for f:*)",
+      "Bash(do)",
+      "Bash(sed -i 's/onLoadedMetadata={\\(e\\) => { e.currentTarget.playbackRate = 1 }}/onCanPlay={\\(e\\) => { e.currentTarget.playbackRate = 1 }} onPlay={\\(e\\) => { e.currentTarget.playbackRate = 1 }}/g' \"$f\")",
+      "Bash(done)"
     ]
   }
 }

@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { Suspense, lazy, useEffect } from 'react'
+import { Suspense, lazy, useEffect, useRef } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -50,10 +50,55 @@ function ScrollToTop() {
 function Layout() {
   const location = useLocation()
   const isAdminDashboard = location.pathname === '/admin/dashboard'
+  const videoRef = useRef(null)
+
+  useEffect(() => {
+    const video = videoRef.current
+    if (!video) return
+
+    video.defaultPlaybackRate = 1
+    video.playbackRate = 1
+
+    const forcePlay = () => {
+      if (video.paused) {
+        video.play().catch(() => {})
+      }
+    }
+
+    const maintainRate = () => {
+      video.playbackRate = 1
+    }
+
+    forcePlay()
+    
+    // Force playback if paused by browser (e.g. power saving)
+    video.addEventListener('pause', forcePlay)
+    video.addEventListener('suspend', forcePlay)
+    video.addEventListener('ratechange', maintainRate)
+
+    return () => {
+      video.removeEventListener('pause', forcePlay)
+      video.removeEventListener('suspend', forcePlay)
+      video.removeEventListener('ratechange', maintainRate)
+    }
+  }, [isAdminDashboard, location.pathname])
 
   return (
     <>
       <ScrollToTop />
+      {!isAdminDashboard && (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          onEnded={(e) => e.target.play()}
+          style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: -1, pointerEvents: 'none' }}
+        >
+          <source src="/video.mp4" type="video/mp4" />
+        </video>
+      )}
       {!isAdminDashboard && <Navbar />}
       <Suspense fallback={<SWALoader />}>
         <Routes>

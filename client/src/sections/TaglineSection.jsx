@@ -6,7 +6,7 @@ import { FiArrowRight } from 'react-icons/fi'
 export default function TaglineSection() {
   const sectionRef = useRef(null)
   const navigate = useNavigate()
-  
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"]
@@ -20,10 +20,11 @@ export default function TaglineSection() {
   const handleCTA = useCallback(() => navigate('/book-demo'), [navigate])
 
   return (
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
     <section
       ref={sectionRef}
       style={{
-        background: 'var(--white)',
+        background: 'transparent',
         padding: '60px 60px 80px',
         textAlign: 'center',
         position: 'relative',
@@ -119,5 +120,6 @@ export default function TaglineSection() {
         </button>
       </motion.div>
     </section>
+    </div>
   )
 }

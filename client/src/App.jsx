@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { Suspense, lazy, useEffect, useRef } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState } from 'react'
 import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -51,6 +51,13 @@ function Layout() {
   const location = useLocation()
   const isAdminDashboard = location.pathname === '/admin/dashboard'
   const videoRef = useRef(null)
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     const video = videoRef.current
@@ -88,15 +95,17 @@ function Layout() {
       <ScrollToTop />
       {!isAdminDashboard && (
         <video
+          key={isMobile ? 'mobile-bg' : 'desktop-bg'}
           ref={videoRef}
           autoPlay
           muted
           loop
           playsInline
+          className="global-bg-video"
           onEnded={(e) => e.target.play()}
           style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: -1, pointerEvents: 'none' }}
         >
-          <source src="/video.mp4" type="video/mp4" />
+          <source src={isMobile ? "/video1.mp4" : "/video.mp4"} type="video/mp4" />
         </video>
       )}
       {!isAdminDashboard && <Navbar />}

@@ -38,10 +38,9 @@ export default function CTABanner() {
   return (
     <section 
       ref={sectionRef}
-      className="fade-up"
+      className="fade-up cta-section"
       style={{
         position: 'relative',
-        height: '480px',
         overflow: 'hidden',
         display: 'flex',
         alignItems: 'center',
@@ -75,9 +74,10 @@ export default function CTABanner() {
       }} />
 
       {/* Content */}
-      <div style={{
+      <div 
+        className="cta-content"
+        style={{
         position: 'relative', zIndex: 2,
-        padding: '0 40px',
         maxWidth: '860px'
       }}>
         <AnimatePresence mode="wait">
@@ -150,6 +150,14 @@ export default function CTABanner() {
           ))}
         </div>
       </div>
+      <style>{`
+        .cta-section { height: 480px; }
+        .cta-content { padding: 0 40px; }
+        @media (max-width: 768px) {
+          .cta-section { height: 540px; }
+          .cta-content { padding: 0 20px; }
+        }
+      `}</style>
     </section>
   )
 }

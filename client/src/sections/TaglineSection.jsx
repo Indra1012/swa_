@@ -23,9 +23,9 @@ export default function TaglineSection() {
     <div style={{ position: 'relative', overflow: 'hidden' }}>
     <section
       ref={sectionRef}
+      className="tagline-section"
       style={{
         background: 'transparent',
-        padding: '60px 60px 80px',
         textAlign: 'center',
         position: 'relative',
         zIndex: 2,
@@ -71,12 +71,12 @@ export default function TaglineSection() {
         </h2>
 
         {/* Subtext */}
-        <p style={{
-          fontSize: '17px', 
+        <p 
+          className="tagline-subtext"
+          style={{
           color: 'var(--secondary)',
           maxWidth: '560px', 
           margin: '0 auto 48px',
-          lineHeight: 1.7, 
           opacity: 0.85,
           fontFamily: 'DM Sans, sans-serif'
         }}>
@@ -119,6 +119,15 @@ export default function TaglineSection() {
           <FiArrowRight size={16} />
         </button>
       </motion.div>
+      <style>{`
+        .tagline-section { padding: 60px 60px 80px; }
+        .tagline-subtext { font-size: 17px; line-height: 1.7; }
+        
+        @media (max-width: 768px) {
+          .tagline-section { padding: 40px 20px 60px; }
+          .tagline-subtext { font-size: 16px; line-height: 1.6; }
+        }
+      `}</style>
     </section>
     </div>
   )

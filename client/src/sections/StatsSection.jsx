@@ -33,6 +33,7 @@ function StatItem({ stat, index, isInView }) {
 
   return (
     <motion.div
+      className="stat-item"
       initial={{ y: 30, opacity: 0 }}
       animate={isInView ? { y: 0, opacity: 1 } : {}}
       transition={{ duration: 0.8, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
@@ -48,7 +49,9 @@ function StatItem({ stat, index, isInView }) {
         padding: '32px 24px'
       }}
     >
-      <h3 style={{
+      <h3 
+        className="stat-value"
+        style={{
         fontFamily: 'Cormorant Garamond, serif',
         fontSize: 'clamp(48px, 5vw, 64px)',
         fontWeight: 600,
@@ -62,7 +65,9 @@ function StatItem({ stat, index, isInView }) {
           {stat.suffix}
         </span>
       </h3>
-      <p style={{
+      <p 
+        className="stat-label"
+        style={{
         fontSize: '14px',
         color: 'rgba(255,255,255,0.65)',
         fontWeight: 600,
@@ -100,9 +105,9 @@ export default function StatsSection() {
   return (
     <section
       ref={sectionRef}
+      className="stats-section"
       style={{
         background: 'var(--dark3)',
-        padding: '60px 60px 80px 60px',
         position: 'relative',
         overflow: 'hidden',
         margin: 0
@@ -159,9 +164,31 @@ export default function StatsSection() {
       </motion.div>
 
       <style>{`
+        .stats-section { padding: 60px 60px 80px 60px; }
         @media (max-width: 900px) {
           .stats-row { justify-content: center !important; gap: 40px !important; }
           .stat-divider { display: none !important; }
+        }
+        @media (max-width: 768px) {
+          .stats-section { padding: 40px 20px 60px 20px; }
+          
+          /* Enforce 2-per-row grid layout on mobile */
+          .stats-row { 
+            gap: 16px !important; 
+            flex-direction: row !important; 
+            flex-wrap: wrap !important; 
+            justify-content: center !important;
+          }
+          
+          /* The last 5th item will auto-center perfectly because of justify-content: center */
+          .stat-item {
+            width: calc(50% - 8px) !important;
+            padding: 24px 12px !important;
+            border-radius: 16px !important;
+          }
+          
+          .stat-value { font-size: 36px !important; margin-bottom: 8px !important; }
+          .stat-label { font-size: 11px !important; letter-spacing: 1px !important; }
         }
       `}</style>
     </section>

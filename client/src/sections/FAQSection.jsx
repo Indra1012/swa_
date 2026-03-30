@@ -23,12 +23,12 @@ function FAQItem({ faq, index, isOpen, onToggle }) {
       {/* Question row */}
       <button
         onClick={() => onToggle(index)}
+        className="faq-button"
         style={{
           width: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '22px 28px',
           background: 'none',
           border: 'none',
           cursor: 'pointer',
@@ -81,8 +81,9 @@ function FAQItem({ faq, index, isOpen, onToggle }) {
             transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{
-              padding: '0 28px 24px',
+            <div 
+              className="faq-answer"
+              style={{
               borderTop: '1px solid rgba(255,255,255,0.08)'
             }}>
               <p style={{
@@ -113,10 +114,9 @@ export default function FAQSection() {
   return (
     <section
       ref={sectionRef}
-      className="fade-up"
+      className="fade-up faq-section"
       style={{
         background: 'var(--dark3)',
-        padding: '80px 60px',
         margin: 0
       }}
     >
@@ -154,6 +154,18 @@ export default function FAQSection() {
           ))}
         </div>
       </div>
+      <style>{`
+        .faq-section { padding: 80px 60px; }
+        .faq-button { padding: 22px 28px; }
+        .faq-answer { padding: 0 28px 24px; }
+        
+        @media (max-width: 768px) {
+          .faq-section { padding: 60px 20px; }
+          .faq-button { padding: 20px 16px; gap: 12px !important; }
+          .faq-button span { font-size: 14px !important; }
+          .faq-answer { padding: 0 16px 20px; }
+        }
+      `}</style>
     </section>
   )
 }

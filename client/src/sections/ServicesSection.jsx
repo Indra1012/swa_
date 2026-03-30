@@ -50,9 +50,9 @@ export default function ServicesSection() {
     <div style={{ position: 'relative', overflow: 'hidden' }}>
     <section
       ref={sectionRef}
+      className="services-section"
       style={{
         background: 'transparent',
-        padding: '80px 40px',
         position: 'relative',
         overflow: 'hidden'
       }}
@@ -167,10 +167,11 @@ export default function ServicesSection() {
                   transition: 'all 0.6s ease'
                 }} />
 
-                {/* Vertical True Stacked Title (Shown ONLY when collapsed) */}
+                {/* Collapsed Title (Vertical on Desktop, Horizontal on Mobile) */}
                 <AnimatePresence>
                   {!isActive && (
                     <motion.div
+                      className="accordion-collapsed-title"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
@@ -179,24 +180,27 @@ export default function ServicesSection() {
                         position: 'absolute',
                         inset: 0,
                         display: 'flex',
-                        flexDirection: 'column',
                         alignItems: 'center', 
-                        justifyContent: 'center',
-                        gap: '4px' /* Tighter spacing so full words fit vertically */
+                        justifyContent: 'center'
                       }}
                     >
-                      {service.title.split('').map((char, charIdx) => (
-                        <div key={charIdx} style={{
-                          color: 'var(--white)',
-                          fontSize: '15px', /* Much smaller font to fit "Corporate Wellness" totally vertically inside 460px */
-                          fontFamily: 'Cormorant Garamond, serif',
-                          fontWeight: 700,
-                          lineHeight: '1',
-                          textTransform: 'uppercase'
-                        }}>
-                          {char === ' ' ? '\u00A0' : char} {/* Render space character gracefully */}
-                        </div>
-                      ))}
+                      <div className="accordion-title-vertical">
+                        {service.title.split('').map((char, charIdx) => (
+                          <div key={charIdx} style={{
+                            color: 'var(--white)',
+                            fontSize: '15px',
+                            fontFamily: 'Cormorant Garamond, serif',
+                            fontWeight: 700,
+                            lineHeight: '1',
+                            textTransform: 'uppercase'
+                          }}>
+                            {char === ' ' ? '\u00A0' : char}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="accordion-title-horizontal">
+                        {service.title}
+                      </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -237,9 +241,11 @@ export default function ServicesSection() {
                         {service.title}
                       </div>
 
-                      <h3 style={{
+                      <h3 
+                        className="accordion-headline"
+                        style={{
                         fontFamily: 'Cormorant Garamond, serif',
-                        fontSize: 'clamp(32px, 3.5vw, 48px)', /* Scaled down slightly */
+                        fontSize: 'clamp(32px, 3.5vw, 48px)',
                         fontWeight: 600,
                         color: 'var(--white)',
                         lineHeight: 1.05,
@@ -300,12 +306,34 @@ export default function ServicesSection() {
       </div>
 
       <style>{`
+        .services-section { padding: 80px 40px; }
+        .accordion-title-horizontal { display: none; }
+        .accordion-title-vertical { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         @media (max-width: 1000px) {
-          section { padding: 100px 30px !important; }
+          .services-section { padding: 80px 30px; }
           .services-accordion-container {
             flex-direction: column !important;
             height: 900px !important;
           }
+          .accordion-title-horizontal { 
+            display: block; 
+            color: var(--white);
+            font-size: 22px;
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+          }
+          .accordion-title-vertical { display: none; }
+        }
+        @media (max-width: 768px) {
+          .services-section { padding: 60px 20px; }
+          .services-accordion-container {
+            height: 850px !important;
+          }
+          .accordion-title-horizontal { font-size: 18px; letter-spacing: 2px; }
+          .accordion-headline { font-size: 26px !important; letter-spacing: -0.5px !important; }
         }
       `}</style>
     </section>

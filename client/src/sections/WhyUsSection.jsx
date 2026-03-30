@@ -89,9 +89,9 @@ export default function WhyUsSection() {
     <div style={{ position: 'relative', overflow: 'hidden' }}>
     <section
       ref={sectionRef}
+      className="why-us-section"
       style={{
         background: 'transparent',
-        padding: '80px 40px',
         position: 'relative',
         overflow: 'hidden',
         margin: 0
@@ -295,28 +295,23 @@ export default function WhyUsSection() {
         }
 
         /* === RESPONSIVE === */
+        .why-us-section { padding: 80px 40px; }
         @media (max-width: 1024px) {
-          .pillar-content {
-            gap: 32px;
-          }
-          .pillar-left-group {
-            gap: 20px;
-          }
+          .pillar-content { gap: 32px; }
+          .pillar-left-group { gap: 20px; }
         }
-
         @media (max-width: 768px) {
-          section { padding: 100px 24px !important; }
+          .why-us-section { padding: 60px 20px !important; }
           .pillar-content {
             grid-template-columns: 1fr;
             gap: 16px;
-            padding: 32px 24px !important;
+            padding: 32px 20px !important;
           }
           .pillar-row:hover .pillar-content {
-            padding: 36px 24px !important;
+            padding: 32px 20px !important;
           }
-          .pillar-desc {
-            opacity: 0.9;
-          }
+          .pillar-desc { opacity: 0.9; }
+          .pillar-icon { width: 40px; height: 40px; }
           h2 { white-space: normal !important; }
         }
       `}</style>

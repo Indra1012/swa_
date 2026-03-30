@@ -23,8 +23,10 @@ export default function HealingTechniques() {
         if (scrollLeft >= maxScroll - 10) {
            containerRef.current.scrollTo({ left: 0, behavior: 'smooth' })
         } else {
-           // Scroll by width of one card + the gap (340px + 32px gap = 372px)
-           containerRef.current.scrollBy({ left: 372, behavior: 'smooth' })
+           // Scroll dynamically by the width of the first card + gap
+           const firstCard = containerRef.current.children[0]
+           const scrollAmount = firstCard ? firstCard.clientWidth + 32 : 372
+           containerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
         }
       }
     }, 2000)
@@ -36,15 +38,15 @@ export default function HealingTechniques() {
       <section
         id="healing"
         ref={sectionRef}
+        className="healing-section"
         style={{
           background: 'transparent',
-          padding: '100px 0 100px 60px', // Left padding 60px, right 0 to let cards bleed off screen
           margin: 0
         }}
       >
         <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
           {/* Header */}
-          <div style={{ marginBottom: '60px', textAlign: 'center', paddingRight: '60px' }}>
+          <div className="healing-header" style={{ marginBottom: '60px', textAlign: 'center' }}>
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={isInView ? { y: 0, opacity: 1 } : {}}
@@ -87,11 +89,10 @@ export default function HealingTechniques() {
               gap: '32px',
               overflowX: 'auto',
               paddingBottom: '60px',
-              paddingRight: '60px', // End padding so the last item breathes
               scrollbarWidth: 'none', // Hide scrollbar in Firefox
               msOverflowStyle: 'none' // Hide scrollbar in IE/Edge
             }}
-            className="hide-scrollbar"
+            className="hide-scrollbar healing-scroll-container"
           >
             {TECHNIQUES.map((technique) => (
               <SimpleCard
@@ -107,6 +108,17 @@ export default function HealingTechniques() {
         <style>{`
           .hide-scrollbar::-webkit-scrollbar {
             display: none;
+          }
+          .healing-section { padding: 100px 0 100px 60px; }
+          .healing-header { padding-right: 60px; }
+          .healing-scroll-container { padding-right: 60px !important; }
+          .healing-card { width: 340px; }
+          
+          @media (max-width: 768px) {
+            .healing-section { padding: 60px 0 60px 20px; }
+            .healing-header { padding-right: 20px; }
+            .healing-scroll-container { padding-right: 20px !important; }
+            .healing-card { width: calc(85vw); min-width: 260px; max-width: 340px; }
           }
         `}</style>
       </section>
@@ -126,8 +138,8 @@ function SimpleCard({ technique, onOpen }) {
       onClick={() => onOpen(technique)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className="healing-card"
       style={{
-        width: '340px',
         height: '460px',
         flexShrink: 0,
         position: 'relative',

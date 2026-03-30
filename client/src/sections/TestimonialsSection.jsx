@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { HR_TESTIMONIALS, EMPLOYEE_TESTIMONIALS } from '../constants/testimonials'
 import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'framer-motion'
 
@@ -9,8 +9,9 @@ function TestimonialCard({ testimonial }) {
     <div 
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      className="testimonial-card"
       style={{
-        width: '420px',
+        width: 'clamp(280px, 85vw, 420px)',
         flexShrink: 0,
         position: 'relative',
         background: hovered ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
@@ -25,7 +26,9 @@ function TestimonialCard({ testimonial }) {
       }}
     >
       {/* Decorative Quote Mark Background */}
-      <div style={{
+      <div 
+        className="testimonial-quote-mark"
+        style={{
         position: 'absolute',
         top: '-10px', right: '10px',
         fontSize: '180px', fontFamily: 'Cormorant Garamond, serif',
@@ -39,7 +42,9 @@ function TestimonialCard({ testimonial }) {
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         {/* Company / Name */}
-        <p style={{
+        <p 
+          className="testimonial-company"
+          style={{
           fontFamily: 'Cormorant Garamond, serif',
           fontSize: '24px', fontWeight: 600,
           color: 'var(--primary)',
@@ -64,7 +69,9 @@ function TestimonialCard({ testimonial }) {
         </div>
 
         {/* Quote Title */}
-        <p style={{
+        <p 
+          className="testimonial-quote"
+          style={{
           fontFamily: 'Cormorant Garamond, serif',
           fontSize: '22px', fontWeight: 600,
           color: 'var(--white)',
@@ -76,7 +83,9 @@ function TestimonialCard({ testimonial }) {
         </p>
 
         {/* Text Body */}
-        <p style={{
+        <p 
+          className="testimonial-text"
+          style={{
           fontSize: '15px',
           color: 'rgba(255,255,255,0.6)',
           lineHeight: 1.8,
@@ -90,33 +99,51 @@ function TestimonialCard({ testimonial }) {
 }
 
 function MarqueeTrack({ testimonials }) {
-  const trackRef = useRef(null)
-  const doubled = [...testimonials, ...testimonials]
+  const scrollRef = useRef(null)
+  const [isHovered, setIsHovered] = useState(false)
+  
+  // Quadruple for an ultra-safe scroll buffer
+  const multipled = [...testimonials, ...testimonials, ...testimonials, ...testimonials]
+
+  // Native smooth fluid scroll via JS animation loop, pausing on interaction
+  useEffect(() => {
+    if (isHovered || !scrollRef.current) return
+    
+    let animationId
+    const step = () => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollLeft += 1.2 /* Slower, smooth speed */
+        
+        // Endless loop logic: if we've scrolled past exactly HALF the total width, jump back
+        if (scrollRef.current.scrollLeft >= scrollRef.current.scrollWidth / 2) {
+          scrollRef.current.scrollLeft -= scrollRef.current.scrollWidth / 2
+        }
+      }
+      animationId = requestAnimationFrame(step)
+    }
+    
+    animationId = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(animationId)
+  }, [isHovered, testimonials])
 
   return (
-    <div style={{ 
-      overflow: 'hidden', padding: '20px 0 80px',
-      WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
-      maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
-    }}>
-      <div
-        ref={trackRef}
-        style={{
-          display: 'flex',
-          gap: '32px',
-          width: 'max-content',
-          animation: 'marquee 50s linear infinite'
-        }}
-        onMouseEnter={() => {
-          if (trackRef.current)
-            trackRef.current.style.animationPlayState = 'paused'
-        }}
-        onMouseLeave={() => {
-          if (trackRef.current)
-            trackRef.current.style.animationPlayState = 'running'
-        }}
-      >
-        {doubled.map((t, i) => (
+    <div 
+      ref={scrollRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onTouchStart={() => setIsHovered(true)}
+      onTouchEnd={() => setIsHovered(false)}
+      className="hide-scrollbar"
+      style={{ 
+        overflowX: 'auto', padding: '20px 0 80px',
+        msOverflowStyle: 'none', scrollbarWidth: 'none',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+        maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+        cursor: isHovered ? 'grab' : 'default'
+      }}
+    >
+      <div style={{ display: 'flex', gap: '32px', width: 'max-content', padding: '0 20px' }}>
+        {multipled.map((t, i) => (
           <TestimonialCard key={i} testimonial={t} />
         ))}
       </div>
@@ -156,9 +183,9 @@ export default function TestimonialsSection() {
   return (
     <section
       ref={sectionRef}
+      className="testimonials-section"
       style={{
         background: 'var(--dark)',
-        padding: '80px 0',
         overflow: 'hidden',
         position: 'relative',
         margin: 0
@@ -190,9 +217,9 @@ export default function TestimonialsSection() {
             gap: '12px',
             marginBottom: '32px'
           }}>
-            <div style={{ width: '8px', height: '8px', background: 'var(--primary)', borderRadius: '50%' }} />
+            <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
             <span style={{
-              fontSize: '13px', color: 'var(--primary)', letterSpacing: '3px',
+              fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px',
               textTransform: 'uppercase', fontWeight: 700
             }}>
               Voices of SWA
@@ -208,9 +235,9 @@ export default function TestimonialsSection() {
             lineHeight: 1.1,
             letterSpacing: '-0.5px'
           }}>
-            Fostering Lasting{' '}
+            Client{' '}
             <span style={{ color: 'var(--accent)', fontStyle: 'italic', fontWeight: 500 }}>
-              Transformations
+              Testimonials
             </span>
           </h2>
 
@@ -225,13 +252,20 @@ export default function TestimonialsSection() {
           </p>
 
           {/* Tab switcher */}
-          <div style={{
+          <div 
+            className="testimonial-tabs-container hide-scrollbar"
+            style={{
             display: 'flex',
             justifyContent: 'center',
             gap: '16px',
-            flexWrap: 'wrap'
+            flexWrap: 'nowrap',
+            overflowX: 'auto',
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
+            padding: '4px'
           }}>
             <button
+              className="testimonial-tab-btn"
               style={tabBtnStyle('hr')}
               onClick={() => setActiveTab('hr')}
               onMouseEnter={e => {
@@ -250,6 +284,7 @@ export default function TestimonialsSection() {
               Organizational Impact
             </button>
             <button
+              className="testimonial-tab-btn"
               style={tabBtnStyle('employee')}
               onClick={() => setActiveTab('employee')}
               onMouseEnter={e => {
@@ -285,6 +320,22 @@ export default function TestimonialsSection() {
           </motion.div>
         </AnimatePresence>
       </div>
+      <style>{`
+        .testimonials-section { padding: 80px 0; }
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        @media (max-width: 768px) {
+          .testimonials-section { padding: 60px 0; }
+          .testimonial-card { padding: 24px 20px !important; border-radius: 20px !important; }
+          .testimonial-company { font-size: 20px !important; margin-bottom: 12px !important; }
+          .testimonial-quote { font-size: 18px !important; margin-bottom: 12px !important; line-height: 1.3 !important; }
+          .testimonial-text { font-size: 14px !important; line-height: 1.6 !important; }
+          .testimonial-quote-mark { font-size: 120px !important; top: -5px !important; right: 5px !important; }
+          
+          /* Single line tabs container */
+          .testimonial-tabs-container { justify-content: center !important; padding-bottom: 8px !important; gap: 8px !important; }
+          .testimonial-tab-btn { white-space: nowrap !important; padding: 8px 18px !important; font-size: 13px !important; flex-shrink: 0 !important; }
+        }
+      `}</style>
     </section>
   )
 }

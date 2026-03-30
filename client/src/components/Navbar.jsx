@@ -78,7 +78,9 @@ export default function Navbar() {
 
   return (
     <>
-      <nav style={{
+      <nav 
+        className="navbar-container"
+        style={{
         position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
         height: '76px',
         display: 'flex', alignItems: 'center',
@@ -449,6 +451,9 @@ export default function Navbar() {
         }
 
         @media (max-width: 768px) {
+          .navbar-container {
+            padding: 0 24px 0 32px !important; /* Bumped left side in slightly more */
+          }
           .desktop-nav { display: none !important; }
           .mobile-only { display: flex !important; }
         }

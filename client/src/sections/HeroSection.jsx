@@ -15,15 +15,14 @@ export default function HeroSection() {
   const scrollFade = useTransform(scrollYProgress, [0, 0.4], [1, 0]) // Texts vanish completely cleanly before the section is even half gone
 
   return (
-    <section
-      id="hero"
-      ref={containerRef}
-      style={{
-        position: 'relative',
-        height: '100vh',
-        minHeight: '600px',
-        overflow: 'hidden',
-        display: 'flex',
+      <section
+        id="hero"
+        ref={containerRef}
+        className="hero-section"
+        style={{
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'flex',
         alignItems: 'flex-end',
         background: '#4A2530' // Solid dark underneath to kill any white flashes
       }}
@@ -89,59 +88,7 @@ export default function HeroSection() {
         </motion.div>
       </div>
 
-      {/* 
-        ----------------------
-        BOTTOM ENTRANCE TYPOGRAPHY
-        ---------------------- 
-      */}
-      <motion.div 
-        style={{
-          position: 'relative', zIndex: 1,
-          width: '100%', padding: '0 60px 60px',
-          display: 'flex', justifyContent: 'space-between',
-          alignItems: 'flex-end',
-          y: textDriftY, opacity: scrollFade
-        }}
-      >
-        {/* Left Focus Headline */}
-        <motion.div
-           initial={{ opacity: 0, x: -40 }}
-           animate={{ opacity: 1, x: 0 }}
-           transition={{ duration: 1.2, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {/* CSS Hardware-Accelerated Floating Effect */}
-          <div className="hero-float-2">
-            <h1 style={{
-              fontFamily: 'Cormorant Garamond, serif',
-              fontSize: 'clamp(40px, 6vw, 84px)',
-              fontWeight: 700, color: 'white',
-              lineHeight: 1.05, maxWidth: '700px',
-              textShadow: '0 4px 30px rgba(0,0,0,0.6)'
-            }}>
-              Where Self Meets<br /><span style={{ fontStyle: 'italic', fontWeight: 500 }}>Its True Essence</span>
-            </h1>
-          </div>
-        </motion.div>
 
-        {/* Right Descriptive Tagline */}
-        <motion.div
-          initial={{ opacity: 0, x: 40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 1.2, delay: 0.7, ease: [0.16, 1, 0.3, 1] }}
-        >
-          {/* CSS Hardware-Accelerated Floating Effect */}
-          <div className="hero-float-3">
-            <p style={{
-              fontSize: '17px', color: 'white',
-              fontWeight: 500, opacity: 0.9, lineHeight: 1.7,
-              maxWidth: '320px', textAlign: 'right',
-              textShadow: '0 2px 10px rgba(0,0,0,0.5)'
-            }}>
-              Science-backed wellness programs for organizations, institutions & communities.
-            </p>
-          </div>
-        </motion.div>
-      </motion.div>
 
       <style>{`
         @keyframes heroFloat {
@@ -150,8 +97,11 @@ export default function HeroSection() {
           100% { transform: translate3d(0, 0, 0); }
         }
         .hero-float-1 { animation: heroFloat 7s ease-in-out infinite; }
-        .hero-float-2 { animation: heroFloat 6s ease-in-out infinite 1s; }
-        .hero-float-3 { animation: heroFloat 8s ease-in-out infinite 0.5s; }
+        
+        .hero-section { height: 100vh; min-height: 600px; }
+        @media (max-width: 768px) {
+          .hero-section { height: 60vh !important; min-height: 480px !important; }
+        }
       `}</style>
 
       {/* 
@@ -159,14 +109,14 @@ export default function HeroSection() {
         SCROLL INDICATOR
         ---------------------- 
       */}
-      <motion.div 
+      <motion.div
         style={{
           position: 'absolute', bottom: '24px', left: '50%',
           x: '-50%',
           color: 'var(--primary)', opacity: scrollFade, fontSize: '20px', zIndex: 1, fontWeight: 700
         }}
       >
-        <motion.div 
+        <motion.div
           animate={{ y: [0, 8, 0] }}
           transition={{ repeat: Infinity, duration: 2, ease: 'easeInOut' }}
         >

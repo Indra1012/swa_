@@ -1,14 +1,18 @@
 const Slot = require('../models/Slot')
 
-// ── GET AVAILABLE SLOTS ──────────────────────────────────────────
+// ── GET SLOTS (available + booked, so frontend can show booked state) ──
 const getAvailableSlots = async (req, res, next) => {
   try {
     const today = new Date().toISOString().split('T')[0]  // YYYY-MM-DD
 
+    // Return all future slots that are either available or booked
+    // (admin-disabled slots with isAvailable=false AND isBooked=false are hidden)
     const slots = await Slot.find({
-      isAvailable: true,
-      isBooked:    false,
-      date:        { $gte: today },
+      date: { $gte: today },
+      $or: [
+        { isAvailable: true },
+        { isBooked: true },
+      ],
     }).sort({ date: 1, time: 1 })
 
     res.status(200).json({ count: slots.length, slots })

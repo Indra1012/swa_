@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { useNavigate, useParams } from 'react-router-dom'
+import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
 import { FiArrowRight, FiCheckCircle, FiChevronDown } from 'react-icons/fi'
 
 // Floating Expandable Button
@@ -13,7 +13,8 @@ function ExpandableCard({ title, delay, children }) {
       viewport={{ once: true, margin: '-50px' }}
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay }}
       style={{
-        background: 'var(--white)',
+        background: 'rgba(250, 248, 245, 0.95)', /* Premium Off-White Glass */
+        backdropFilter: 'blur(12px)',
         borderRadius: '24px',
         overflow: 'hidden',
         boxShadow: isOpen ? '0 20px 40px rgba(0,0,0,0.06)' : '0 10px 20px rgba(0,0,0,0.03)',
@@ -23,7 +24,7 @@ function ExpandableCard({ title, delay, children }) {
       }}
       onClick={() => setIsOpen(!isOpen)}
     >
-      <div style={{ padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{ padding: 'clamp(20px, 4vw, 32px)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h5 style={{ margin: 0, fontSize: '12px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px' }}>
           {title}
         </h5>
@@ -44,7 +45,7 @@ function ExpandableCard({ title, delay, children }) {
             transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             style={{ overflow: 'hidden' }}
           >
-            <div style={{ padding: '0 32px 32px 32px' }}>
+            <div style={{ padding: '0 clamp(20px, 4vw, 32px) clamp(20px, 4vw, 32px) clamp(20px, 4vw, 32px)' }}>
               {children}
             </div>
           </motion.div>
@@ -151,40 +152,47 @@ function ServiceFullWidthSection({ data, index }) {
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
-    offset: ["start end", "end start"]
+    offset: ["start 90%", "end start"]
   })
 
+  // Smooth Kinetic Spring to avoid lagging and strict popping
+  const smoothScroll = useSpring(scrollYProgress, { stiffness: 60, damping: 20, restDelta: 0.001 })
+
   // Deep Parallax Effect on scrolling
-  const sectionY = useTransform(scrollYProgress, [0, 1], [40, -40])
-  const imgY = useTransform(scrollYProgress, [0, 1], ["-15%", "15%"])
+  const sectionY = useTransform(smoothScroll, [0, 1], [40, -40])
+  const imgY = useTransform(smoothScroll, [0, 1], ["-15%", "15%"])
+
+  // Kinetic Typography Mappings
+  const headerScale = useTransform(smoothScroll, [0, 0.2, 0.4], [0.85, 1, 1])
+  const headerOpacity = useTransform(smoothScroll, [0, 0.15, 0.3], [0, 1, 1])
+  const headerY = useTransform(smoothScroll, [0, 0.2, 0.4], [40, 0, 0])
+
+  const sublineOpacity = useTransform(smoothScroll, [0.05, 0.25, 0.4], [0, 1, 1])
+  const sublineY = useTransform(smoothScroll, [0.05, 0.25, 0.4], [30, 0, 0])
+
+  const cardOpacity = useTransform(smoothScroll, [0.1, 0.3, 0.5], [0, 1, 1])
+  const cardY = useTransform(smoothScroll, [0.1, 0.3, 0.5], [60, 0, 0])
+  const cardScale = useTransform(smoothScroll, [0.1, 0.3, 0.5], [0.95, 1, 1])
 
   return (
     <motion.div
       id={data.id}
       ref={sectionRef}
       style={{
-        padding: '60px 40px',
+        padding: '20px 0 10px 0', /* Dramatically reduced bottom padding to pull the footer up */
         maxWidth: '1200px',
         margin: '0 auto',
-        borderBottom: index !== 2 ? '1px solid rgba(0,0,0,0.06)' : 'none',
         y: sectionY
       }}
     >
-      {/* 1. Header Stack (Centered) */}
+      {/* 1. Kinetic Header Stack (Centered) */}
       <motion.div
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: false, amount: 0.15 }}
-        variants={{
-          hidden: {},
-          visible: { transition: { staggerChildren: 0.25 } }
+        style={{ 
+          textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px',
+          scale: headerScale, opacity: headerOpacity, y: headerY
         }}
-        style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto 40px' }}
       >
-        <motion.div variants={{
-          hidden: { opacity: 0, x: -30 },
-          visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
-        }}>
+        <div>
           <span style={{
             display: 'inline-block',
             fontSize: '11px', fontWeight: 700, color: 'var(--dark)',
@@ -193,15 +201,10 @@ function ServiceFullWidthSection({ data, index }) {
           }}>
             {data.tag}
           </span>
-        </motion.div>
+        </div>
 
-        <motion.h2 
-          variants={{
-            hidden: { opacity: 0, x: 30 },
-            visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
-          }}
-          style={{
-            fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(36px, 4vw, 56px)',
+        <h2 style={{
+            fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(36px, 8vw, 56px)',
             fontWeight: 700, color: 'var(--dark)', lineHeight: 1.15, letterSpacing: '-0.5px', marginBottom: '24px'
           }}
         >
@@ -212,15 +215,11 @@ function ServiceFullWidthSection({ data, index }) {
           }}>
             {data.headlineAccent}
           </span>
-        </motion.h2>
+        </h2>
 
-        <motion.p 
-          variants={{
-            hidden: { opacity: 0, x: -30 },
-            visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
-          }}
-          style={{
-            fontSize: '18px', color: 'var(--secondary)', fontWeight: 400, lineHeight: 1.6, opacity: 0.9
+        <motion.p style={{
+            fontSize: '18px', color: 'var(--secondary)', fontWeight: 400, lineHeight: 1.6, 
+            opacity: sublineOpacity, y: sublineY
           }}
         >
           {data.subheadline}
@@ -233,56 +232,51 @@ function ServiceFullWidthSection({ data, index }) {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: '-80px' }}
         transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+        className="services-parallax-img"
         style={{
-          width: '100%', height: '460px', borderRadius: '32px', overflow: 'hidden', position: 'relative',
+          width: '100%', borderRadius: 'clamp(16px, 4vw, 32px)', overflow: 'hidden', position: 'relative',
           marginBottom: '48px', boxShadow: '0 30px 60px rgba(0,0,0,0.08)'
         }}
       >
         <motion.img 
-          src={data.image} alt={data.headline} 
+          src={data.image} alt={data.headlinePre} 
           style={{ width: '100%', height: '130%', objectFit: 'cover', y: imgY }}
         />
       </motion.div>
 
-      {/* 3. The Problem & Solution (Identical Premium Cards) */}
+      {/* 3. The Problem & Solution (Kinetic Premium Cards) */}
       <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '40px', marginBottom: '48px'
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: 'clamp(20px, 4vw, 40px)', marginBottom: '48px'
       }}>
         {/* Challenge Card */}
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           style={{
-            background: 'var(--white)', padding: '50px', borderRadius: '24px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.03)', borderBottom: '4px solid var(--accent)'
+            background: 'rgba(250, 248, 245, 0.95)', padding: 'clamp(24px, 5vw, 50px)', borderRadius: '24px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.03)', borderBottom: '4px solid var(--accent)',
+            scale: cardScale, opacity: cardOpacity, y: cardY
           }}
         >
           <h5 style={{ fontSize: '11px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px', opacity: 0.6 }}>
             The Challenge
           </h5>
-          <p style={{ fontSize: '18px', color: 'var(--dark)', lineHeight: 1.7, margin: 0, fontWeight: 500 }}>
+          <p style={{ fontSize: 'clamp(16px, 3vw, 18px)', color: 'var(--dark)', lineHeight: 1.7, margin: 0, fontWeight: 500 }}>
             {data.challenge}
           </p>
         </motion.div>
 
         {/* Approach Card */}
         <motion.div
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-50px' }}
-          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
           style={{
-            background: 'var(--white)', padding: '50px', borderRadius: '24px',
-            boxShadow: '0 10px 40px rgba(0,0,0,0.03)', borderBottom: '4px solid var(--accent)'
+            background: 'rgba(250, 248, 245, 0.95)', padding: 'clamp(24px, 5vw, 50px)', borderRadius: '24px',
+            boxShadow: '0 10px 40px rgba(0,0,0,0.03)', borderBottom: '4px solid var(--accent)',
+            scale: cardScale, opacity: cardOpacity, y: cardY
           }}
         >
           <h5 style={{ fontSize: '11px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '24px', opacity: 0.6 }}>
             Our Approach
           </h5>
           <h4 style={{ 
-            fontFamily: 'Cormorant Garamond, serif', fontSize: '24px', 
+            fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(20px, 4vw, 24px)', 
             color: 'var(--dark)', fontWeight: 500, lineHeight: 1.4, fontStyle: 'italic', margin: 0
           }}>
             "{data.approach}"
@@ -292,13 +286,13 @@ function ServiceFullWidthSection({ data, index }) {
 
       {/* 4. Offerings & Formats (Floating Expanding Accordions) */}
       <div style={{
-        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '40px', marginBottom: '48px',
+        display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '40px', marginBottom: '48px',
         alignItems: 'start'
       }}>
         <ExpandableCard title="What We Offer" delay={0}>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {data.offerings.map((offering, idx) => (
-              <li key={idx} style={{ position: 'relative', paddingLeft: '32px', fontSize: '17px', color: 'var(--dark)', fontWeight: 500 }}>
+              <li key={idx} style={{ position: 'relative', paddingLeft: '32px', fontSize: 'clamp(15px, 2.5vw, 17px)', color: 'var(--dark)', fontWeight: 500 }}>
                 <FiCheckCircle size={18} color="var(--dark2)" style={{ position: 'absolute', left: 0, top: '4px' }} />
                 {offering}
               </li>
@@ -327,7 +321,7 @@ function ServiceFullWidthSection({ data, index }) {
         viewport={{ once: true, margin: '-50px' }}
         transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         style={{
-          background: 'rgba(255,255,255,0.7)', padding: '60px', borderRadius: '32px', color: 'var(--dark)',
+          background: 'rgba(255,255,255,0.7)', padding: 'clamp(30px, 6vw, 60px)', borderRadius: '32px', color: 'var(--dark)',
           position: 'relative', overflow: 'hidden', textAlign: 'center', boxShadow: '0 20px 40px rgba(0,0,0,0.03)',
           border: '1px solid rgba(255,255,255,1)', backdropFilter: 'blur(20px)'
         }}
@@ -336,11 +330,11 @@ function ServiceFullWidthSection({ data, index }) {
           Outcomes {data.id === 'community' ? '' : 'You Can Expect'}
         </h5>
         
-        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '24px', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '16px', marginBottom: '40px' }}>
           {data.outcomes.map((outcome, idx) => (
             <div key={idx} style={{
-              background: 'var(--white)', padding: '16px 28px', borderRadius: '16px',
-              fontFamily: 'Cormorant Garamond, serif', fontSize: '24px', border: '1px solid rgba(0,0,0,0.04)',
+              background: 'rgba(250, 248, 245, 0.95)', padding: 'clamp(12px, 3vw, 16px) clamp(20px, 4vw, 28px)', borderRadius: '16px',
+              fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(18px, 3.5vw, 24px)', border: '1px solid rgba(0,0,0,0.04)',
               boxShadow: '0 4px 12px rgba(0,0,0,0.02)', fontWeight: 500
             }}>
               {outcome}
@@ -352,8 +346,8 @@ function ServiceFullWidthSection({ data, index }) {
           onClick={() => navigate('/book-demo')}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: '12px',
-            padding: '18px 40px', background: 'var(--accent)', color: 'var(--white)',
-            borderRadius: '50px', fontSize: '16px', fontWeight: 600,
+            padding: 'clamp(14px, 3vw, 18px) clamp(24px, 5vw, 40px)', background: 'var(--accent)', color: 'var(--white)',
+            borderRadius: '50px', fontSize: 'clamp(14px, 3vw, 16px)', fontWeight: 600,
             border: 'none', cursor: 'pointer', transition: 'all 0.3s ease',
             boxShadow: '0 10px 30px rgba(184, 139, 88, 0.4)'
           }}
@@ -379,22 +373,21 @@ function ServiceFullWidthSection({ data, index }) {
 }
 
 export default function ServicesPage() {
-  const { hash } = useLocation()
-  // Hash scrolling logic, highly precise with setTimeout
+  const { serviceId } = useParams()
+  const navigate = useNavigate()
+  const [activeTab, setActiveTab] = useState(SERVICES_DATA[0].id)
+
+  // Navigate to the correct tab based on URL param
   useEffect(() => {
-    if (hash) {
-      setTimeout(() => {
-        const id = hash.replace('#', '')
-        const element = document.getElementById(id)
-        if (element) {
-          const y = element.getBoundingClientRect().top + window.scrollY - 100
-          window.scrollTo({ top: y, behavior: 'smooth' })
-        }
-      }, 300) 
-    } else {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (serviceId && SERVICES_DATA.find(s => s.id === serviceId)) {
+      setActiveTab(serviceId)
     }
-  }, [hash])
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 100)
+  }, [serviceId])
+
+  const activeServiceData = SERVICES_DATA.find(s => s.id === activeTab) || SERVICES_DATA[0]
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
@@ -402,7 +395,7 @@ export default function ServicesPage() {
     <main style={{
       position: 'relative',
       background: 'transparent',
-      minHeight: '100vh', paddingTop: '72px', overflow: 'hidden'
+      minHeight: '100vh', paddingTop: '120px', overflow: 'hidden'
     }}>
       
       {/* Ambient Luxury Lighting Gradients */}
@@ -425,15 +418,119 @@ export default function ServicesPage() {
         }} 
       />
 
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Render Full-Width Sections */}
-        <div>
-          {SERVICES_DATA.map((service, i) => (
-            <ServiceFullWidthSection key={service.id} data={service} index={i} />
-          ))}
+      <div style={{ position: 'relative', zIndex: 1, maxWidth: '1200px', margin: '0 auto', padding: '0 20px' }}>
+        
+        {/* ACTIVE CONTENT WITH BUTTER SMOOTH ANIMATION TRIGGERED BY NAVBAR DROPDOWN */}
+        <AnimatePresence mode="wait">
+           <motion.div
+             key={activeTab}
+             initial={{ opacity: 0, y: 40, filter: 'blur(8px)' }}
+             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+             exit={{ opacity: 0, y: -30, filter: 'blur(8px)' }}
+             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+           >
+             <ServiceFullWidthSection data={activeServiceData} index={0} />
+           </motion.div>
+        </AnimatePresence>
+
+        {/* BOTTOM NAVIGATION - EXPLORE OTHER SERVICES */}
+        <div style={{
+           marginTop: '0px',
+           marginBottom: '100px',
+           paddingTop: '20px',
+           display: 'flex',
+           flexDirection: 'column',
+           alignItems: 'center'
+        }}>
+           <h3 style={{ 
+               fontFamily: 'Cormorant Garamond, serif', 
+               fontSize: '36px', 
+               color: 'var(--dark)',
+               marginBottom: '40px',
+               fontStyle: 'italic'
+           }}>
+              Explore More Services
+           </h3>
+           <div style={{
+               display: 'grid',
+               gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))',
+               gap: '30px',
+               width: '100%',
+               maxWidth: '900px'
+           }}>
+              {SERVICES_DATA.filter(s => s.id !== activeTab).map((service) => (
+                 <button
+                    key={service.id}
+                    onClick={() => {
+                        setActiveTab(service.id)
+                        navigate(`/services/${service.id}`)
+                        window.scrollTo({ top: 0, behavior: 'smooth' })
+                    }}
+                    style={{
+                        background: 'var(--dark)',
+                        padding: 'clamp(14px, 3vw, 18px) clamp(24px, 5vw, 36px)', /* Dynamic padding to keep slimmer on mobile */
+                        borderRadius: '50px',
+                        border: 'none',
+                        boxShadow: '0 15px 30px rgba(101,50,57,0.2)',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '16px'
+                    }}
+                    onMouseEnter={e => {
+                        e.currentTarget.style.transform = 'translateY(-4px)'
+                        e.currentTarget.style.boxShadow = '0 25px 50px rgba(101,50,57,0.3)'
+                        e.currentTarget.style.background = '#4A2B2F' /* Slightly lighter plum on hover */
+                    }}
+                    onMouseLeave={e => {
+                        e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.boxShadow = '0 15px 30px rgba(101,50,57,0.2)'
+                        e.currentTarget.style.background = 'var(--dark)'
+                    }}
+                 >
+                    <span style={{ 
+                        fontFamily: 'Cormorant Garamond, serif', 
+                        fontSize: 'clamp(18px, 4vw, 22px)', /* Fluid typography to fit slimmer button bounds */
+                        fontWeight: 600, 
+                        color: 'var(--white)',
+                        lineHeight: 1.15
+                    }}>
+                        {service.tag}
+                    </span>
+                    
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: '8px',
+                        fontSize: 'clamp(11px, 2.5vw, 13px)', fontWeight: 700,
+                        color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '2px',
+                        flexShrink: 0  /* Ensure action text doesn't squish out of bounded box */
+                    }}>
+                        Explore <FiArrowRight size={18} />
+                    </div>
+                 </button>
+              ))}
+           </div>
         </div>
+
       </div>
     </main>
+
+    {/* Responsive Media Queries for Services */}
+    <style>{`
+      .services-parallax-img {
+        height: 460px;
+      }
+      @media (max-width: 768px) {
+        .services-parallax-img {
+          aspect-ratio: 0.8 !important;
+          height: auto !important;
+        }
+      }
+    `}</style>
+
     </div>
     </div>
   )

@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { TECHNIQUES } from '../constants/techniques'
-import { FiUser } from 'react-icons/fi'
+import { FiUser, FiChevronDown } from 'react-icons/fi'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -152,14 +153,98 @@ export default function Navbar() {
             </button>
           </li>
 
-          {/* Services link (no dropdown) */}
-          <li>
+          {/* Services link (Horizontal Dropdown Mega-style) */}
+          <li
+            onMouseEnter={handleServicesEnter}
+            onMouseLeave={handleServicesLeave}
+            style={{ position: 'relative' }}
+          >
             <button
               className="desktop-nav-link"
               onClick={() => navigate('/services')}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               Services
+              <motion.div
+                 animate={{ rotate: servicesOpen ? 180 : 0 }}
+                 transition={{ duration: 0.3 }}
+                 style={{ display: 'flex', alignItems: 'center', marginTop: '2px' }}
+              >
+                 <FiChevronDown size={14} opacity={0.6} />
+              </motion.div>
             </button>
+            <AnimatePresence>
+              {servicesOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.90, y: -10, x: "-50%", filter: 'blur(5px)' }}
+                  animate={{ opacity: 1, scale: 1, y: 0, x: "-50%", filter: 'blur(0px)' }}
+                  exit={{ opacity: 0, scale: 0.90, y: -10, x: "-50%", filter: 'blur(5px)' }}
+                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  style={{
+                    position: 'absolute',
+                    top: '100%',
+                    left: '50%',
+                    background: 'rgba(250, 248, 245, 0.75)', /* Increased transparency for light glass */
+                    backdropFilter: 'blur(30px)',
+                    WebkitBackdropFilter: 'blur(30px)',
+                    padding: '8px',
+                    borderRadius: '20px',
+                    boxShadow: '0 20px 40px rgba(101, 50, 57, 0.08)',
+                    border: '1px solid rgba(0, 0, 0, 0.04)', /* Much thinner, subtle dark border */
+                    display: 'flex',
+                    flexDirection: 'row',
+                    gap: '4px',
+                    marginTop: '20px',
+                    minWidth: 'max-content',
+                    transformOrigin: 'top center'
+                  }}
+                >
+                  {/* Invisible bridge to safely cross from nav button to dropdown menu */}
+                  <div style={{ position: 'absolute', top: '-25px', left: 0, right: 0, height: '25px' }} />
+
+                  
+                  {[
+                    { id: 'corporate', name: 'Corporate Solutions' },
+                    { id: 'education', name: 'Educational Environments' },
+                    { id: 'community', name: 'Community Outreaches' }
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        navigate('/services/' + item.id)
+                        setServicesOpen(false)
+                      }}
+                      style={{
+                        padding: '12px 24px',
+                        background: 'transparent',
+                        border: 'none',
+                        borderRadius: '16px',
+                        fontFamily: 'Cormorant Garamond, serif',
+                        fontSize: '18px',
+                        fontWeight: 600,
+                        color: 'var(--dark)',
+                        cursor: 'pointer',
+                        transition: 'all 0.3s ease',
+                      }}
+                      onMouseEnter={(e) => {
+                         e.currentTarget.style.background = 'var(--dark)'
+                         e.currentTarget.style.color = 'var(--white)'
+                         e.currentTarget.style.boxShadow = '0 10px 20px rgba(101,50,57,0.15)'
+                         e.currentTarget.style.transform = 'translateY(-2px)'
+                      }}
+                      onMouseLeave={(e) => {
+                         e.currentTarget.style.background = 'transparent'
+                         e.currentTarget.style.color = 'var(--dark)'
+                         e.currentTarget.style.boxShadow = 'none'
+                         e.currentTarget.style.transform = 'translateY(0)'
+                      }}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </li>
 
           {/* About Us */}
@@ -277,7 +362,6 @@ export default function Navbar() {
             fontSize: '20px', fontWeight: 700,
             color: 'var(--dark)'
           }}>
-            Menu
           </span>
           <button
             onClick={() => setDrawerOpen(false)}
@@ -318,17 +402,57 @@ export default function Navbar() {
             Healing Techniques
           </button>
 
-          {/* Services (Mobile) */}
-          <button
-            style={{
-              ...navLinkStyle, textAlign: 'left',
-              padding: '14px 0', width: '100%',
-              borderBottom: '1px solid rgba(204,199,185,0.25)'
-            }}
-            onClick={() => { navigate('/services'); setDrawerOpen(false) }}
-          >
-            Services
-          </button>
+          {/* Services (Mobile) Accordion */}
+          <div>
+            <button
+              style={{
+                ...navLinkStyle, textAlign: 'left',
+                padding: '14px 0', width: '100%',
+                borderBottom: drawerServicesOpen ? 'none' : '1px solid rgba(204,199,185,0.25)',
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+              }}
+              onClick={() => setDrawerServicesOpen(!drawerServicesOpen)}
+            >
+              Services
+              <motion.div animate={{ rotate: drawerServicesOpen ? 180 : 0 }}>
+                <FiChevronDown size={16} />
+              </motion.div>
+            </button>
+            <AnimatePresence>
+              {drawerServicesOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  style={{ overflow: 'hidden', borderBottom: '1px solid rgba(204,199,185,0.25)' }}
+                >
+                  <div style={{ padding: '0 0 14px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {[
+                      { id: 'corporate', name: 'Corporate Solutions' },
+                      { id: 'education', name: 'Educational Environments' },
+                      { id: 'community', name: 'Community Outreaches' }
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          navigate('/services/' + item.id)
+                          setDrawerOpen(false)
+                        }}
+                        style={{
+                          textAlign: 'left', background: 'none', border: 'none',
+                          fontSize: '15px', color: 'var(--secondary)', cursor: 'pointer',
+                          fontFamily: 'DM Sans, sans-serif',
+                          padding: '4px 0'
+                        }}
+                      >
+                        {item.name}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* About */}
           <button

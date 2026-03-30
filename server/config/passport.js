@@ -12,10 +12,12 @@ module.exports = (passport) => {
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
-        const email  = profile.emails?.[0]?.value || ''
-        const name   = profile.displayName         || ''
-        const avatar = profile.photos?.[0]?.value  || ''
-        const role   = email === process.env.ADMIN_EMAIL ? 'admin' : 'user'
+        const email      = profile.emails?.[0]?.value || ''
+        const name       = profile.displayName         || ''
+        const avatar     = profile.photos?.[0]?.value  || ''
+        const adminEmails = (process.env.ADMIN_EMAILS || process.env.ADMIN_EMAIL || '')
+                              .split(',').map(e => e.trim().toLowerCase())
+        const role       = adminEmails.includes(email.toLowerCase()) ? 'admin' : 'user'
 
         // Find existing user by googleId first, then fall back to email
         let user = await User.findOne({ googleId: profile.id })

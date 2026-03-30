@@ -1,6 +1,7 @@
-const Booking  = require('../models/Booking')
-const Slot     = require('../models/Slot')
-const Settings = require('../models/Settings')
+const Booking         = require('../models/Booking')
+const Slot            = require('../models/Slot')
+const Settings        = require('../models/Settings')
+const createMeetEvent = require('../utils/createMeetEvent')
 const { sendEmail, bookingConfirmationTemplate, bookingNotificationTemplate } = require('../utils/sendEmail')
 
 // ── CREATE BOOKING ───────────────────────────────────────────────
@@ -24,8 +25,14 @@ const createBooking = async (req, res, next) => {
       return res.status(400).json({ error: 'Selected slot is no longer available' })
     }
 
-    // Create booking
-    const booking = await Booking.create({ name, email, phone, company, teamSize, message, date, timeSlot })
+    // Create Google Meet event (non-blocking — returns null if not configured)
+    const meetLink = await createMeetEvent({ name, email, company, date, timeSlot })
+
+    // Create booking (with Meet link if generated)
+    const booking = await Booking.create({
+      name, email, phone, company, teamSize, message, date, timeSlot,
+      ...(meetLink && { meetLink })
+    })
 
     // Mark slot as booked
     slot.isBooked    = true
@@ -46,7 +53,7 @@ const createBooking = async (req, res, next) => {
     // Send emails (fire-and-forget — don't block the response)
     sendEmail({
       to:      email,
-      subject: '✅ Your SWA Demo Request is Confirmed',
+      subject: '✅ Your SWA Demo is Confirmed — Google Meet Link Inside',
       html:    bookingConfirmationTemplate(booking),
     }).catch(err => console.error('❌ Confirmation email failed:', err.message))
 
@@ -57,7 +64,7 @@ const createBooking = async (req, res, next) => {
       html:    bookingNotificationTemplate(booking),
     }).catch(err => console.error('❌ Notification email failed:', err.message))
 
-    console.log(`✅ Booking created: ${name} | ${company} | ${date} ${timeSlot}`)
+    console.log(`✅ Booking created: ${name} | ${company} | ${date} ${timeSlot} | Meet: ${meetLink || 'none'}`)
     res.status(201).json({ message: 'Booking created successfully', booking })
   } catch (err) {
     console.error('❌ createBooking error:', err.message)

@@ -103,8 +103,9 @@ export default function BookDemo() {
     fetchSlots()
   }, [])
 
-  const timesForDate = selectedDate
-    ? slots.filter(s => s.date === selectedDate && s.isAvailable && !s.isBooked).map(s => s.time)
+  // All slots for the selected date (available + booked), for display
+  const allTimesForDate = selectedDate
+    ? slots.filter(s => s.date === selectedDate)
     : []
 
   const handleFormChange = useCallback((field, value) => {
@@ -171,16 +172,16 @@ export default function BookDemo() {
                 Experience <span style={{ fontWeight: 600, color: 'var(--dark)' }}>SWA Wellness</span>
               </h1>
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px' }}>
-                <span style={{ fontSize: '15px', fontWeight: 500, color: 'var(--secondary)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(8px, 2vw, 16px)', flexWrap: 'nowrap' }}>
+                <span style={{ fontSize: 'clamp(13px, 3.5vw, 15px)', fontWeight: 500, color: 'var(--secondary)', whiteSpace: 'nowrap' }}>
                   Want a quick preview?
                 </span>
                 <button
                   onClick={() => setIsVideoExpanded(!isVideoExpanded)}
                   style={{
-                    padding: '10px 24px', background: 'var(--dark)', color: 'var(--white)',
-                    borderRadius: '50px', fontSize: '13px', fontWeight: 600, border: 'none',
-                    transition: 'all 0.3s ease'
+                    padding: 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 24px)', background: 'var(--dark)', color: 'var(--white)',
+                    borderRadius: '50px', fontSize: 'clamp(12px, 3.5vw, 13px)', fontWeight: 600, border: 'none',
+                    transition: 'all 0.3s ease', whiteSpace: 'nowrap'
                   }}
                   onMouseEnter={e => e.currentTarget.style.background = 'var(--dark2)'}
                   onMouseLeave={e => e.currentTarget.style.background = 'var(--dark)'}
@@ -222,7 +223,7 @@ export default function BookDemo() {
           {/* ── SECTION 3: Booking Form ── */}
           <section style={{
             background: 'transparent',
-            padding: '20px 60px 80px',
+            padding: '20px clamp(16px, 4vw, 60px) 80px',
             margin: 0
           }}>
             <div style={{ maxWidth: '760px', margin: '0 auto' }}>
@@ -235,8 +236,9 @@ export default function BookDemo() {
               >
                 <h2 style={{
                   fontFamily: 'Cormorant Garamond, serif',
-                  fontSize: 'clamp(28px, 3vw, 42px)',
-                  fontWeight: 700, color: 'var(--dark)', marginBottom: '12px', letterSpacing: '-0.5px'
+                  fontSize: 'clamp(20px, 5.5vw, 42px)',
+                  fontWeight: 700, color: 'var(--dark)', marginBottom: '12px', letterSpacing: '-0.5px',
+                  whiteSpace: 'nowrap'
                 }}>
                   Book a 30-Min <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>Google Meet</span>
                 </h2>
@@ -303,7 +305,7 @@ export default function BookDemo() {
                   <div style={{
                     background: 'var(--white)',
                     borderRadius: '24px',
-                    padding: '48px',
+                    padding: 'clamp(24px, 5vw, 48px)',
                     border: '1px solid rgba(204,199,185,0.2)',
                     boxShadow: '0 40px 80px rgba(0,0,0,0.02)'
                   }}>
@@ -379,26 +381,63 @@ export default function BookDemo() {
                         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: 600, color: 'var(--dark)', marginBottom: '16px' }}>
                           <FiClock size={15} /> Select a Time <span style={{ color: 'var(--secondary)' }}>*</span>
                         </label>
-                        {timesForDate.length === 0 ? (
+                        {allTimesForDate.length === 0 ? (
                           <p style={{ fontSize: '13px', color: 'var(--secondary)', padding: '16px', background: 'rgba(204,199,185,0.15)', borderRadius: '16px', border: '1px dashed rgba(204,199,185,0.4)' }}>
                             No available times for this date.
                           </p>
                         ) : (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                            {timesForDate.map(time => (
-                              <button
-                                key={time} onClick={() => setSelectedTime(time)}
-                                style={{
-                                  padding: '10px 20px', borderRadius: '50px',
-                                  border: selectedTime === time ? '2px solid var(--dark)' : '1.5px solid rgba(204,199,185,0.4)',
-                                  background: selectedTime === time ? 'var(--dark)' : 'var(--white)',
-                                  color: selectedTime === time ? 'var(--white)' : 'var(--dark)',
-                                  fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'var(--transition)', fontFamily: 'DM Sans, sans-serif'
-                                }}
-                              >
-                                {time}
-                              </button>
-                            ))}
+                            {allTimesForDate.map(slot => {
+                              const isBooked    = slot.isBooked || !slot.isAvailable
+                              const isSelected  = selectedTime === slot.time && !isBooked
+                              return (
+                                <div key={slot._id} style={{ position: 'relative' }}>
+                                  <button
+                                    disabled={isBooked}
+                                    onClick={() => !isBooked && setSelectedTime(slot.time)}
+                                    title={isBooked ? 'Slot already booked' : ''}
+                                    style={{
+                                      padding: '10px 20px', borderRadius: '50px',
+                                      border: isBooked
+                                        ? '1.5px solid rgba(204,199,185,0.25)'
+                                        : isSelected
+                                          ? '2px solid var(--dark)'
+                                          : '1.5px solid rgba(204,199,185,0.4)',
+                                      background: isBooked
+                                        ? 'rgba(204,199,185,0.18)'
+                                        : isSelected
+                                          ? 'var(--dark)'
+                                          : 'var(--white)',
+                                      color: isBooked
+                                        ? 'rgba(101,50,57,0.35)'
+                                        : isSelected
+                                          ? 'var(--white)'
+                                          : 'var(--dark)',
+                                      fontSize: '13px', fontWeight: 500,
+                                      cursor: isBooked ? 'not-allowed' : 'pointer',
+                                      transition: 'var(--transition)',
+                                      fontFamily: 'DM Sans, sans-serif',
+                                      position: 'relative',
+                                    }}
+                                  >
+                                    {slot.time}
+                                    {isBooked && (
+                                      <span style={{
+                                        display: 'block',
+                                        fontSize: '9px',
+                                        fontWeight: 600,
+                                        letterSpacing: '0.5px',
+                                        color: 'rgba(101,50,57,0.4)',
+                                        marginTop: '2px',
+                                        textTransform: 'uppercase'
+                                      }}>
+                                        Booked
+                                      </span>
+                                    )}
+                                  </button>
+                                </div>
+                              )
+                            })}
                           </div>
                         )}
                       </motion.div>

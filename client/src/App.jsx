@@ -115,6 +115,7 @@ function Layout() {
           <Route path="/about"                   element={<About />} />
           <Route path="/book-demo"               element={<BookDemo />} />
           <Route path="/services"                element={<ServicesPage />} />
+          <Route path="/services/:serviceId"     element={<ServicesPage />} />
           <Route path="/healing-techniques"      element={<HealingTechniquesPage />} />
           <Route path="/admin/login"             element={<AdminLogin />} />
           <Route

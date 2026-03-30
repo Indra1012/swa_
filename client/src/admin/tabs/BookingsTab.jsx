@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import axios from 'axios'
 import {
   FiCalendar, FiTrash2, FiRefreshCw,
-  FiSearch, FiChevronDown, FiAlertCircle
+  FiSearch, FiChevronDown, FiAlertCircle, FiVideo
 } from 'react-icons/fi'
 
 const API = import.meta.env.VITE_API_URL
@@ -354,7 +354,7 @@ export default function BookingsTab() {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ background: 'rgba(226,212,186,0.1)' }}>
-                  {['Name', 'Email', 'Company', 'Team Size', 'Date', 'Time', 'Status', ''].map((col, i) => (
+                  {['Name', 'Email', 'Company', 'Team Size', 'Date', 'Time', 'Meet', 'Status', ''].map((col, i) => (
                     <th key={i} style={{
                       padding: '13px 16px',
                       textAlign: 'left',
@@ -423,6 +423,35 @@ export default function BookingsTab() {
                       whiteSpace: 'nowrap'
                     }}>
                       {booking.timeSlot}
+                    </td>
+                    <td style={{ padding: '14px 16px' }}>
+                      {booking.meetLink ? (
+                        <a
+                          href={booking.meetLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          title="Join Google Meet"
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '5px',
+                            padding: '5px 12px',
+                            borderRadius: '50px',
+                            background: 'rgba(26,115,232,0.08)',
+                            border: '1px solid rgba(26,115,232,0.25)',
+                            color: '#1a73e8',
+                            fontSize: '12px', fontWeight: 600,
+                            textDecoration: 'none',
+                            transition: 'background 0.2s ease',
+                            fontFamily: 'DM Sans, sans-serif',
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = 'rgba(26,115,232,0.14)'}
+                          onMouseLeave={e => e.currentTarget.style.background = 'rgba(26,115,232,0.08)'}
+                        >
+                          <FiVideo size={12} />
+                          Meet
+                        </a>
+                      ) : (
+                        <span style={{ fontSize: '12px', color: 'rgba(204,199,185,0.6)', fontFamily: 'DM Sans, sans-serif' }}>—</span>
+                      )}
                     </td>
                     <td style={{ padding: '14px 16px' }}>
                       <StatusDropdown

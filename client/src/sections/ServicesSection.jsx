@@ -285,7 +285,7 @@ export default function ServicesSection() {
                         }}
                         onClick={(e) => {
                           e.stopPropagation()
-                          navigate('/services#' + service.type)
+                          navigate('/services/' + service.type)
                         }}
                         onMouseEnter={e => {
                           e.currentTarget.style.transform = 'translateY(-4px)'

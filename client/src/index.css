@@ -70,8 +70,12 @@ body {
   font-family: 'DM Sans', sans-serif;
   background: var(--bg);
   color: var(--dark);
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+#root {
+  overflow-x: clip;
+  width: 100%;
 }
 
 h1,

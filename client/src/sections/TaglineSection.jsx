@@ -120,11 +120,11 @@ export default function TaglineSection() {
         </button>
       </motion.div>
       <style>{`
-        .tagline-section { padding: 60px 60px 80px; }
+        .tagline-section { padding: 60px 60px 20px; }
         .tagline-subtext { font-size: 17px; line-height: 1.7; }
         
         @media (max-width: 768px) {
-          .tagline-section { padding: 40px 20px 60px; }
+          .tagline-section { padding: 40px 20px 20px; }
           .tagline-subtext { font-size: 16px; line-height: 1.6; }
         }
       `}</style>

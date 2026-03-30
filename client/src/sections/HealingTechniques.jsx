@@ -109,13 +109,13 @@ export default function HealingTechniques() {
           .hide-scrollbar::-webkit-scrollbar {
             display: none;
           }
-          .healing-section { padding: 100px 0 100px 60px; }
+          .healing-section { padding: 20px 0 100px 60px; }
           .healing-header { padding-right: 60px; }
           .healing-scroll-container { padding-right: 60px !important; }
           .healing-card { width: 340px; }
           
           @media (max-width: 768px) {
-            .healing-section { padding: 60px 0 60px 20px; }
+            .healing-section { padding: 0px 0 60px 20px; }
             .healing-header { padding-right: 20px; }
             .healing-scroll-container { padding-right: 20px !important; }
             .healing-card { width: calc(85vw); min-width: 260px; max-width: 340px; }

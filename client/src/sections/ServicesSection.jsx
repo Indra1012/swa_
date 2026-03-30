@@ -73,7 +73,10 @@ export default function ServicesSection() {
              alignItems: 'center',
              y: headerY,
              opacity: headerOpacity,
-             scale: headerScale
+             scale: headerScale,
+             position: 'relative',
+             zIndex: 5,
+             pointerEvents: 'none' /* FIX: Prevents parallax bounding box from overlapping and stealing clicks on mobile */
            }}
         >
           {/* Raw minimal text replacing the pill badge */}
@@ -128,6 +131,7 @@ export default function ServicesSection() {
             return (
               <motion.div
                 key={index}
+                onClick={() => setActiveIndex(index)}
                 onMouseEnter={() => setActiveIndex(index)}
                 animate={{
                   flex: isActive ? 4 : 1
@@ -276,7 +280,8 @@ export default function ServicesSection() {
                           background: 'var(--accent)', color: 'var(--white)',
                           borderRadius: '50px', fontSize: '14px', fontWeight: 600,
                           border: 'none', transition: 'all 0.4s ease',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
+                          pointerEvents: 'auto'
                         }}
                         onClick={(e) => {
                           e.stopPropagation()

@@ -46,7 +46,7 @@ export default function HealingTechniques() {
       >
         <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
           {/* Header */}
-          <div className="healing-header" style={{ marginBottom: '60px', textAlign: 'center' }}>
+          <div className="healing-header float-subtle" style={{ marginBottom: '60px', textAlign: 'center' }}>
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={isInView ? { y: 0, opacity: 1 } : {}}

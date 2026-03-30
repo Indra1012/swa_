@@ -41,10 +41,10 @@ export default function ServicesSection() {
     offset: ["start end", "end start"]
   })
 
-  // Smooth parallax values matching the TaglineSection style
+  // Scroll-Driven Scale Reveal (kinetic typography)
   const headerY = useTransform(scrollYProgress, [0, 1], [80, -80])
   const headerOpacity = useTransform(scrollYProgress, [0, 0.15, 0.7, 1], [0, 1, 1, 0])
-  const headerScale = useTransform(scrollYProgress, [0, 0.2, 0.7, 1], [0.92, 1, 1, 0.95])
+  const headerScale = useTransform(scrollYProgress, [0, 0.35, 0.7, 1], [0.6, 1, 1, 0.95])
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden' }}>

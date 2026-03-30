@@ -12,10 +12,13 @@ export default function TaglineSection() {
     offset: ["start end", "end start"]
   })
 
-  // Subtle parallax and scale effect
+  // Scroll-Driven Scale Reveal (kinetic typography)
   const y = useTransform(scrollYProgress, [0, 1], [60, -60])
-  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
-  const scale = useTransform(scrollYProgress, [0, 0.3, 0.8, 1], [0.92, 1, 1, 0.95])
+  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0])
+  const scale = useTransform(scrollYProgress, [0, 0.35, 0.85, 1], [0.6, 1, 1, 0.95])
+  const subOpacity = useTransform(scrollYProgress, [0, 0.25, 0.85, 1], [0, 1, 1, 0])
+  const subScale = useTransform(scrollYProgress, [0, 0.4, 0.85, 1], [0.55, 1, 1, 0.95])
+  const subY = useTransform(scrollYProgress, [0, 1], [80, -40])
 
   const handleCTA = useCallback(() => navigate('/book-demo'), [navigate])
 
@@ -34,6 +37,7 @@ export default function TaglineSection() {
         marginTop: -30
       }}
     >
+      {/* HEADING — Scroll-Driven Scale Reveal */}
       <motion.div 
         style={{ 
           maxWidth: '800px', 
@@ -69,7 +73,19 @@ export default function TaglineSection() {
             community & workplace
           </span>
         </h2>
+      </motion.div>
 
+      {/* SUBTEXT + CTA — Delayed Scale Reveal */}
+      <motion.div
+        style={{
+          maxWidth: '800px',
+          margin: '0 auto',
+          y: subY,
+          opacity: subOpacity,
+          scale: subScale,
+          textAlign: 'center'
+        }}
+      >
         {/* Subtext */}
         <p 
           className="tagline-subtext"

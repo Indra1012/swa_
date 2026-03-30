@@ -33,9 +33,10 @@ function PillarRow({ pillar, index }) {
     offset: ["start end", "end start"]
   })
 
-  // Subtle per-row parallax: each row shifts up/down as you scroll
+  // Scroll-Driven Scale Reveal per row — heading scales AND position shift
   const y = useTransform(scrollYProgress, [0, 1], [30 + index * 8, -(20 + index * 8)])
   const opacity = useTransform(scrollYProgress, [0, 0.15, 0.4, 0.85, 1], [0, 1, 1, 1, 0.3])
+  const scale = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0.85, 1, 1, 0.97])
   const scaleX = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
 
   const Icon = pillar.icon
@@ -44,7 +45,7 @@ function PillarRow({ pillar, index }) {
     <motion.div
       ref={rowRef}
       className="pillar-row"
-      style={{ y, opacity }}
+      style={{ y, opacity, scale }}
     >
       {/* Animated divider line that scales in from left on scroll */}
       <div className="pillar-divider-track">
@@ -80,10 +81,13 @@ export default function WhyUsSection() {
     offset: ["start end", "end start"]
   })
 
-  // Slower movement, gentler fade
+  // Scroll-Driven Scale Reveal (kinetic typography)
   const headerY = useTransform(scrollYProgress, [0, 1], [40, -40])
-  const headerOpacity = useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0])
-  const headerScale = useTransform(scrollYProgress, [0, 0.3, 0.8, 1], [0.96, 1, 1, 0.98])
+  const headerOpacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0])
+  const headerScale = useTransform(scrollYProgress, [0, 0.35, 0.85, 1], [0.6, 1, 1, 0.95])
+  const subScale = useTransform(scrollYProgress, [0, 0.4, 0.85, 1], [0.55, 1, 1, 0.95])
+  const subOpacity = useTransform(scrollYProgress, [0, 0.25, 0.85, 1], [0, 1, 1, 0])
+  const subY = useTransform(scrollYProgress, [0, 1], [60, -30])
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden' }}>
@@ -102,12 +106,12 @@ export default function WhyUsSection() {
         margin: '0 auto'
       }}>
         
-        {/* HUGE PARALLAX HEADER EXACTLY MATCHING 'Our Expertise' */}
+        {/* HEADING — Scroll-Driven Scale Reveal, Kinetic Typography, ALL viewports */}
         <motion.div
            style={{
              textAlign: 'center',
              maxWidth: '1000px',
-             margin: '0 auto 100px',
+             margin: '0 auto 40px',
              display: 'flex',
              flexDirection: 'column',
              alignItems: 'center',
@@ -138,14 +142,26 @@ export default function WhyUsSection() {
             color: 'var(--dark)',
             lineHeight: 1.1,
             letterSpacing: '-0.5px',
-            marginBottom: '32px',
+            marginBottom: '0',
             whiteSpace: 'nowrap'
           }}>
             True wellness is a <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>continuous journey.</span>
           </h2>
+        </motion.div>
 
+        {/* SUBTEXT — Delayed Scale Reveal, slightly slower */}
+        <motion.div
+          style={{
+            textAlign: 'center',
+            maxWidth: '700px',
+            margin: '0 auto 80px',
+            y: subY,
+            opacity: subOpacity,
+            scale: subScale
+          }}
+        >
           <p style={{
-            fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7, fontWeight: 400, maxWidth: '700px', margin: '0 auto'
+            fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7, fontWeight: 400, margin: 0
           }}>
             We move past quick fixes to provide structured, practical wellness programs that create real, lasting changes in your environment.
           </p>

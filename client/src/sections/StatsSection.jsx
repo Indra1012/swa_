@@ -133,8 +133,8 @@ export default function StatsSection() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: '-100px' }}
       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}>
-        {/* Compact Title - Animation removed as requested */}
-        <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+        {/* Compact Title */}
+        <div className="float-subtle" style={{ textAlign: 'center', marginBottom: '80px' }}>
           <h2 style={{
             fontFamily: 'Cormorant Garamond, serif',
             fontSize: 'clamp(36px, 4vw, 52px)',

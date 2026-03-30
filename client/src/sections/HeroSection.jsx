@@ -92,15 +92,14 @@ export default function HeroSection() {
 
       <style>{`
         @keyframes heroFloat {
-          0% { transform: translate3d(0, 0, 0); }
-          50% { transform: translate3d(0, -8px, 0); }
-          100% { transform: translate3d(0, 0, 0); }
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-16px); }
         }
-        .hero-float-1 { animation: heroFloat 7s ease-in-out infinite; }
+        .hero-float-1 { animation: heroFloat 4s ease-in-out infinite; }
         
         .hero-section { height: 100vh; min-height: 600px; }
         @media (max-width: 768px) {
-          .hero-section { height: 60vh !important; min-height: 480px !important; }
+          .hero-section { height: 80vh !important; min-height: 550px !important; }
         }
       `}</style>
 

@@ -201,6 +201,15 @@ a {
   }
 }
 
+/* Global Buttery Float Effects */
+@keyframes butteryFloatSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+.float-subtle {
+  animation: butteryFloatSubtle 6s ease-in-out infinite;
+}
+
 /* Smooth link underline */
 a,
 button {

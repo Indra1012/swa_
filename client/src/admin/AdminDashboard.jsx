@@ -3,22 +3,20 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
-  FiGrid, FiImage, FiEdit3, FiCalendar,
+  FiGrid, FiEdit3, FiCalendar,
   FiClock, FiBell, FiLogOut, FiMenu, FiX,
   FiExternalLink
 } from 'react-icons/fi'
 
 import OverviewTab from './tabs/OverviewTab'
-import MediaManagerTab from './tabs/MediaManagerTab'
-import ContentEditorTab from './tabs/ContentEditorTab'
+import EditTab from './tabs/EditTab'
 import BookingsTab from './tabs/BookingsTab'
 import SlotSettingsTab from './tabs/SlotSettingsTab'
 import NotificationSettingsTab from './tabs/NotificationSettingsTab'
 
 const TABS = [
   { id: 'overview',      label: 'Overview',              icon: <FiGrid size={18} /> },
-  { id: 'media',         label: 'Media Manager',         icon: <FiImage size={18} /> },
-  { id: 'content',       label: 'Content Editor',        icon: <FiEdit3 size={18} /> },
+  { id: 'edit',          label: 'Edit',                  icon: <FiEdit3 size={18} /> },
   { id: 'bookings',      label: 'Bookings',              icon: <FiCalendar size={18} /> },
   { id: 'slots',         label: 'Slot Settings',         icon: <FiClock size={18} /> },
   { id: 'notifications', label: 'Notification Settings', icon: <FiBell size={18} /> }
@@ -37,8 +35,7 @@ export default function AdminDashboard() {
   const renderTab = () => {
     switch (activeTab) {
       case 'overview':      return <OverviewTab />
-      case 'media':         return <MediaManagerTab />
-      case 'content':       return <ContentEditorTab />
+      case 'edit':          return <EditTab />
       case 'bookings':      return <BookingsTab />
       case 'slots':         return <SlotSettingsTab />
       case 'notifications': return <NotificationSettingsTab />

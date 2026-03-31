@@ -1,5 +1,8 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import axios from 'axios'
+
+const API = import.meta.env.VITE_API_URL
 import { FiPlus, FiMinus } from 'react-icons/fi'
 import { FAQS } from '../constants/faqs'
 import useScrollFade from '../hooks/useScrollFade'
@@ -104,8 +107,25 @@ function FAQItem({ faq, index, isOpen, onToggle }) {
 
 export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState(null)
+  const [faqs, setFaqs] = useState([])
   const sectionRef = useRef(null)
   useScrollFade(sectionRef)
+
+  useEffect(() => {
+    const fetchFaqs = async () => {
+      try {
+        const res = await axios.get(`${API}/api/sections/faqs`)
+        if (res.data.items && res.data.items.length > 0) {
+          setFaqs(res.data.items.map(f => ({ q: f.question, a: f.answer, id: f._id })))
+        } else {
+          setFaqs(FAQS)
+        }
+      } catch (err) {
+        setFaqs(FAQS)
+      }
+    }
+    fetchFaqs()
+  }, [])
 
   const handleToggle = (index) => {
     setOpenIndex(prev => prev === index ? null : index)
@@ -143,9 +163,9 @@ export default function FAQSection() {
           flexDirection: 'column',
           gap: '12px'
         }}>
-          {FAQS.map((faq, i) => (
+          {faqs.map((faq, i) => (
             <FAQItem
-              key={i}
+              key={faq.id || i}
               faq={faq}
               index={i}
               isOpen={openIndex === i}

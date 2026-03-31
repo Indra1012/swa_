@@ -1,5 +1,8 @@
 import { useRef, useEffect, useState } from 'react'
 import { motion, useInView } from 'framer-motion'
+import axios from 'axios'
+
+const API = import.meta.env.VITE_API_URL
 
 const STATS = [
   { value: 450, suffix: '+', label: 'Organizations\nTransformed' },
@@ -81,7 +84,7 @@ function StatItem({ stat, index, isInView }) {
       </p>
 
       {/* Elegant Vertical Divider for all but the last item */}
-      {index !== STATS.length - 1 && (
+      {index !== length - 1 && (
         <div
           className="stat-divider"
           style={{
@@ -100,7 +103,24 @@ function StatItem({ stat, index, isInView }) {
 
 export default function StatsSection() {
   const sectionRef = useRef(null)
+  const [stats, setStats] = useState([])
   const isInView = useInView(sectionRef, { once: true, margin: '-50px 0px' })
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await axios.get(`${API}/api/sections/stats`)
+        if (res.data.items && res.data.items.length > 0) {
+          setStats(res.data.items)
+        } else {
+          setStats(STATS)
+        }
+      } catch (err) {
+        setStats(STATS)
+      }
+    }
+    fetchStats()
+  }, [])
 
   return (
     <section
@@ -157,8 +177,8 @@ export default function StatsSection() {
             flexWrap: 'wrap'
           }}
         >
-          {STATS.map((stat, i) => (
-            <StatItem key={i} stat={stat} index={i} isInView={isInView} />
+          {stats.map((stat, i) => (
+            <StatItem key={stat._id || i} stat={stat} index={i} isInView={isInView} length={stats.length} />
           ))}
         </div>
       </motion.div>

@@ -1,18 +1,22 @@
-import { useRef, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { motion, useScroll, useTransform } from 'framer-motion'
-import { FiArrowRight } from 'react-icons/fi'
+import { useRef, useState, useEffect } from 'react'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+import axios from 'axios'
+
+const API = import.meta.env.VITE_API_URL
+
+const DEFAULT_WORDS = ['community', 'workplace', 'institution']
 
 export default function TaglineSection() {
   const sectionRef = useRef(null)
-  const navigate = useNavigate()
+  const [words, setWords] = useState(DEFAULT_WORDS)
+  const [interval, setIntervalMs] = useState(1500)
+  const [activeIndex, setActiveIndex] = useState(0)
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"]
   })
 
-  // Scroll-Driven Scale Reveal (kinetic typography)
   const y = useTransform(scrollYProgress, [0, 1], [60, -60])
   const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0])
   const scale = useTransform(scrollYProgress, [0, 0.35, 0.85, 1], [0.6, 1, 1, 0.95])
@@ -20,7 +24,34 @@ export default function TaglineSection() {
   const subScale = useTransform(scrollYProgress, [0, 0.4, 0.85, 1], [0.55, 1, 1, 0.95])
   const subY = useTransform(scrollYProgress, [0, 1], [80, -40])
 
-  const handleCTA = useCallback(() => navigate('/book-demo'), [navigate])
+  // Fetch animated words from DB
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const res = await axios.get(`${API}/api/content/tagline`)
+        const items = res.data.items || []
+        items.forEach(item => {
+          if (item.key === 'animatedWords') {
+            try { setWords(JSON.parse(item.value)) } catch {}
+          }
+          if (item.key === 'animationInterval') {
+            const ms = parseInt(item.value)
+            if (ms > 0) setIntervalMs(ms)
+          }
+        })
+      } catch { /* use defaults */ }
+    }
+    load()
+  }, [])
+
+  // Cycle through words
+  useEffect(() => {
+    if (words.length <= 1) return
+    const timer = setInterval(() => {
+      setActiveIndex(prev => (prev + 1) % words.length)
+    }, interval)
+    return () => clearInterval(timer)
+  }, [words, interval])
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden' }}>
@@ -37,7 +68,6 @@ export default function TaglineSection() {
         marginTop: -30
       }}
     >
-      {/* HEADING — Scroll-Driven Scale Reveal */}
       <motion.div 
         style={{ 
           maxWidth: '800px', 
@@ -45,7 +75,6 @@ export default function TaglineSection() {
           y, opacity, scale
         }}
       >
-        {/* Decorative Element */}
         <div style={{
           width: '40px', height: '2px',
           background: 'var(--accent)',
@@ -54,7 +83,6 @@ export default function TaglineSection() {
           opacity: 0.6
         }} />
 
-        {/* Heading */}
         <h2 style={{
           fontFamily: 'Cormorant Garamond, serif',
           fontSize: 'clamp(40px, 5vw, 64px)',
@@ -66,16 +94,34 @@ export default function TaglineSection() {
         }}>
           Bringing lasting wellness to your <br />
           <span style={{
-            color: 'var(--secondary)',
-            fontStyle: 'italic',
-            fontWeight: 500
+            display: 'inline-block',
+            position: 'relative',
+            height: 'clamp(44px, 5.5vw, 70px)',
+            overflow: 'hidden',
+            verticalAlign: 'bottom',
+            minWidth: '200px'
           }}>
-            community & workplace
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={activeIndex}
+                initial={{ y: 40, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -40, opacity: 0 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  display: 'inline-block',
+                  color: 'var(--secondary)',
+                  fontStyle: 'italic',
+                  fontWeight: 500
+                }}
+              >
+                {words[activeIndex]}
+              </motion.span>
+            </AnimatePresence>
           </span>
         </h2>
       </motion.div>
 
-      {/* SUBTEXT + CTA — Delayed Scale Reveal */}
       <motion.div
         style={{
           maxWidth: '800px',
@@ -86,54 +132,18 @@ export default function TaglineSection() {
           textAlign: 'center'
         }}
       >
-        {/* Subtext */}
         <p 
           className="tagline-subtext"
           style={{
           color: 'var(--secondary)',
           maxWidth: '560px', 
-          margin: '0 auto 48px',
+          margin: '0 auto',
           opacity: 0.85,
           fontFamily: 'DM Sans, sans-serif'
         }}>
           We compassionately create wellness programs and mindfulness spaces
           to improve holistic wellbeing across every environment.
         </p>
-
-        {/* CTA Button */}
-        <button
-          onClick={handleCTA}
-          style={{
-            background: 'var(--dark)', 
-            color: 'var(--white)',
-            border: 'none', 
-            borderRadius: '50px',
-            padding: '16px 42px', 
-            fontSize: '15px', 
-            fontWeight: 600,
-            cursor: 'pointer', 
-            display: 'inline-flex',
-            alignItems: 'center', 
-            gap: '12px',
-            boxShadow: '0 4px 20px rgba(60,47,47,0.15)',
-            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            fontFamily: 'DM Sans, sans-serif'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.background = 'var(--dark2)'
-            e.currentTarget.style.transform = 'translateY(-3px)'
-            e.currentTarget.style.boxShadow = '0 12px 24px rgba(184, 139, 88, 0.25)'
-            e.currentTarget.style.color = 'var(--white)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.background = 'var(--dark)'
-            e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.boxShadow = '0 4px 20px rgba(60,47,47,0.15)'
-          }}
-        >
-          Contact us for a demo 
-          <FiArrowRight size={16} />
-        </button>
       </motion.div>
       <style>{`
         .tagline-section { padding: 60px 60px 20px; }

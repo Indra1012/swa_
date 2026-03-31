@@ -4,23 +4,23 @@ import { FiLayers, FiTarget, FiHeart, FiShield } from 'react-icons/fi'
 
 const PILLARS = [
   {
-    title: "Holistic Approach",
-    desc: "We don't just treat symptoms. We look at the entire environment to improve emotional and mental wellbeing.",
+    title: "Rooted in Real Connection",
+    desc: "We go beyond surface-level wellness. Our programs are experiential, tapping directly into the heart of human connection to foster environments where emotional intelligence thrives organically.",
     icon: FiLayers
   },
   {
-    title: "Measurable Results",
-    desc: "Our programs are driven by data and practical science, ensuring you see real, active improvements in your daily life.",
+    title: "Science Meets Wisdom",
+    desc: "By blending the practical rigor of modern psychology with the grounded depth of eastern philosophies, we deliver tools that are both immediately actionable and deeply profound.",
     icon: FiTarget
   },
   {
-    title: "Deep Empathy",
-    desc: "Everything we design is centered around human connection, making sure our strategies naturally fit your people.",
+    title: "Tailored to Your Ecosystem",
+    desc: "No two cultures are the same. We take time to understand the unique emotional and psychological landscape of your workplace or community, designing solutions that feel native to your people.",
     icon: FiHeart
   },
   {
-    title: "Lasting Change",
-    desc: "We focus on building strong, long-term habits that prevent burnout and keep you thriving every single day.",
+    title: "Sustainable Transformation",
+    desc: "We don't do quick fixes. Our entire methodology is designed to create lasting, compounding ripples of wellbeing that protect against burnout and elevate life satisfaction long-term.",
     icon: FiShield
   }
 ]

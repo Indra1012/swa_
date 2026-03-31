@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
 import { HR_TESTIMONIALS, EMPLOYEE_TESTIMONIALS } from '../constants/testimonials'
 import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'framer-motion'
+import axios from 'axios'
+
+const API = import.meta.env.VITE_API_URL
 
 function TestimonialCard({ testimonial }) {
   const [hovered, setHovered] = useState(false)
@@ -25,7 +28,6 @@ function TestimonialCard({ testimonial }) {
         overflow: 'hidden'
       }}
     >
-      {/* Decorative Quote Mark Background */}
       <div 
         className="testimonial-quote-mark"
         style={{
@@ -41,7 +43,6 @@ function TestimonialCard({ testimonial }) {
       </div>
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Company / Name */}
         <p 
           className="testimonial-company"
           style={{
@@ -51,24 +52,22 @@ function TestimonialCard({ testimonial }) {
           marginBottom: '16px',
           letterSpacing: '0.5px'
         }}>
-          {testimonial.company || testimonial.name}
+          {testimonial.name}
         </p>
 
-        {/* Stars */}
         <div style={{
           display: 'flex', gap: '4px',
           marginBottom: '24px'
         }}>
           {[...Array(5)].map((_, i) => (
             <span key={i} style={{
-              color: 'rgba(226,212,186,0.9)',
+              color: i < (testimonial.rating || 5) ? 'rgba(226,212,186,0.9)' : 'rgba(226,212,186,0.3)',
               fontSize: '16px',
               opacity: 0.9
             }}>★</span>
           ))}
         </div>
 
-        {/* Quote Title */}
         <p 
           className="testimonial-quote"
           style={{
@@ -82,7 +81,6 @@ function TestimonialCard({ testimonial }) {
           "{testimonial.quote}"
         </p>
 
-        {/* Text Body */}
         <p 
           className="testimonial-text"
           style={{
@@ -102,19 +100,15 @@ function MarqueeTrack({ testimonials }) {
   const scrollRef = useRef(null)
   const [isHovered, setIsHovered] = useState(false)
   
-  // Quadruple for an ultra-safe scroll buffer
   const multipled = [...testimonials, ...testimonials, ...testimonials, ...testimonials]
 
-  // Native smooth fluid scroll via JS animation loop, pausing on interaction
   useEffect(() => {
     if (isHovered || !scrollRef.current) return
     
     let animationId
     const step = () => {
       if (scrollRef.current) {
-        scrollRef.current.scrollLeft += 1.2 /* Slower, smooth speed */
-        
-        // Endless loop logic: if we've scrolled past exactly HALF the total width, jump back
+        scrollRef.current.scrollLeft += 1.2
         if (scrollRef.current.scrollLeft >= scrollRef.current.scrollWidth / 2) {
           scrollRef.current.scrollLeft -= scrollRef.current.scrollWidth / 2
         }
@@ -126,6 +120,8 @@ function MarqueeTrack({ testimonials }) {
     return () => cancelAnimationFrame(animationId)
   }, [isHovered, testimonials])
 
+  if (testimonials.length === 0) return null;
+
   return (
     <div 
       ref={scrollRef}
@@ -133,7 +129,7 @@ function MarqueeTrack({ testimonials }) {
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={() => setIsHovered(true)}
       onTouchEnd={() => setIsHovered(false)}
-      className="hide-scrollbar"
+      className="hide-scrollbar marquee-track-container"
       style={{ 
         overflowX: 'auto', padding: '20px 0 80px',
         msOverflowStyle: 'none', scrollbarWidth: 'none',
@@ -152,33 +148,46 @@ function MarqueeTrack({ testimonials }) {
 }
 
 export default function TestimonialsSection() {
-  const [activeTab, setActiveTab] = useState('hr')
   const sectionRef = useRef(null)
+  const [testimonials, setTestimonials] = useState([])
 
-  // EXACT Parallax animation copied from prior sections
+  useEffect(() => {
+    const fetchTestimonials = async () => {
+      try {
+        const res = await axios.get(`${API}/api/sections/testimonials`)
+        if (res.data.items && res.data.items.length > 0) {
+          setTestimonials(res.data.items)
+        } else {
+          // Fallback to constants mapped to match DB model structure
+          const combined = [...HR_TESTIMONIALS, ...EMPLOYEE_TESTIMONIALS].map(t => ({
+            name: t.company, // maps company to name
+            rating: 5,
+            quote: t.quote,
+            text: t.text
+          }))
+          setTestimonials(combined)
+        }
+      } catch (err) {
+        const combined = [...HR_TESTIMONIALS, ...EMPLOYEE_TESTIMONIALS].map(t => ({
+          name: t.company,
+          rating: 5,
+          quote: t.quote,
+          text: t.text
+        }))
+        setTestimonials(combined)
+      }
+    }
+    fetchTestimonials()
+  }, [])
+
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"]
   })
 
-  // Same parallax hooks
   const headerY = useTransform(scrollYProgress, [0, 1], [80, -80])
   const headerOpacity = useTransform(scrollYProgress, [0, 0.15, 0.7, 1], [0, 1, 1, 0])
   const headerScale = useTransform(scrollYProgress, [0, 0.2, 0.7, 1], [0.92, 1, 1, 0.95])
-
-  const tabBtnStyle = (tab) => ({
-    background: activeTab === tab ? 'var(--white)' : 'rgba(255,255,255,0.08)',
-    color: activeTab === tab ? 'var(--dark)' : 'rgba(255,255,255,0.65)',
-    border: '1px solid',
-    borderColor: activeTab === tab ? 'var(--white)' : 'rgba(255,255,255,0.15)',
-    borderRadius: '50px',
-    padding: '14px 40px',
-    fontSize: '15px', fontWeight: 600,
-    cursor: 'pointer',
-    transition: 'all 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-    fontFamily: 'DM Sans, sans-serif',
-    boxShadow: activeTab === tab ? '0 8px 24px rgba(255,255,255,0.15)' : 'none'
-  })
 
   return (
     <section
@@ -197,7 +206,6 @@ export default function TestimonialsSection() {
         position: 'relative',
         zIndex: 1
       }}>
-        {/* PARALLAX HEADER */}
         <motion.div 
           style={{
             textAlign: 'center',
@@ -250,75 +258,13 @@ export default function TestimonialsSection() {
           }}>
             Hear directly from the organizations and individuals experiencing the profound shifts of a mindful workplace.
           </p>
-
-          {/* Tab switcher */}
-          <div 
-            className="testimonial-tabs-container hide-scrollbar"
-            style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '16px',
-            flexWrap: 'nowrap',
-            overflowX: 'auto',
-            msOverflowStyle: 'none',
-            scrollbarWidth: 'none',
-            padding: '4px'
-          }}>
-            <button
-              className="testimonial-tab-btn"
-              style={tabBtnStyle('hr')}
-              onClick={() => setActiveTab('hr')}
-              onMouseEnter={e => {
-                if (activeTab !== 'hr') {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-                  e.currentTarget.style.color = 'var(--white)'
-                }
-              }}
-              onMouseLeave={e => {
-                if (activeTab !== 'hr') {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.65)'
-                }
-              }}
-            >
-              Organizational Impact
-            </button>
-            <button
-              className="testimonial-tab-btn"
-              style={tabBtnStyle('employee')}
-              onClick={() => setActiveTab('employee')}
-              onMouseEnter={e => {
-                if (activeTab !== 'employee') {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-                  e.currentTarget.style.color = 'var(--white)'
-                }
-              }}
-              onMouseLeave={e => {
-                if (activeTab !== 'employee') {
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'
-                  e.currentTarget.style.color = 'rgba(255,255,255,0.65)'
-                }
-              }}
-            >
-              Personal Experiences
-            </button>
-          </div>
         </motion.div>
       </div>
 
-      {/* Scrolling track */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <AnimatePresence mode="popLayout">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          >
-            <MarqueeTrack testimonials={activeTab === 'hr' ? HR_TESTIMONIALS : EMPLOYEE_TESTIMONIALS} />
-          </motion.div>
-        </AnimatePresence>
+        {testimonials.length > 0 && (
+          <MarqueeTrack testimonials={testimonials} />
+        )}
       </div>
       <style>{`
         .testimonials-section { padding: 80px 0; }
@@ -330,10 +276,6 @@ export default function TestimonialsSection() {
           .testimonial-quote { font-size: 18px !important; margin-bottom: 12px !important; line-height: 1.3 !important; }
           .testimonial-text { font-size: 14px !important; line-height: 1.6 !important; }
           .testimonial-quote-mark { font-size: 120px !important; top: -5px !important; right: 5px !important; }
-          
-          /* Single line tabs container */
-          .testimonial-tabs-container { justify-content: center !important; padding-bottom: 8px !important; gap: 8px !important; }
-          .testimonial-tab-btn { white-space: nowrap !important; padding: 8px 18px !important; font-size: 13px !important; flex-shrink: 0 !important; }
         }
       `}</style>
     </section>

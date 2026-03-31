@@ -1,32 +1,32 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { FiArrowRight } from 'react-icons/fi'
+import axios from 'axios'
 
-const SERVICES = [
+const API = import.meta.env.VITE_API_URL
+
+const DEFAULT_SERVICES = [
   {
     type: 'corporate',
-    title: 'Corporate Wellness', // Restored full title
+    title: 'Corporate Wellness',
     image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&q=80',
     headline: 'Build a Resilient, High-Performing Workforce',
     description: 'Empower teams with structured wellness programs to reduce stress and drive performance.',
-    linkParams: '/corporate'
   },
   {
     type: 'education',
-    title: 'Education Sector', // Restored full title
+    title: 'Education Sector',
     image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80',
     headline: 'Emotionally Strong & Focused Students',
     description: 'Helping students and educators build emotional resilience for long-term success.',
-    linkParams: '/education'
   },
   {
     type: 'community',
-    title: 'Community Spaces', // Restored full title
+    title: 'Community Spaces',
     image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80',
     headline: 'Healthier, More Resilient Communities',
     description: 'Driving wellbeing initiatives that help individuals manage stress and live balanced lives.',
-    linkParams: '/community'
   }
 ]
 
@@ -34,6 +34,27 @@ export default function ServicesSection() {
   const navigate = useNavigate()
   const sectionRef = useRef(null)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [services, setServices] = useState(DEFAULT_SERVICES)
+
+  useEffect(() => {
+    const loadImages = async () => {
+      try {
+        const res = await axios.get(`${API}/api/content/services`)
+        const dbItems = res.data.items || res.data || []
+        if (!Array.isArray(dbItems) || dbItems.length === 0) return
+        const map = {}
+        dbItems.forEach(item => { map[item.key] = item.value })
+        setServices(prev => prev.map(s => ({
+          ...s,
+          image: map[`${s.type}_image`] || s.image
+        })))
+      } catch { /* keep defaults */ }
+    }
+    loadImages()
+  }, [])
+
+  // Replace SERVICES references below with services state
+  const SERVICES = services
 
   // Implement the requested scroll-linked parallax animation for the header
   const { scrollYProgress } = useScroll({
@@ -91,7 +112,7 @@ export default function ServicesSection() {
               fontSize: '13px', color: 'var(--dark)', letterSpacing: '3px',
               textTransform: 'uppercase', fontWeight: 700
             }}>
-              Our Expertise & The Core Challenge
+              Our Expertise & The Core Services in SWA Magic
             </span>
           </div>
           

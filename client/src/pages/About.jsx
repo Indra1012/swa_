@@ -1,7 +1,26 @@
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
 import { FiArrowRight } from 'react-icons/fi'
+
+// Pure Scroll-Driven Kinetic Typography Wrapper
+const KineticWrap = ({ children, yStart = 80, yEnd = -40, scaleStart = 0.90, style }) => {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: ref,
+    offset: ["start 95%", "end start"]
+  })
+  const smooth = useSpring(scrollYProgress, { stiffness: 60, damping: 20 })
+  const y = useTransform(smooth, [0, 0.4, 1], [yStart, 0, yEnd])
+  const scale = useTransform(smooth, [0, 0.3, 1], [scaleStart, 1, 1])
+  const opacity = useTransform(smooth, [0, 0.25, 1], [0, 1, 1])
+
+  return (
+    <motion.div ref={ref} style={{ ...style, y, scale, opacity }}>
+      {children}
+    </motion.div>
+  )
+}
 
 const TEAM_IMAGES = [
   { img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80', name: 'Alina R.', role: 'Senior Therapist' },
@@ -14,83 +33,85 @@ export default function About() {
   const navigate = useNavigate()
   const pageRef = useRef(null)
 
-  const { scrollYProgress } = useScroll({ target: pageRef, offset: ["start start", "end end"] })
-  const heroY = useTransform(scrollYProgress, [0, 0.2], [0, 150])
+  // Scroll bindings specifically for the top Hero parallax where viewport is initially 0
+  const { scrollY } = useScroll()
+  const smoothY = useSpring(scrollY, { stiffness: 60, damping: 20 })
+  const heroY = useTransform(smoothY, [0, 800], [0, 300])
+  const heroTextOpacity = useTransform(smoothY, [0, 400], [1, 0])
+  const heroTextScale = useTransform(smoothY, [0, 400], [1, 0.95])
+  const heroTextY = useTransform(smoothY, [0, 400], [0, 100])
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
     <div style={{ position: 'relative', zIndex: 1 }}>
     <main ref={pageRef} className="about-page" style={{ margin: 0, padding: 0, paddingTop: '72px', minHeight: '100vh', overflow: 'hidden' }}>
 
-      {/* 1. EPIC HERO BANNER */}
+      {/* 1. EPIC LIGHT AESTHETIC HERO BANNER */}
       <section style={{
-        position: 'relative', height: '600px', width: '100%',
+        position: 'relative', height: '80vh', minHeight: '480px', width: '100%',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        overflow: 'hidden', background: 'var(--dark)', margin: 0
+        overflow: 'hidden', background: 'transparent', margin: 0
       }}>
-        <motion.div style={{ position: 'absolute', inset: 0, y: heroY }}>
+        <motion.div style={{ position: 'absolute', inset: -100, zIndex: 0, y: heroY }}>
           <img
-            src="https://images.unsplash.com/photo-1543269865-cbf427effbad?w=2000&q=80"
-            alt="SWA Team Assembly"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'brightness(0.8)' }}
+            src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=2000"
+            alt="SWA Wellness Team"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}
           />
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.55)' }} />
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          style={{ position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: '800px', padding: '0 40px' }}
+          style={{ 
+            position: 'relative', zIndex: 10, textAlign: 'center', maxWidth: '800px', padding: '0 40px',
+            opacity: heroTextOpacity, scale: heroTextScale, y: heroTextY
+          }}
         >
           <span style={{
-            display: 'inline-block', fontSize: '12px', fontWeight: 700, color: 'var(--accent)',
-            letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '24px'
+            display: 'inline-block', fontSize: '13px', fontWeight: 800, color: 'var(--accent)',
+            letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '24px',
+            textShadow: '0 2px 10px rgba(255,255,255,0.8)'
           }}>
             The SWA Story
           </span>
           <h1 style={{
             fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(50px, 6vw, 84px)',
-            fontWeight: 700, color: 'var(--white)', lineHeight: 1.05, letterSpacing: '-1px', marginBottom: '24px'
+            fontWeight: 800, color: 'var(--dark)', lineHeight: 1.05, letterSpacing: '-1px', marginBottom: '24px',
+            textShadow: '0 2px 20px rgba(255,255,255,0.7)' /* Ensuring legibility without using a full image overlay */
           }}>
-            Master your <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>emotions.</span>
+            Master your <span style={{ fontStyle: 'italic', fontWeight: 600, color: 'var(--accent)' }}>emotions.</span>
           </h1>
           <h1 style={{
             fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(50px, 6vw, 84px)',
-            fontWeight: 700, color: 'var(--white)', lineHeight: 1.05, letterSpacing: '-1px'
+            fontWeight: 800, color: 'var(--dark)', lineHeight: 1.05, letterSpacing: '-1px',
+            textShadow: '0 2px 20px rgba(255,255,255,0.7)'
           }}>
-            Lead with <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>clarity.</span>
+            Lead with <span style={{ fontStyle: 'italic', fontWeight: 600, color: 'var(--accent)' }}>clarity.</span>
           </h1>
         </motion.div>
       </section>
 
       {/* 2. ELEVATED FOUNDER HIGHLIGHT */}
       <section style={{ background: 'transparent', padding: '80px 0', margin: 0 }}>
-      <div style={{ padding: '0 40px', maxWidth: '1100px', margin: '0 auto' }}>
+      <div style={{ padding: '0 clamp(20px, 4vw, 40px)', maxWidth: '1100px', margin: '0 auto' }}>
         <div style={{
-          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '80px', alignItems: 'center'
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: 'clamp(40px, 8vw, 80px)', alignItems: 'center'
         }}>
           {/* Stunning Portrait with floating backdrop */}
-          <motion.div
-            initial={{ opacity: 0, x: -60 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.9, ease: 'easeOut' }}
-            style={{ position: 'relative', width: '100%', maxWidth: '420px', aspectRatio: '4/5', marginLeft: 'auto', borderRadius: '32px' }}
-          >
+          {/* Stunning Portrait with floating backdrop */}
+          <KineticWrap yStart={80} style={{ position: 'relative', width: '100%', maxWidth: '420px', aspectRatio: '4/5', margin: '0 auto', borderRadius: '32px' }}>
             {/* Floating abstract decorative box behind */}
             <motion.div 
               animate={{ y: [0, -20, 0] }}
               transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
               style={{
-                position: 'absolute', top: '-20px', left: '-20px', width: '100%', height: '100%',
+                position: 'absolute', top: '-15px', left: '-15px', width: '100%', height: '100%',
                 background: 'rgba(175,122,109,0.1)', borderRadius: '32px', zIndex: 0
               }} 
             />
             {/* The Image */}
             <div style={{
               width: '100%', height: '100%', borderRadius: '32px', overflow: 'hidden',
-              boxShadow: '0 40px 80px rgba(0,0,0,0.1)', position: 'relative', zIndex: 1
+              boxShadow: '0 40px 80px rgba(0,0,0,0.15)', position: 'relative', zIndex: 1
             }}>
               <img
                 src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1200&q=80"
@@ -98,47 +119,44 @@ export default function About() {
                 style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }}
               />
             </div>
-            {/* Floating name badge */}
+            {/* Floating name badge - fluid position instead of crashing negative values */}
             <motion.div 
               animate={{ y: [0, 15, 0] }}
               transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
               style={{
-                position: 'absolute', bottom: '40px', left: '-30px', background: 'var(--white)',
-                padding: '20px 32px', borderRadius: '20px', boxShadow: '0 20px 40px rgba(0,0,0,0.08)', zIndex: 2
+                position: 'absolute', bottom: 'clamp(20px, 5vw, 40px)', left: 'clamp(-10px, -2vw, -30px)', 
+                background: 'rgba(250, 248, 245, 0.95)', backdropFilter: 'blur(20px)',
+                padding: 'clamp(16px, 3vw, 20px) clamp(24px, 4vw, 32px)', borderRadius: '20px', 
+                boxShadow: '0 20px 40px rgba(0,0,0,0.1)', zIndex: 2
               }}
             >
-              <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '26px', color: 'var(--dark)', marginBottom: '4px' }}>
+              <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(22px, 4vw, 26px)', color: 'var(--dark)', marginBottom: '4px' }}>
                 Dhruvi Shah
               </h3>
-              <p style={{ fontSize: '13px', color: 'var(--dark)', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>
+              <p style={{ fontSize: '12px', color: 'var(--dark)', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>
                 Founder & Head Coach
               </p>
             </motion.div>
-          </motion.div>
+          </KineticWrap>
 
           {/* Deep Bio Content */}
-          <motion.div
-            initial={{ opacity: 0, x: 60 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 0.9, ease: 'easeOut', delay: 0.2 }}
-          >
+          <KineticWrap yStart={120}>
             <h2 style={{
-              fontFamily: 'Cormorant Garamond, serif', fontSize: '36px', color: 'var(--dark)', lineHeight: 1.1, marginBottom: '24px', fontWeight: 700, letterSpacing: '-0.5px'
+              fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(28px, 4vw, 36px)', color: 'var(--dark)', lineHeight: 1.15, marginBottom: '24px', fontWeight: 700, letterSpacing: '-0.5px'
             }}>
               Building emotionally resilient individuals & <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>conscious leaders.</span>
             </h2>
             
             <div style={{
-              padding: '24px 32px', background: 'var(--white)', borderRadius: '24px',
+              padding: 'clamp(24px, 4vw, 32px)', background: 'rgba(250, 248, 245, 0.95)', backdropFilter: 'blur(20px)', borderRadius: '24px',
               boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid rgba(204,199,185,0.25)',
               marginBottom: '24px'
             }}>
-              <p style={{ fontSize: '16px', color: 'var(--secondary)', lineHeight: 1.8, marginBottom: '20px', marginTop: 0 }}>
+              <p style={{ fontSize: 'clamp(15px, 2.5vw, 16px)', color: 'var(--dark)', lineHeight: 1.8, marginBottom: '20px', marginTop: 0, fontWeight: 500 }}>
                 Dhruvi Shah is the Founder and Head Wellness Coach at SWA Wellness. With a deeply rooted background in psychology, a diploma in expressive art therapy, and rich experience as an international sound healer, she brings a uniquely holistic and integrative approach to modern mental well-being.
               </p>
               
-              <p style={{ fontSize: '16px', color: 'var(--secondary)', lineHeight: 1.8, margin: 0 }}>
+              <p style={{ fontSize: 'clamp(15px, 2.5vw, 16px)', color: 'var(--dark)', lineHeight: 1.8, margin: 0, fontWeight: 500 }}>
                 Her expertise extensively spans mental health wellness, Indian psychology, and leadership development—masterfully blending traditional ancient wisdom with structured contemporary practices.
               </p>
             </div>
@@ -146,19 +164,19 @@ export default function About() {
             <motion.div 
               whileHover={{ y: -5, boxShadow: '0 30px 60px rgba(0,0,0,0.06)' }}
               style={{
-                padding: '24px 32px', background: 'var(--white)', borderRadius: '24px', position: 'relative',
+                padding: 'clamp(24px, 4vw, 32px)', background: 'rgba(250, 248, 245, 0.95)', backdropFilter: 'blur(20px)', borderRadius: '24px', position: 'relative',
                 boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid rgba(204,199,185,0.25)',
                 transition: 'all 0.4s ease'
               }}
             >
               <span style={{ position: 'absolute', top: -10, left: 30, fontSize: '80px', color: 'var(--accent)', opacity: 0.15, fontFamily: 'serif', lineHeight: 1 }}>"</span>
               <p style={{
-                fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', color: 'var(--dark)', fontStyle: 'italic', lineHeight: 1.4, margin: 0, position: 'relative', zIndex: 1
+                fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(18px, 3vw, 20px)', color: 'var(--dark)', fontStyle: 'italic', lineHeight: 1.5, margin: 0, position: 'relative', zIndex: 1
               }}>
                 Dhruvi is driven by a clear mission: to help individuals understand and master their emotions before those emotions begin to shape their decisions—enabling more balanced, self-aware, and effective leadership.
               </p>
             </motion.div>
-          </motion.div>
+          </KineticWrap>
         </div>
       </div>
       </section>
@@ -197,29 +215,28 @@ export default function About() {
             </motion.h2>
           </motion.div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '32px' }}>
             {[
               { t: 'Corporate Wellness Program', d: 'Fostering high-performance organizations through resilience and connection.' },
               { t: 'Student Welfare Program', d: 'Cultivating emotional intelligence and academic focus in early stages.' },
               { t: 'Community Wellness Program', d: 'Healing the collective fabric through scaleable wellbeing outreach.' }
             ].map((srv, i) => (
-              <motion.div
+              <KineticWrap
                 key={i}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: i * 0.15 }}
-                whileHover={{ y: -5, boxShadow: '0 30px 60px rgba(0,0,0,0.06)' }}
+                yStart={60}
                 style={{
-                  background: 'var(--white)', padding: '50px 40px', borderRadius: '24px', textAlign: 'center',
-                  border: '1px solid rgba(204,199,185,0.25)',
+                  background: 'rgba(250, 248, 245, 0.95)', backdropFilter: 'blur(20px)', 
+                  padding: 'clamp(32px, 5vw, 50px) clamp(24px, 4vw, 40px)', borderRadius: '24px', textAlign: 'center',
+                  border: '1px solid rgba(204,199,185,0.25)', display: 'flex', flexDirection: 'column', justifyContent: 'center',
                   boxShadow: '0 10px 30px rgba(0,0,0,0.03)', transition: 'all 0.4s ease', cursor: 'pointer'
                 }}
                 onClick={() => navigate('/services')}
               >
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '28px', color: 'var(--dark)', marginBottom: '16px' }}>{srv.t}</h3>
-                <p style={{ fontSize: '15px', color: 'var(--secondary)', lineHeight: 1.6 }}>{srv.d}</p>
-              </motion.div>
+                <motion.div whileHover={{ y: -5 }}>
+                  <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(24px, 4vw, 28px)', color: 'var(--dark)', marginBottom: '16px' }}>{srv.t}</h3>
+                  <p style={{ fontSize: 'clamp(15px, 2.5vw, 16px)', color: 'var(--dark)', fontWeight: 500, lineHeight: 1.6 }}>{srv.d}</p>
+                </motion.div>
+              </KineticWrap>
             ))}
           </div>
         </div>
@@ -267,7 +284,7 @@ export default function About() {
         </motion.div>
 
         <div className="team-grid" style={{
-          display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '32px', maxWidth: '1400px', margin: '0 auto', padding: '0 40px'
+          display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '32px', maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(20px, 4vw, 40px)'
         }}>
           {TEAM_IMAGES.map((member, i) => (
             <motion.div
@@ -333,7 +350,7 @@ export default function About() {
                 hidden: { opacity: 0, x: 30 },
                 visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
               }}
-              style={{ fontSize: '20px', color: 'var(--secondary)', lineHeight: 1.8, maxWidth: '800px', marginBottom: '80px' }}
+              style={{ fontSize: 'clamp(18px, 4vw, 20px)', color: 'var(--dark)', fontWeight: 500, lineHeight: 1.8, maxWidth: '800px', marginBottom: '80px', padding: '0 20px' }}
             >
               At SWA Wellness, we believe that emotional wellbeing is the absolute bedrock of successful lives and organizations. 
               We do not just offer temporary relief; we architect structured, science-backed, and culturally-rooted programs tailored to fundamentally shift internal perspectives. 
@@ -341,23 +358,21 @@ export default function About() {
             </motion.p>
           </motion.div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '40px', width: '100%', textAlign: 'left' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 350px), 1fr))', gap: 'clamp(32px, 5vw, 40px)', width: '100%', textAlign: 'left' }}>
             {[
               { title: 'Scientific & Grounded', text: 'Integrating empirical modern psychology with highly effective somatic traditional modalities for comprehensive healing.' },
               { title: 'Measurable Outcomes', text: 'Crafting strategic pathways for tangible improvement in focus, retention, and conflict-resolution.' }
             ].map((p, i) => (
-              <motion.div
+              <KineticWrap
                 key={i}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 + (i*0.1) }}
-                whileHover={{ y: -5, boxShadow: '0 30px 60px rgba(0,0,0,0.3)' }}
-                style={{ background: 'var(--white)', padding: '50px', borderRadius: '24px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', transition: 'all 0.4s ease' }}
+                yStart={60}
+                style={{ background: 'rgba(250, 248, 245, 0.95)', backdropFilter: 'blur(20px)', padding: 'clamp(32px, 5vw, 50px)', borderRadius: '24px', border: '1px solid rgba(204,199,185,0.25)', boxShadow: '0 10px 30px rgba(0,0,0,0.03)', transition: 'all 0.4s ease' }}
               >
-                <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '28px', color: 'var(--dark)', marginBottom: '16px' }}>{p.title}</h4>
-                <p style={{ fontSize: '16px', color: 'var(--secondary)', lineHeight: 1.7, margin: 0 }}>{p.text}</p>
-              </motion.div>
+                <motion.div whileHover={{ y: -5 }}>
+                  <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(24px, 4vw, 28px)', color: 'var(--dark)', marginBottom: '16px' }}>{p.title}</h4>
+                  <p style={{ fontSize: 'clamp(15px, 2.5vw, 16px)', color: 'var(--dark)', fontWeight: 500, lineHeight: 1.7, margin: 0 }}>{p.text}</p>
+                </motion.div>
+              </KineticWrap>
             ))}
           </div>
 
@@ -379,8 +394,8 @@ export default function About() {
             onClick={() => navigate('/book-demo')}
             style={{
               marginTop: '40px', display: 'inline-flex', alignItems: 'center', gap: '12px',
-              padding: '20px 48px', background: 'var(--dark)', color: 'var(--white)',
-              borderRadius: '50px', fontSize: '16px', fontWeight: 600, border: 'none', cursor: 'pointer',
+              padding: 'clamp(14px, 3vw, 20px) clamp(32px, 6vw, 48px)', background: 'var(--dark)', color: 'var(--white)',
+              borderRadius: '50px', fontSize: 'clamp(14px, 3vw, 16px)', fontWeight: 600, border: 'none', cursor: 'pointer',
               transition: 'all 0.3s ease', boxShadow: '0 15px 30px rgba(0,0,0,0.1)'
             }}
             onMouseEnter={e => {

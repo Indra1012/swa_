@@ -12,7 +12,30 @@ const { cloudinary }   = require('../config/cloudinary')
 const getTechniques = async (req, res, next) => {
   try {
     const { category } = req.params
-    const items = await HealingTechnique.find({ category }).sort({ order: 1, createdAt: 1 })
+    let items = await HealingTechnique.find({ category }).sort({ order: 1, createdAt: 1 })
+    
+    if (items.length === 0) {
+      if (category === 'healing') {
+        const defaults = [
+          { order: 1, title: 'Psychological Wellness', subtitle: 'Mind', readMoreText: 'Helps individuals understand their thoughts, build resilience, and develop healthier mental patterns.', image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80', category: 'healing' },
+          { order: 2, title: 'Emotional Expression', subtitle: '& Healing', readMoreText: 'Allows individuals to process emotions safely and develop emotional intelligence.', image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&q=80', category: 'healing' },
+          { order: 3, title: 'Body & Somatic', subtitle: 'Wellness', readMoreText: 'Helps release stored stress, regulate the nervous system, and reconnect with the body.', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', category: 'healing' },
+          { order: 4, title: 'Energy & Relaxation', subtitle: 'Practices', readMoreText: 'Supports relaxation, emotional balance, and recovery from daily stress.', image: 'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=800&q=80', category: 'healing' },
+          { order: 5, title: 'Social & Community', subtitle: 'Wellness', readMoreText: 'Strengthens social bonds and builds supportive environments for wellbeing.', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80', category: 'healing' },
+          { order: 6, title: 'Nature & Environmental', subtitle: 'Wellness', readMoreText: 'Encourages grounding, creativity, and emotional restoration through nature.', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80', category: 'healing' }
+        ]
+        await HealingTechnique.insertMany(defaults)
+      } else if (category === 'wellbeing') {
+        const defaults = [
+          { order: 1, title: 'Body Scan Meditation', subtitle: 'Focus', readMoreText: 'Mentally scan your entire body, releasing tension at every point.', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', category: 'wellbeing' },
+          { order: 2, title: 'Gratitude Reflection', subtitle: 'Mindset', readMoreText: 'A daily habit of listing what you are grateful for.', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800&q=80', category: 'wellbeing' },
+          { order: 3, title: 'Deep Breathing', subtitle: 'Calm', readMoreText: 'Structured breathing exercises designed to lower heart rate.', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80', category: 'wellbeing' }
+        ]
+        await HealingTechnique.insertMany(defaults)
+      }
+      items = await HealingTechnique.find({ category }).sort({ order: 1, createdAt: 1 })
+    }
+
     res.json({ count: items.length, items })
   } catch (err) { next(err) }
 }
@@ -39,7 +62,7 @@ const deleteTechnique = async (req, res, next) => {
     if (item.publicId) {
       await cloudinary.uploader.destroy(item.publicId).catch(() => {})
     }
-    await item.deleteOne()
+    await HealingTechnique.findByIdAndDelete(req.params.id)
     res.json({ message: 'Deleted' })
   } catch (err) { next(err) }
 }
@@ -65,7 +88,23 @@ const uploadTechniqueImage = async (req, res, next) => {
 // =====================================================================
 const getTestimonials = async (req, res, next) => {
   try {
-    const items = await Testimonial.find().sort({ order: 1, createdAt: -1 })
+    let items = await Testimonial.find().sort({ order: 1, createdAt: -1 })
+    
+    if (items.length === 0) {
+      const defaults = [
+        { order: 1, name: 'PayPal', rating: 5, quote: "SWA Didn't Just Support Us, They Transformed Us", text: "When we partnered with SWA, we had no idea just how transformative it would be. From the first session, it was clear they weren't just offering wellbeing — they were creating a space where our team could truly thrive." },
+        { order: 2, name: 'Edelweiss', rating: 5, quote: "What Began as Wellness Became a Cultural Shift", text: "We were looking for something fresh and meaningful. What we got was a complete transformation of how our organization thinks about wellness and happiness." },
+        { order: 3, name: 'LinkedIn', rating: 5, quote: "A Powerhouse of Professional Creativity", text: "SWA did an incredible job. The team's professionalism, dedication, and collaboration was noticed and greatly appreciated by employees across the board." },
+        { order: 4, name: 'Amazon', rating: 5, quote: "Wellness at Scale, Done Right", text: "Implementing SWA across thousands of employees was seamless, impactful, and deeply human. A remarkable achievement we are proud of." },
+        { order: 5, name: 'Flipkart', rating: 5, quote: "I Finally Feel Like I Matter at Work", text: "The sessions helped me understand my emotions and communicate better with my team. I feel genuinely supported for the first time in my career." },
+        { order: 6, name: 'BPCL', rating: 5, quote: "This Changed How I See Myself", text: "I was skeptical at first, but the mindfulness and NLP tools gave me clarity I never had before. My anxiety has reduced significantly." },
+        { order: 7, name: 'Blue Star', rating: 5, quote: "More Energy, More Joy, Every Day", text: "The wellness festivals and daily check-ins have completely changed my morning routine. I'm more productive and honestly, just happier." },
+        { order: 8, name: 'Narayana Health', rating: 5, quote: "Real Tools for Real Life", text: "What I loved most was how practical everything was. These aren't just concepts — they're habits I now use daily both at work and home." }
+      ]
+      await Testimonial.insertMany(defaults)
+      items = await Testimonial.find().sort({ order: 1, createdAt: -1 })
+    }
+
     res.json({ count: items.length, items })
   } catch (err) { next(err) }
 }
@@ -98,7 +137,20 @@ const deleteTestimonial = async (req, res, next) => {
 // =====================================================================
 const getStats = async (req, res, next) => {
   try {
-    const items = await Stat.find().sort({ order: 1 })
+    let items = await Stat.find().sort({ order: 1 })
+    
+    if (items.length === 0) {
+      const defaults = [
+        { order: 1, value: 450, suffix: '+', label: 'Organizations\nTransformed' },
+        { order: 2, value: 2, suffix: 'L+', label: "People's Lives\nEmpowered" },
+        { order: 3, value: 2, suffix: 'L+', label: 'Sessions\nConducted' },
+        { order: 4, value: 1000, suffix: '+', label: 'Global Experts\n& Healers' },
+        { order: 5, value: 102, suffix: '+', label: 'Cities\nImpacted' }
+      ]
+      await Stat.insertMany(defaults)
+      items = await Stat.find().sort({ order: 1 })
+    }
+
     res.json({ count: items.length, items })
   } catch (err) { next(err) }
 }
@@ -131,7 +183,21 @@ const deleteStat = async (req, res, next) => {
 // =====================================================================
 const getFaqs = async (req, res, next) => {
   try {
-    const items = await FAQ.find().sort({ order: 1 })
+    let items = await FAQ.find().sort({ order: 1 })
+    
+    if (items.length === 0) {
+      const defaults = [
+        { question: 'What is SWA?', answer: 'SWA (Where Self Meets Its True Essence) is a holistic mental health and wellness company that brings science-backed programs to organizations, institutions, and communities. We blend ancient wisdom with modern psychology to create lasting wellbeing.', order: 1 },
+        { question: 'How can we get started with SWA?', answer: "Getting started is simple. Click 'Book a Demo' and our team will schedule a discovery call to understand your needs and recommend the right program for you.", order: 2 },
+        { question: 'What kind of wellness programs do you offer?', answer: "We offer Wellness Festivals, Zen Space design, Employee Happiness Programs, Wellness Retreats, Self-Experiential Programs, and 1-on-1 counselling — all customizable to your team.", order: 3 },
+        { question: 'Who can benefit from SWA programs?', answer: 'Our programs are designed for corporate teams, educational institutions, healthcare organizations, and individuals. If you have people, we have a program for them.', order: 4 },
+        { question: 'Do you work with remote or hybrid teams?', answer: 'Absolutely. We have robust virtual programs designed for remote and hybrid workforces, ensuring no one is left out of the wellness journey regardless of location.', order: 5 },
+        { question: 'How do you measure program impact?', answer: 'We use pre and post assessments, employee feedback surveys, and engagement metrics. We share detailed impact reports with organizational partners after each engagement.', order: 6 }
+      ]
+      await FAQ.insertMany(defaults)
+      items = await FAQ.find().sort({ order: 1 })
+    }
+    
     res.json({ count: items.length, items })
   } catch (err) { next(err) }
 }
@@ -164,7 +230,25 @@ const deleteFaq = async (req, res, next) => {
 // =====================================================================
 const getGallery = async (req, res, next) => {
   try {
-    const items = await GalleryItem.find().sort({ order: 1, createdAt: -1 })
+    let items = await GalleryItem.find().sort({ order: 1, createdAt: -1 })
+    
+    if (items.length === 0) {
+      const defaults = [
+        { url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80', type: 'image', sizeVariant: 'landscape' },
+        { url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', type: 'image', sizeVariant: 'portrait' },
+        { url: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80', type: 'image', sizeVariant: 'medium' },
+        { url: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800&q=80', type: 'image', sizeVariant: 'small' },
+        { url: 'https://images.unsplash.com/photo-1528715471579-d1bcf0ba5e83?w=800&q=80', type: 'image', sizeVariant: 'large' },
+        { url: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800&q=80', type: 'image', sizeVariant: 'small' },
+        { url: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80', type: 'image', sizeVariant: 'medium' },
+        { url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80', type: 'image', sizeVariant: 'landscape' },
+        { url: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80', type: 'image', sizeVariant: 'large' },
+        { url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80', type: 'image', sizeVariant: 'portrait' }
+      ]
+      await GalleryItem.insertMany(defaults)
+      items = await GalleryItem.find().sort({ order: 1, createdAt: -1 })
+    }
+
     res.json({ count: items.length, items })
   } catch (err) { next(err) }
 }
@@ -199,7 +283,7 @@ const deleteGalleryItem = async (req, res, next) => {
       const rType = item.type === 'video' ? 'video' : 'image'
       await cloudinary.uploader.destroy(item.publicId, { resource_type: rType }).catch(() => {})
     }
-    await item.deleteOne()
+    await GalleryItem.findByIdAndDelete(req.params.id)
     res.json({ message: 'Deleted' })
   } catch (err) { next(err) }
 }
@@ -222,6 +306,75 @@ const setWellbeingVisible = async (req, res, next) => {
   } catch (err) { next(err) }
 }
 
+// =====================================================================
+//  SERVICE CARDS (Our Expertise)
+// =====================================================================
+const ServiceCard = require('../models/ServiceCard')
+
+const getServiceCards = async (req, res, next) => {
+  try {
+    let items = await ServiceCard.find().sort({ order: 1, createdAt: 1 })
+    
+    // Seed default cards if DB is entirely empty
+    if (items.length === 0) {
+      const defaults = [
+        { typeSlug: 'corporate', title: 'Corporate Wellness', headline: 'Build a Resilient, High-Performing Workforce', description: 'Empower teams with structured wellness programs to reduce stress and drive performance.', image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&q=80', order: 1 },
+        { typeSlug: 'education', title: 'Education Sector', headline: 'Emotionally Strong & Focused Students', description: 'Helping students and educators build emotional resilience for long-term success.', image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80', order: 2 },
+        { typeSlug: 'community', title: 'Community Spaces', headline: 'Healthier, More Resilient Communities', description: 'Driving wellbeing initiatives that help individuals manage stress and live balanced lives.', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80', order: 3 }
+      ]
+      await ServiceCard.insertMany(defaults)
+      items = await ServiceCard.find().sort({ order: 1, createdAt: 1 })
+    }
+    
+    res.json({ count: items.length, items })
+  } catch (err) { next(err) }
+}
+
+const createServiceCard = async (req, res, next) => {
+  try {
+    const item = await ServiceCard.create(req.body)
+    res.status(201).json({ message: 'Created', item })
+  } catch (err) { next(err) }
+}
+
+const updateServiceCard = async (req, res, next) => {
+  try {
+    const item = await ServiceCard.findByIdAndUpdate(req.params.id, req.body, { new: true })
+    if (!item) return res.status(404).json({ error: 'Not found' })
+    res.json({ message: 'Updated', item })
+  } catch (err) { next(err) }
+}
+
+const deleteServiceCard = async (req, res, next) => {
+  try {
+    const item = await ServiceCard.findById(req.params.id)
+    if (!item) return res.status(404).json({ error: 'Not found' })
+    if (item.publicId) {
+      await cloudinary.uploader.destroy(item.publicId).catch(() => {})
+    }
+    await ServiceCard.findByIdAndDelete(req.params.id)
+    res.json({ message: 'Deleted' })
+  } catch (err) { next(err) }
+}
+
+const uploadServiceImage = async (req, res, next) => {
+  try {
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+    const item = await ServiceCard.findById(req.params.id)
+    if (!item) return res.status(404).json({ error: 'Not found' })
+    if (item.publicId) {
+      await cloudinary.uploader.destroy(item.publicId).catch(() => {})
+    }
+    item.image = req.file.path
+    item.publicId = req.file.filename
+    item.mediaMode = req.file.mimetype.startsWith('video/') ? 'video' : 'image'
+    await item.save()
+    res.json({ message: 'Media uploaded', item })
+  } catch (err) { next(err) }
+}
+
+
+
 module.exports = {
   getTechniques, createTechnique, updateTechnique, deleteTechnique, uploadTechniqueImage,
   getTestimonials, createTestimonial, updateTestimonial, deleteTestimonial,
@@ -229,4 +382,5 @@ module.exports = {
   getFaqs, createFaq, updateFaq, deleteFaq,
   getGallery, createGalleryItem, updateGalleryItem, deleteGalleryItem,
   getWellbeingVisible, setWellbeingVisible,
+  getServiceCards, createServiceCard, updateServiceCard, deleteServiceCard, uploadServiceImage
 }

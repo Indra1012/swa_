@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiLinkedin, FiInstagram, FiYoutube, FiFacebook, FiChevronDown } from 'react-icons/fi'
+import { FiLinkedin, FiInstagram, FiYoutube, FiFacebook, FiChevronDown, FiPhone } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const FOOTER_SECTIONS = [
@@ -87,18 +87,20 @@ export default function Footer() {
             We compassionately create wellness programs and mindfulness spaces to improve holistic wellbeing for organizations, institutions, and individuals.
           </p>
 
-          {/* Social icons */}
+          {/* Social / Contact icons */}
           <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
             {[
-              { icon: <FiLinkedin />, label: 'LinkedIn' },
-              { icon: <FiInstagram />, label: 'Instagram' },
-              { icon: <FiYoutube />, label: 'YouTube' },
-              { icon: <FiFacebook />, label: 'Facebook' }
-            ].map(({ icon, label }) => (
-              <button
+              { icon: <FiPhone />, label: 'Phone', url: 'tel:+919998310041' },
+              { icon: <FiLinkedin />, label: 'LinkedIn', url: 'https://www.linkedin.com/company/swa-wellness890/' },
+              { icon: <FiInstagram />, label: 'Instagram', url: 'https://www.instagram.com/swa.spaces?igsh=ZXpvOHI2eGE4cDVq' }
+            ].map(({ icon, label, url }) => (
+              <a
                 key={label}
                 title={label}
-                style={socialStyle}
+                href={url}
+                target={label === 'Phone' ? '_self' : '_blank'}
+                rel="noopener noreferrer"
+                style={{ ...socialStyle, textDecoration: 'none' }}
                 onMouseEnter={e => {
                   e.currentTarget.style.background = 'var(--secondary)'
                   e.currentTarget.style.color = 'white'
@@ -111,13 +113,18 @@ export default function Footer() {
                 }}
               >
                 {icon}
-              </button>
+              </a>
             ))}
           </div>
 
-          {/* Email */}
-          <div className="footer-email" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--secondary)' }}>
-            ✉ &nbsp;hello@swa-wellness.com
+          {/* Contact Info */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <a href="mailto:dhruvi@swaspaces.com" className="footer-email" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--secondary)', fontWeight: 500 }}>
+              <span>✉</span> dhruvi@swaspaces.com
+            </a>
+            <a href="mailto:well-begin@swaspaces.com" className="footer-email" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--secondary)', fontWeight: 500 }}>
+              <span>✉</span> well-begin@swaspaces.com
+            </a>
           </div>
         </div>
 

@@ -4,7 +4,7 @@ const contentSchema = new mongoose.Schema(
   {
     section: { type: String, required: true, trim: true }, // e.g. 'hero', 'tagline'
     key:     { type: String, required: true, trim: true }, // e.g. 'heading', 'subtext'
-    value:   { type: String, required: true },
+    value:   { type: String, default: '' },
     type:    { type: String, enum: ['text', 'html'], default: 'text' },
   },
   { timestamps: true }

@@ -6,9 +6,11 @@ const API = import.meta.env.VITE_API_URL
 
 export default function HeroSection() {
   const containerRef = useRef(null)
-  const [heroImage, setHeroImage] = useState('')
+  const [mediaUrl, setMediaUrl] = useState('')
+  const [mediaType, setMediaType] = useState('image') // 'image' | 'video'
   const [headline, setHeadline] = useState("It's time to bring the SWA Magic")
   const [subline, setSubline] = useState('to your place and people')
+  const [btnHovered, setBtnHovered] = useState(false)
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -22,25 +24,68 @@ export default function HeroSection() {
   useEffect(() => {
     const load = async () => {
       try {
-        // Load hero image from media
-        const imgRes = await axios.get(`${API}/api/media/hero`)
-        const media = imgRes.data.media || []
-        if (media.length > 0) setHeroImage(media[0].url)
+        const now = Date.now()
+        const [mediaRes, txtRes] = await Promise.all([
+          axios.get(`${API}/api/media/hero?t=${now}`),
+          axios.get(`${API}/api/content/hero?t=${now}`)
+        ])
 
-        // Load text content
-        const txtRes = await axios.get(`${API}/api/content/hero`)
+        const media = mediaRes.data.media || []
         const items = txtRes.data.items || []
+
+        let savedMediaType = 'image'
+        let savedMediaUrl = ''
+
         items.forEach(item => {
-          if (item.key === 'headline') setHeadline(item.value)
-          if (item.key === 'subline') setSubline(item.value)
+          if (item.key === 'headline' && item.value?.trim()) setHeadline(item.value.trim())
+          if (item.key === 'subline'  && item.value?.trim()) setSubline(item.value.trim())
+          if (item.key === 'mediaType') savedMediaType = item.value
+          if (item.key === 'mediaUrl')  savedMediaUrl  = item.value
         })
-      } catch { /* use defaults */ }
+
+        if (savedMediaType === 'link' && savedMediaUrl) {
+          // Paste-link mode — auto-detect video vs image by URL extension
+          const isVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(savedMediaUrl)
+          setMediaType(isVideo ? 'video' : 'image')
+          setMediaUrl(savedMediaUrl)
+
+        } else if (savedMediaType === 'video') {
+          // Video upload mode — find the video MediaItem specifically
+          const videoItem = media.find(m => m.type === 'video') || media[0]
+          if (videoItem) {
+            setMediaUrl(videoItem.url)
+            setMediaType('video')
+          } else {
+            setMediaType('image')
+            setMediaUrl('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80')
+          }
+
+        } else if (media.length > 0) {
+          // Image upload mode — find the image MediaItem specifically
+          const imgItem = media.find(m => m.type !== 'video') || media[0]
+          setMediaUrl(imgItem.url)
+          setMediaType('image')
+
+        } else {
+          // Nothing in DB at all — fallback
+          setMediaType('image')
+          setMediaUrl('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80')
+        }
+      } catch {
+        setMediaType('image')
+        setMediaUrl('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80')
+      }
     }
     load()
   }, [])
 
-  // If no DB image, use Unsplash fallback
-  const imgSrc = heroImage || 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80'
+  // Render text with newline support (admin can press Enter in admin textarea)
+  const renderLines = (text) =>
+    text.split('\n').map((line, i, arr) => (
+      <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+    ))
+
+  const fallbackImg = 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80'
 
   return (
     <section
@@ -56,21 +101,44 @@ export default function HeroSection() {
       }}
     >
       <motion.div style={{ position: 'absolute', inset: -150, zIndex: 0, y: bgY }}>
-        <motion.img
-          initial={{ scale: 1.15 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
-          src={imgSrc}
-          alt="SWA Wellness"
-          loading="eager"
-          style={{
-            width: '100%', height: '100%',
-            objectFit: 'cover', objectPosition: 'center', filter: 'brightness(1.05)'
-          }}
-        />
+
+        {/* VIDEO background (uploaded or link) */}
+        {mediaType === 'video' && mediaUrl ? (
+          <video
+            key={mediaUrl}
+            src={mediaUrl}
+            autoPlay muted loop playsInline
+            style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'center'
+            }}
+          />
+        ) : (
+          /* IMAGE background */
+          <motion.img
+            initial={{ scale: 1.15 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
+            src={mediaUrl || fallbackImg}
+            alt="SWA Wellness"
+            loading="eager"
+            style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'center', filter: 'brightness(1.05)'
+            }}
+          />
+        )}
+
+        {/* Full-coverage Brand Color Overlay (like the screenshot) */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to bottom, rgba(101,50,57,0.15) 0%, rgba(101,50,57,0.08) 40%, rgba(101,50,57,0.75) 100%)'
+          background: 'rgba(101, 50, 57, 0.45)' // Beautiful maroon tint over the whole image
+        }} />
+
+        {/* Gradient fade at bottom for text readability */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to bottom, transparent 0%, rgba(85, 58, 61, 0.1) 40%, rgba(161, 96, 103, 0.85) 100%)'
         }} />
       </motion.div>
 
@@ -91,13 +159,45 @@ export default function HeroSection() {
                 fontSize: 'clamp(32px, 5vw, 64px)',
                 fontWeight: 700,
                 color: 'var(--white)',
-                lineHeight: 1.1,
+                lineHeight: 1.2,
                 letterSpacing: '0.5px',
-                textShadow: '0 10px 40px rgba(0,0,0,0.6)'
+                textShadow: '0 10px 40px rgba(0,0,0,0.6)',
+                marginBottom: '32px'
               }}>
-                {headline}<br />
-                <span style={{ fontStyle: 'italic', fontWeight: 500, opacity: 0.9 }}>{subline}</span>
+                {renderLines(headline)}
+                <br />
+                <span style={{ fontStyle: 'italic', fontWeight: 500, opacity: 0.9 }}>
+                  {renderLines(subline)}
+                </span>
               </h2>
+
+              {/* Connect for happiness button — same style as CTABanner */}
+              <button
+                onClick={() => window.location.href = '/book-demo'}
+                onMouseEnter={() => setBtnHovered(true)}
+                onMouseLeave={() => setBtnHovered(false)}
+                style={{
+                  background: btnHovered ? 'rgba(242,228,213,0.3)' : 'rgba(242,228,213,0.15)',
+                  backdropFilter: 'blur(8px)',
+                  WebkitBackdropFilter: 'blur(8px)',
+                  border: '2px solid rgba(242,228,213,0.7)',
+                  color: 'var(--white)',
+                  borderRadius: '50px',
+                  padding: '14px 40px',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  transform: btnHovered ? 'translateY(-2px)' : 'translateY(0)',
+                  transition: 'all 0.3s ease',
+                  fontFamily: 'DM Sans, sans-serif',
+                  textShadow: 'none'
+                }}
+              >
+                Connect for happiness &nbsp;→
+              </button>
             </div>
           </motion.div>
         </motion.div>
@@ -109,7 +209,7 @@ export default function HeroSection() {
           50% { transform: translateY(-16px); }
         }
         .hero-float-1 { animation: heroFloat 4s ease-in-out infinite; }
-        .hero-section { height: 100vh; min-height: 600px; }
+        .hero-section { height: 75vh; min-height: 500px; }
         @media (max-width: 768px) {
           .hero-section { height: 80vh !important; min-height: 550px !important; }
         }
@@ -129,6 +229,7 @@ export default function HeroSection() {
           ↓
         </motion.div>
       </motion.div>
+
     </section>
   )
 }

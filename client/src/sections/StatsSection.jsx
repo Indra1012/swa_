@@ -104,12 +104,25 @@ function StatItem({ stat, index, isInView }) {
 export default function StatsSection() {
   const sectionRef = useRef(null)
   const [stats, setStats] = useState([])
+  const [headings, setHeadings] = useState({ title: 'Our global impact' })
   const isInView = useInView(sectionRef, { once: true, margin: '-50px 0px' })
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get(`${API}/api/sections/stats`)
+        const [res, contRes] = await Promise.all([
+          axios.get(`${API}/api/sections/stats`),
+          axios.get(`${API}/api/content/stats`).catch(() => ({ data: [] }))
+        ])
+
+        const cmap = {}
+        ;(contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
+        if (Object.keys(cmap).length > 0) {
+          setHeadings(h => ({
+            title: cmap.title || h.title
+          }))
+        }
+
         if (res.data.items && res.data.items.length > 0) {
           setStats(res.data.items)
         } else {
@@ -162,7 +175,16 @@ export default function StatsSection() {
             color: 'var(--white)',
             letterSpacing: '-0.5px'
           }}>
-            Our global <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>impact</span>
+            {headings.title.split(' ').length > 1 ? (
+              <>
+                {headings.title.split(' ').slice(0, -1).join(' ')}{' '}
+                <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>
+                  {headings.title.split(' ').slice(-1)}
+                </span>
+              </>
+            ) : (
+              headings.title
+            )}
           </h2>
         </div>
 

@@ -22,7 +22,7 @@ export default function CTABanner() {
   const [current, setCurrent] = useState(0)
   const [hovered, setHovered] = useState(false)
   const navigate = useNavigate()
-  
+
   const sectionRef = useRef(null)
   useScrollFade(sectionRef)
 
@@ -36,7 +36,7 @@ export default function CTABanner() {
   const goToSlide = useCallback((i) => setCurrent(i), [])
 
   return (
-    <section 
+    <section
       ref={sectionRef}
       className="fade-up cta-section"
       style={{
@@ -74,12 +74,12 @@ export default function CTABanner() {
       }} />
 
       {/* Content */}
-      <div 
+      <div
         className="cta-content"
         style={{
-        position: 'relative', zIndex: 2,
-        maxWidth: '860px'
-      }}>
+          position: 'relative', zIndex: 2,
+          maxWidth: '860px'
+        }}>
         <AnimatePresence mode="wait">
           <motion.h2
             key={current}

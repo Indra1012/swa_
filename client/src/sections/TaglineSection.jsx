@@ -9,7 +9,7 @@ const DEFAULT_WORDS = ['community', 'workplace', 'institution']
 export default function TaglineSection() {
   const sectionRef = useRef(null)
   const [words, setWords] = useState(DEFAULT_WORDS)
-  const [interval, setIntervalMs] = useState(1500)
+  const [interval, setIntervalMs] = useState(2500)
   const [activeIndex, setActiveIndex] = useState(0)
 
   const { scrollYProgress } = useScroll({
@@ -17,12 +17,12 @@ export default function TaglineSection() {
     offset: ["start end", "end start"]
   })
 
-  const y = useTransform(scrollYProgress, [0, 1], [60, -60])
-  const opacity = useTransform(scrollYProgress, [0, 0.15, 0.85, 1], [0, 1, 1, 0])
-  const scale = useTransform(scrollYProgress, [0, 0.35, 0.85, 1], [0.6, 1, 1, 0.95])
-  const subOpacity = useTransform(scrollYProgress, [0, 0.25, 0.85, 1], [0, 1, 1, 0])
-  const subScale = useTransform(scrollYProgress, [0, 0.4, 0.85, 1], [0.55, 1, 1, 0.95])
-  const subY = useTransform(scrollYProgress, [0, 1], [80, -40])
+  const y = useTransform(scrollYProgress, [0, 1], [60, 0])
+  const opacity = useTransform(scrollYProgress, [0, 0.2, 0.85, 1], [0, 1, 1, 0])
+  const scale = useTransform(scrollYProgress, [0, 0.4, 0.85, 1], [0.4, 1, 1, 0.95])
+  const subOpacity = useTransform(scrollYProgress, [0, 0.3, 0.85, 1], [0, 1, 1, 0])
+  const subScale = useTransform(scrollYProgress, [0, 0.5, 0.85, 1], [0.35, 1, 1, 0.95])
+  const subY = useTransform(scrollYProgress, [0, 1], [80, 0])
 
   // Fetch animated words from DB
   useEffect(() => {
@@ -65,7 +65,7 @@ export default function TaglineSection() {
         zIndex: 2,
         overflow: 'hidden',
         margin: 0,
-        marginTop: -30
+        marginTop: -20
       }}
     >
       <motion.div 
@@ -75,13 +75,6 @@ export default function TaglineSection() {
           y, opacity, scale
         }}
       >
-        <div style={{
-          width: '40px', height: '2px',
-          background: 'var(--accent)',
-          margin: '0 auto 32px',
-          borderRadius: '2px',
-          opacity: 0.6
-        }} />
 
         <h2 style={{
           fontFamily: 'Cormorant Garamond, serif',
@@ -92,7 +85,7 @@ export default function TaglineSection() {
           marginBottom: '28px',
           letterSpacing: '-0.5px'
         }}>
-          Bringing lasting wellness to your <br />
+          Bringing lasting wellness to your{' '}
           <span style={{
             display: 'inline-block',
             position: 'relative',
@@ -107,7 +100,7 @@ export default function TaglineSection() {
                 initial={{ y: 40, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 exit={{ y: -40, opacity: 0 }}
-                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
                 style={{
                   display: 'inline-block',
                   color: 'var(--secondary)',
@@ -146,11 +139,11 @@ export default function TaglineSection() {
         </p>
       </motion.div>
       <style>{`
-        .tagline-section { padding: 60px 60px 20px; }
+        .tagline-section { padding: 40px 60px 40px; }
         .tagline-subtext { font-size: 17px; line-height: 1.7; }
         
         @media (max-width: 768px) {
-          .tagline-section { padding: 40px 20px 20px; }
+          .tagline-section { padding: 40px 20px 60px; }
           .tagline-subtext { font-size: 16px; line-height: 1.6; }
         }
       `}</style>

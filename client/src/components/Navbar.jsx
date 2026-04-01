@@ -143,15 +143,7 @@ export default function Navbar() {
             </button>
           </li>
 
-          {/* Healing Techniques link (No Dropdown) */}
-          <li>
-            <button
-              className="desktop-nav-link"
-              onClick={() => navigate('/healing-techniques')}
-            >
-              Healing Techniques
-            </button>
-          </li>
+
 
           {/* Services link (Horizontal Dropdown Mega-style) */}
           <li
@@ -254,6 +246,16 @@ export default function Navbar() {
               onClick={() => navigate('/about')}
             >
               About Us
+            </button>
+          </li>
+
+          {/* Blogs */}
+          <li>
+            <button
+              className="desktop-nav-link"
+              onClick={() => navigate('/healing-techniques')}
+            >
+              Blogs
             </button>
           </li>
         </ul>
@@ -390,17 +392,7 @@ export default function Navbar() {
             Home
           </button>
 
-          {/* Healing Techniques (Mobile) */}
-          <button
-            style={{
-              ...navLinkStyle, textAlign: 'left',
-              padding: '14px 0', width: '100%',
-              borderBottom: '1px solid rgba(204,199,185,0.25)'
-            }}
-            onClick={() => { navigate('/healing-techniques'); setDrawerOpen(false) }}
-          >
-            Healing Techniques
-          </button>
+
 
           {/* Services (Mobile) Accordion */}
           <div>
@@ -464,6 +456,18 @@ export default function Navbar() {
             onClick={() => { navigate('/about'); setDrawerOpen(false) }}
           >
             About Us
+          </button>
+
+          {/* Blogs */}
+          <button
+            style={{
+              ...navLinkStyle, textAlign: 'left',
+              padding: '14px 0', width: '100%',
+              borderBottom: '1px solid rgba(204,199,185,0.25)'
+            }}
+            onClick={() => { navigate('/healing-techniques'); setDrawerOpen(false) }}
+          >
+            Blogs
           </button>
         </div>
 

@@ -9,9 +9,17 @@ const {
   getFaqs, createFaq, updateFaq, deleteFaq,
   getGallery, createGalleryItem, updateGalleryItem, deleteGalleryItem,
   getWellbeingVisible, setWellbeingVisible,
+  getServiceCards, createServiceCard, updateServiceCard, deleteServiceCard, uploadServiceImage
 } = require('../controllers/sections.controller')
 
 const router = express.Router()
+
+// ── SERVICES (Our Expertise) ─────────────────────────────────────
+router.get('/services',                           getServiceCards)
+router.post('/services',          protect, adminOnly, createServiceCard)
+router.put('/services/:id',       protect, adminOnly, updateServiceCard)
+router.delete('/services/:id',    protect, adminOnly, deleteServiceCard)
+router.post('/services/:id/image', protect, adminOnly, uploadSingle, uploadServiceImage)
 
 // ── TECHNIQUES (healing + wellbeing) ─────────────────────────────
 router.get('/techniques/:category',             getTechniques)

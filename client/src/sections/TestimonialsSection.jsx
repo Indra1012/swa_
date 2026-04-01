@@ -9,7 +9,7 @@ function TestimonialCard({ testimonial }) {
   const [hovered, setHovered] = useState(false)
 
   return (
-    <div 
+    <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       className="testimonial-card"
@@ -28,30 +28,30 @@ function TestimonialCard({ testimonial }) {
         overflow: 'hidden'
       }}
     >
-      <div 
+      <div
         className="testimonial-quote-mark"
         style={{
-        position: 'absolute',
-        top: '-10px', right: '10px',
-        fontSize: '180px', fontFamily: 'Cormorant Garamond, serif',
-        color: 'rgba(255,255,255,0.05)',
-        lineHeight: 1, pointerEvents: 'none',
-        userSelect: 'none',
-        fontWeight: 700
-      }}>
+          position: 'absolute',
+          top: '-10px', right: '10px',
+          fontSize: '180px', fontFamily: 'Cormorant Garamond, serif',
+          color: 'rgba(255,255,255,0.05)',
+          lineHeight: 1, pointerEvents: 'none',
+          userSelect: 'none',
+          fontWeight: 700
+        }}>
         "
       </div>
 
       <div style={{ position: 'relative', zIndex: 1 }}>
-        <p 
+        <p
           className="testimonial-company"
           style={{
-          fontFamily: 'Cormorant Garamond, serif',
-          fontSize: '24px', fontWeight: 600,
-          color: 'var(--primary)',
-          marginBottom: '16px',
-          letterSpacing: '0.5px'
-        }}>
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: '24px', fontWeight: 600,
+            color: 'var(--primary)',
+            marginBottom: '16px',
+            letterSpacing: '0.5px'
+          }}>
           {testimonial.name}
         </p>
 
@@ -68,27 +68,27 @@ function TestimonialCard({ testimonial }) {
           ))}
         </div>
 
-        <p 
+        <p
           className="testimonial-quote"
           style={{
-          fontFamily: 'Cormorant Garamond, serif',
-          fontSize: '22px', fontWeight: 600,
-          color: 'var(--white)',
-          marginBottom: '16px',
-          lineHeight: 1.4,
-          letterSpacing: '-0.3px'
-        }}>
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: '22px', fontWeight: 600,
+            color: 'var(--white)',
+            marginBottom: '16px',
+            lineHeight: 1.4,
+            letterSpacing: '-0.3px'
+          }}>
           "{testimonial.quote}"
         </p>
 
-        <p 
+        <p
           className="testimonial-text"
           style={{
-          fontSize: '15px',
-          color: 'rgba(255,255,255,0.6)',
-          lineHeight: 1.8,
-          fontFamily: 'DM Sans, sans-serif'
-        }}>
+            fontSize: '15px',
+            color: 'rgba(255,255,255,0.6)',
+            lineHeight: 1.8,
+            fontFamily: 'DM Sans, sans-serif'
+          }}>
           {testimonial.text}
         </p>
       </div>
@@ -99,12 +99,12 @@ function TestimonialCard({ testimonial }) {
 function MarqueeTrack({ testimonials }) {
   const scrollRef = useRef(null)
   const [isHovered, setIsHovered] = useState(false)
-  
+
   const multipled = [...testimonials, ...testimonials, ...testimonials, ...testimonials]
 
   useEffect(() => {
     if (isHovered || !scrollRef.current) return
-    
+
     let animationId
     const step = () => {
       if (scrollRef.current) {
@@ -115,7 +115,7 @@ function MarqueeTrack({ testimonials }) {
       }
       animationId = requestAnimationFrame(step)
     }
-    
+
     animationId = requestAnimationFrame(step)
     return () => cancelAnimationFrame(animationId)
   }, [isHovered, testimonials])
@@ -123,14 +123,14 @@ function MarqueeTrack({ testimonials }) {
   if (testimonials.length === 0) return null;
 
   return (
-    <div 
+    <div
       ref={scrollRef}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onTouchStart={() => setIsHovered(true)}
       onTouchEnd={() => setIsHovered(false)}
       className="hide-scrollbar marquee-track-container"
-      style={{ 
+      style={{
         overflowX: 'auto', padding: '20px 0 80px',
         msOverflowStyle: 'none', scrollbarWidth: 'none',
         WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
@@ -150,13 +150,33 @@ function MarqueeTrack({ testimonials }) {
 export default function TestimonialsSection() {
   const sectionRef = useRef(null)
   const [testimonials, setTestimonials] = useState([])
+  const [headings, setHeadings] = useState({
+    tagline: 'Voices of SWA',
+    title: 'Client Testimonials',
+    subtitle: 'Hear directly from the organizations and individuals experiencing the profound shifts of a mindful workplace.'
+  })
 
   useEffect(() => {
     const fetchTestimonials = async () => {
       try {
-        const res = await axios.get(`${API}/api/sections/testimonials`)
-        if (res.data.items && res.data.items.length > 0) {
-          setTestimonials(res.data.items)
+        const [testRes, contRes] = await Promise.all([
+          axios.get(`${API}/api/sections/testimonials`),
+          axios.get(`${API}/api/content/testimonials`).catch(() => ({ data: [] }))
+        ])
+
+        // Map Headings
+        const cmap = {}
+          ; (contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
+        if (Object.keys(cmap).length > 0) {
+          setHeadings(h => ({
+            tagline: cmap.tagline || h.tagline,
+            title: cmap.title || h.title,
+            subtitle: cmap.subtitle || h.subtitle
+          }))
+        }
+
+        if (testRes.data.items && testRes.data.items.length > 0) {
+          setTestimonials(testRes.data.items)
         } else {
           // Fallback to constants mapped to match DB model structure
           const combined = [...HR_TESTIMONIALS, ...EMPLOYEE_TESTIMONIALS].map(t => ({
@@ -206,7 +226,7 @@ export default function TestimonialsSection() {
         position: 'relative',
         zIndex: 1
       }}>
-        <motion.div 
+        <motion.div
           style={{
             textAlign: 'center',
             maxWidth: '1000px',
@@ -230,7 +250,7 @@ export default function TestimonialsSection() {
               fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px',
               textTransform: 'uppercase', fontWeight: 700
             }}>
-              Voices of SWA
+              {headings.tagline}
             </span>
           </div>
 
@@ -241,12 +261,10 @@ export default function TestimonialsSection() {
             color: 'var(--white)',
             marginBottom: '32px',
             lineHeight: 1.1,
-            letterSpacing: '-0.5px'
+            letterSpacing: '-0.5px',
+            whiteSpace: 'pre-wrap'
           }}>
-            Client{' '}
-            <span style={{ color: 'var(--accent)', fontStyle: 'italic', fontWeight: 500 }}>
-              Testimonials
-            </span>
+            {headings.title}
           </h2>
 
           <p style={{
@@ -254,9 +272,10 @@ export default function TestimonialsSection() {
             color: 'rgba(255,255,255,0.55)',
             marginBottom: '48px',
             fontWeight: 400,
-            maxWidth: '600px'
+            maxWidth: '600px',
+            whiteSpace: 'pre-line'
           }}>
-            Hear directly from the organizations and individuals experiencing the profound shifts of a mindful workplace.
+            {headings.subtitle}
           </p>
         </motion.div>
       </div>

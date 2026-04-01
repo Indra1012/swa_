@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
+import FAQSection from './sections/FAQSection'
 import Home from './pages/Home'
 
 // Lazy load everything except Home
@@ -128,6 +129,10 @@ function Layout() {
           />
         </Routes>
       </Suspense>
+      {/* FAQ shown on all pages except book-demo and admin routes */}
+      {!isAdminDashboard && location.pathname !== '/book-demo' && location.pathname !== '/admin/login' && (
+        <FAQSection />
+      )}
       {!isAdminDashboard && <Footer />}
     </>
   )

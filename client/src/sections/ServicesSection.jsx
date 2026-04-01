@@ -34,26 +34,40 @@ export default function ServicesSection() {
   const navigate = useNavigate()
   const sectionRef = useRef(null)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [headings, setHeadings] = useState({
+    subtitle: 'Wellness for every environment.'
+  })
   const [services, setServices] = useState(DEFAULT_SERVICES)
 
   useEffect(() => {
-    const loadImages = async () => {
+    const loadData = async () => {
       try {
-        const res = await axios.get(`${API}/api/content/services`)
-        const dbItems = res.data.items || res.data || []
-        if (!Array.isArray(dbItems) || dbItems.length === 0) return
-        const map = {}
-        dbItems.forEach(item => { map[item.key] = item.value })
-        setServices(prev => prev.map(s => ({
-          ...s,
-          image: map[`${s.type}_image`] || s.image
-        })))
-      } catch { /* keep defaults */ }
+        const now = Date.now()
+        const [contentRes, cardsRes] = await Promise.all([
+          axios.get(`${API}/api/content/services?t=${now}`),
+          axios.get(`${API}/api/sections/services?t=${now}`)
+        ])
+        
+        // Map Heading and Subheading
+        const items = contentRes.data.items || contentRes.data || []
+        const cmap = {}
+        items.forEach(i => { cmap[i.key] = i.value })
+        if (cmap.services_subheading) setHeadings(h => ({ ...h, subtitle: cmap.services_subheading }))
+
+        // Map Cards
+        const dbCards = cardsRes.data.items || []
+        if (dbCards.length > 0) {
+          setServices(dbCards)
+        } else {
+          setServices(DEFAULT_SERVICES)
+        }
+      } catch {
+        setServices(DEFAULT_SERVICES)
+      }
     }
-    loadImages()
+    loadData()
   }, [])
 
-  // Replace SERVICES references below with services state
   const SERVICES = services
 
   // Implement the requested scroll-linked parallax animation for the header
@@ -97,25 +111,10 @@ export default function ServicesSection() {
              scale: headerScale,
              position: 'relative',
              zIndex: 5,
-             pointerEvents: 'none' /* FIX: Prevents parallax bounding box from overlapping and stealing clicks on mobile */
+             pointerEvents: 'none'
            }}
         >
-          {/* Raw minimal text replacing the pill badge */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '32px'
-          }}>
-            <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-            <span style={{
-              fontSize: '13px', color: 'var(--dark)', letterSpacing: '3px',
-              textTransform: 'uppercase', fontWeight: 700
-            }}>
-              Our Expertise & The Core Services in SWA Magic
-            </span>
-          </div>
-          
+
           <h2 style={{
             fontFamily: 'Cormorant Garamond, serif',
             fontSize: 'clamp(40px, 6vw, 76px)', 
@@ -124,9 +123,9 @@ export default function ServicesSection() {
             lineHeight: 1.1,
             letterSpacing: '-0.5px',
             marginBottom: '32px',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'pre-wrap'
           }}>
-            Wellness <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>for every</span> environment.
+            {headings.subtitle}
           </h2>
         </motion.div>
 
@@ -165,21 +164,41 @@ export default function ServicesSection() {
                   background: 'var(--dark3)'
                 }}
               >
-                {/* Background Image slowly zooms if active */}
-                <motion.img
-                  src={service.image}
-                  alt={service.title}
-                  animate={{
-                    scale: isActive ? 1.05 : 1,
-                    opacity: isActive ? 0.95 : 0.85 /* Inactive image is now completely visible per user request */
-                  }}
-                  transition={{ duration: 1.2, ease: "easeOut" }}
-                  style={{
-                    position: 'absolute', inset: 0,
-                    width: '100%', height: '100%',
-                    objectFit: 'cover'
-                  }}
-                />
+                {/* Background Media slowly zooms if active */}
+                {(service.mediaMode === 'video' || /\.(mp4|webm|ogg)(\?|$)/i.test(service.image)) ? (
+                  <motion.video
+                    src={service.image}
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    animate={{
+                      scale: isActive ? 1.05 : 1,
+                      opacity: isActive ? 0.95 : 0.85
+                    }}
+                    transition={{ duration: 1.2, ease: "easeOut" }}
+                    style={{
+                      position: 'absolute', inset: 0,
+                      width: '100%', height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                ) : (
+                  <motion.img
+                    src={service.image}
+                    alt={service.title}
+                    animate={{
+                      scale: isActive ? 1.05 : 1,
+                      opacity: isActive ? 0.95 : 0.85
+                    }}
+                    transition={{ duration: 1.2, ease: "easeOut" }}
+                    style={{
+                      position: 'absolute', inset: 0,
+                      width: '100%', height: '100%',
+                      objectFit: 'cover'
+                    }}
+                  />
+                )}
 
                 {/* Highly transparent Glassmorphic Overlay for inactive cards */}
                 <div style={{
@@ -332,11 +351,11 @@ export default function ServicesSection() {
       </div>
 
       <style>{`
-        .services-section { padding: 80px 40px; }
+        .services-section { padding: 0px 40px 80px; }
         .accordion-title-horizontal { display: none; }
         .accordion-title-vertical { display: flex; flex-direction: column; align-items: center; gap: 4px; }
         @media (max-width: 1000px) {
-          .services-section { padding: 80px 30px; }
+          .services-section { padding: 0px 30px 80px; }
           .services-accordion-container {
             flex-direction: column !important;
             height: 900px !important;
@@ -354,7 +373,7 @@ export default function ServicesSection() {
           .accordion-title-vertical { display: none; }
         }
         @media (max-width: 768px) {
-          .services-section { padding: 60px 20px; }
+          .services-section { padding: 0px 20px 60px; }
           .services-accordion-container {
             height: 850px !important;
           }

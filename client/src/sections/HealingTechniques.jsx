@@ -14,12 +14,30 @@ export default function HealingTechniques() {
   const isInView = useInView(sectionRef, { once: true, margin: '-100px 0px' })
   const [isHovered, setIsHovered] = useState(false)
   const [techniques, setTechniques] = useState([])
+  const [headings, setHeadings] = useState({
+    title: 'Healing Techniques',
+    subtitle: ''
+  })
 
   // Fetch from DB, fall back to constants
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get(`${API}/api/sections/techniques/healing`)
+        const now = Date.now()
+        const [res, contRes] = await Promise.all([
+          axios.get(`${API}/api/sections/techniques/healing?t=${now}`),
+          axios.get(`${API}/api/content/healing?t=${now}`).catch(() => ({ data: [] }))
+        ])
+
+        const cmap = {}
+        ;(contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
+        if (Object.keys(cmap).length > 0) {
+          setHeadings(h => ({
+            title: cmap.title || h.title,
+            subtitle: cmap.subtitle || h.subtitle
+          }))
+        }
+
         const items = res.data.items || []
         if (items.length > 0) {
           setTechniques(items.map(t => ({
@@ -69,18 +87,8 @@ export default function HealingTechniques() {
       >
         <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
           <div className="healing-header float-subtle" style={{ marginBottom: '60px', textAlign: 'center' }}>
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={isInView ? { y: 0, opacity: 1 } : {}}
-              transition={{ duration: 0.6 }}
-              style={{
-                fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px',
-                textTransform: 'uppercase', marginBottom: '20px', fontWeight: 600
-              }}
-            >
-               Our Modalities
-            </motion.div>
-            <motion.h2 
+
+            <motion.h2
               initial={{ y: 20, opacity: 0 }}
               animate={isInView ? { y: 0, opacity: 1 } : {}}
               transition={{ duration: 0.6, delay: 0.1 }}
@@ -94,11 +102,33 @@ export default function HealingTechniques() {
                 letterSpacing: '-0.5px'
               }}
             >
-              Healing <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>Techniques</span>
+              {headings.title.split(' ').length > 1 ? (
+                <>
+                  {headings.title.split(' ').slice(0, -1).join(' ')}{' '}
+                  <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>
+                    {headings.title.split(' ').slice(-1)}
+                  </span>
+                </>
+              ) : (
+                headings.title
+              )}
             </motion.h2>
+            {headings.subtitle && (
+              <motion.p
+                initial={{ y: 20, opacity: 0 }}
+                animate={isInView ? { y: 0, opacity: 1 } : {}}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                style={{
+                  fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7,
+                  maxWidth: '600px', margin: '0 auto', fontWeight: 400
+                }}
+              >
+                {headings.subtitle}
+              </motion.p>
+            )}
           </div>
 
-          <motion.div 
+          <motion.div
             ref={containerRef}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -108,6 +138,8 @@ export default function HealingTechniques() {
             style={{
               display: 'flex',
               gap: '32px',
+              marginTop: '-40px',
+              paddingTop: '40px',
               overflowX: 'auto',
               paddingBottom: '60px',
               scrollbarWidth: 'none',
@@ -124,16 +156,16 @@ export default function HealingTechniques() {
             ))}
           </motion.div>
         </div>
-        
+
         <style>{`
           .hide-scrollbar::-webkit-scrollbar { display: none; }
-          .healing-section { padding: 20px 0 100px 60px; }
+          .healing-section { padding: 40px 0 100px 60px; }
           .healing-header { padding-right: 60px; }
           .healing-scroll-container { padding-right: 60px !important; }
           .healing-card { width: 340px; }
           
           @media (max-width: 768px) {
-            .healing-section { padding: 0px 0 60px 20px; }
+            .healing-section { padding: 40px 0 60px 20px; }
             .healing-header { padding-right: 20px; }
             .healing-scroll-container { padding-right: 20px !important; }
             .healing-card { width: calc(76vw); min-width: 234px; max-width: 306px; }
@@ -153,14 +185,13 @@ function SimpleCard({ technique, onOpen }) {
   const currentImageSrc = validImages[0] || ''
 
   return (
-    <div 
+    <div
       className="healing-card"
       style={{
         flexShrink: 0,
         position: 'relative',
         borderRadius: '24px',
         overflow: 'hidden',
-        cursor: 'pointer',
         boxShadow: hovered ? '0 30px 60px rgba(101, 50, 57, 0.2)' : '0 20px 40px rgba(101, 50, 57, 0.1)',
         transition: 'all 0.4s ease',
         transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
@@ -172,8 +203,7 @@ function SimpleCard({ technique, onOpen }) {
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onClick={() => onOpen(technique)}
-        style={{ height: expanded ? '340px' : '460px', position: 'relative', transition: 'height 0.4s ease' }}
+        style={{ height: '460px', position: 'relative' }}
       >
         {currentImageSrc && (
           <img
@@ -189,24 +219,13 @@ function SimpleCard({ technique, onOpen }) {
 
         <div style={{
           position: 'absolute', inset: 0,
-          background: hovered 
+          background: hovered
             ? 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)'
             : 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)',
           transition: 'background 0.5s ease'
         }} />
 
-        <div style={{
-          position: 'absolute', top: '20px', right: '20px',
-          width: '40px', height: '40px', borderRadius: '50%',
-          background: hovered ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
-          backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'var(--white)',
-          transform: hovered ? 'rotate(0deg)' : 'rotate(-45deg)',
-          transition: 'all 0.4s ease'
-        }}>
-          <FiArrowUpRight size={20} />
-        </div>
+
 
         <div style={{
           position: 'absolute', bottom: '30px', left: '30px', right: '30px',
@@ -222,6 +241,20 @@ function SimpleCard({ technique, onOpen }) {
           <p style={{ fontSize: '14px', fontStyle: 'italic', opacity: 0.9, marginBottom: '12px' }}>
             {technique.subtitle}
           </p>
+          {expanded && technique.readMoreText && (
+            <div style={{
+              marginTop: '12px', marginBottom: '16px'
+            }}>
+              <p style={{
+                fontSize: '14px', color: 'rgba(255,255,255,0.95)', lineHeight: 1.6,
+                fontFamily: 'DM Sans, sans-serif', margin: 0,
+                textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+              }}>
+                {technique.readMoreText}
+              </p>
+            </div>
+          )}
+
           {technique.readMoreText && (
             <button
               onClick={(e) => { e.stopPropagation(); setExpanded(!expanded) }}
@@ -230,7 +263,8 @@ function SimpleCard({ technique, onOpen }) {
                 borderRadius: '50px', padding: '6px 16px', fontSize: '11px', fontWeight: 700,
                 letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--white)',
                 cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px',
-                backdropFilter: 'blur(8px)', transition: 'all 0.3s ease'
+                backdropFilter: 'blur(8px)', transition: 'all 0.3s ease',
+                marginTop: expanded ? '0px' : '10px'
               }}
             >
               {expanded ? 'CLOSE' : 'READ MORE'}
@@ -239,21 +273,6 @@ function SimpleCard({ technique, onOpen }) {
           )}
         </div>
       </div>
-
-      {/* Expandable Read More */}
-      {expanded && technique.readMoreText && (
-        <div style={{
-          padding: '20px 24px', background: 'var(--white)',
-          borderTop: '1px solid rgba(204,199,185,0.2)'
-        }}>
-          <p style={{
-            fontSize: '14px', color: 'var(--secondary)', lineHeight: 1.7,
-            fontFamily: 'DM Sans, sans-serif', margin: 0
-          }}>
-            {technique.readMoreText}
-          </p>
-        </div>
-      )}
     </div>
   )
 }

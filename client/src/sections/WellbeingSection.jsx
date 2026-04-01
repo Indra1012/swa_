@@ -20,115 +20,37 @@ const FALLBACK_WELLBEING = [
   { id: '12', title: 'Inner Resilience', subtitle: 'Bouncing forward', image: 'https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=400&q=80', readMoreText: 'Building the psychological flexibility and inner strength to navigate life\'s challenges with grace.' },
 ]
 
-function WellbeingCard({ item, index }) {
-  const [hovered, setHovered] = useState(false)
-  const [expanded, setExpanded] = useState(false)
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-30px' }}
-      transition={{ duration: 0.6, delay: (index % 6) * 0.07, ease: [0.16, 1, 0.3, 1] }}
-      className="wellbeing-card"
-      style={{
-        position: 'relative',
-        borderRadius: '20px',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        boxShadow: hovered ? '0 20px 40px rgba(101,50,57,0.2)' : '0 8px 24px rgba(101,50,57,0.08)',
-        transition: 'all 0.4s ease',
-        transform: hovered ? 'translateY(-6px)' : 'translateY(0)',
-        WebkitMaskImage: '-webkit-radial-gradient(white, black)',
-        isolation: 'isolate'
-      }}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
-      {/* Image */}
-      <div style={{ height: expanded ? '180px' : '280px', position: 'relative', transition: 'height 0.4s ease' }}>
-        {item.image && (
-          <img
-            src={item.image}
-            alt={item.title}
-            style={{
-              width: '100%', height: '100%', objectFit: 'cover',
-              transform: hovered ? 'scale(1.06)' : 'scale(1)',
-              transition: 'transform 0.7s ease'
-            }}
-          />
-        )}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: hovered
-            ? 'linear-gradient(to top, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.25) 55%, transparent 100%)'
-            : 'linear-gradient(to top, rgba(0,0,0,0.68) 0%, transparent 60%)',
-          transition: 'background 0.5s ease'
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '16px', left: '16px', right: '16px', color: 'var(--white)'
-        }}>
-          <h3 style={{
-            fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(16px, 1.4vw, 20px)',
-            fontWeight: 600, lineHeight: 1.15, marginBottom: '4px',
-            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
-          }}>
-            {item.title}
-          </h3>
-          <p style={{ fontSize: '11px', fontStyle: 'italic', opacity: 0.85, marginBottom: '8px' }}>
-            {item.subtitle}
-          </p>
-          {item.readMoreText && (
-            <button
-              onClick={(e) => { e.stopPropagation(); setExpanded(!expanded) }}
-              style={{
-                background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
-                borderRadius: '50px', padding: '4px 11px', fontSize: '10px', fontWeight: 700,
-                letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--white)',
-                cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px',
-                backdropFilter: 'blur(8px)', transition: 'all 0.3s ease'
-              }}
-            >
-              {expanded ? 'CLOSE' : 'READ MORE'}
-              <FiChevronDown size={10} style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.3s ease' }} />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Expandable read more panel */}
-      {expanded && item.readMoreText && (
-        <div style={{
-          padding: '14px 16px', background: 'var(--white)',
-          borderTop: '1px solid rgba(204,199,185,0.2)'
-        }}>
-          <p style={{
-            fontSize: '13px', color: 'var(--secondary)', lineHeight: 1.7,
-            fontFamily: 'DM Sans, sans-serif', margin: 0
-          }}>
-            {item.readMoreText}
-          </p>
-        </div>
-      )}
-    </motion.div>
-  )
-}
-
 export default function WellbeingSection() {
   const [items, setItems] = useState([])
+  const [headings, setHeadings] = useState({
+    title: '12 Wellbeing Processes',
+    subtitle: 'A comprehensive framework for holistic transformation — mind, body and soul.'
+  })
   const [visible, setVisible] = useState(true)
   const sectionRef = useRef(null)
+  const containerRef = useRef(null)
   const isInView = useInView(sectionRef, { once: true, margin: '-100px 0px' })
+  const [isHovered, setIsHovered] = useState(false)
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [visRes, itemsRes] = await Promise.all([
+        const [visRes, itemsRes, contRes] = await Promise.all([
           axios.get(`${API}/api/sections/settings/wellbeing-visible`),
-          axios.get(`${API}/api/sections/techniques/wellbeing`)
+          axios.get(`${API}/api/sections/techniques/wellbeing`),
+          axios.get(`${API}/api/content/wellbeing`).catch(() => ({ data: [] }))
         ])
-        // Only hide if explicitly set to false
         if (visRes.data.visible === false) setVisible(false)
+
+        const cmap = {}
+        ;(contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
+        if (Object.keys(cmap).length > 0) {
+          setHeadings(h => ({
+            title: cmap.title || h.title,
+            subtitle: cmap.subtitle || h.subtitle
+          }))
+        }
+
         const fetched = itemsRes.data.items || []
         setItems(fetched.length > 0
           ? fetched.map(t => ({ id: t._id, title: t.title, subtitle: t.subtitle, image: t.image, readMoreText: t.readMoreText || '' }))
@@ -141,80 +63,218 @@ export default function WellbeingSection() {
     load()
   }, [])
 
+  // Auto-scrolling
+  useEffect(() => {
+    if (isHovered) return
+    const timer = setInterval(() => {
+      if (containerRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = containerRef.current
+        const maxScroll = scrollWidth - clientWidth
+        if (scrollLeft >= maxScroll - 10) {
+          containerRef.current.scrollTo({ left: 0, behavior: 'smooth' })
+        } else {
+          const firstRow = containerRef.current.children[0]
+          const firstCard = firstRow ? firstRow.children[0] : null
+          const scrollAmount = firstCard ? firstCard.clientWidth + 32 : 372
+          containerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
+        }
+      }
+    }, 2000)
+    return () => clearInterval(timer)
+  }, [isHovered])
+
   if (!visible) return null
 
   return (
-    <section
-      ref={sectionRef}
-      className="wellbeing-section"
-      style={{ background: 'var(--bg)', margin: 0 }}
-    >
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={isInView ? { y: 0, opacity: 1 } : {}}
-            transition={{ duration: 0.6 }}
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
+      <section
+        ref={sectionRef}
+        className="healing-section wellbeing-section"
+        style={{ background: 'var(--bg)', margin: 0 }}
+      >
+        <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
+          {/* Header */}
+          <div className="healing-header" style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <motion.h2
+              initial={{ y: 20, opacity: 0 }}
+              animate={isInView ? { y: 0, opacity: 1 } : {}}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              style={{
+                fontFamily: 'Cormorant Garamond, serif',
+                fontSize: 'clamp(40px, 5vw, 64px)',
+                fontWeight: 700, color: 'var(--dark)',
+                marginBottom: '16px', lineHeight: 1.1, letterSpacing: '-0.5px'
+              }}
+            >
+              {headings.title.split(' ').length > 1 ? (
+                <>
+                  {headings.title.split(' ').slice(0, -1).join(' ')}{' '}
+                  <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>
+                    {headings.title.split(' ').slice(-1)}
+                  </span>
+                </>
+              ) : (
+                headings.title
+              )}
+            </motion.h2>
+            <motion.p
+              initial={{ y: 20, opacity: 0 }}
+              animate={isInView ? { y: 0, opacity: 1 } : {}}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              style={{
+                fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7,
+                maxWidth: '600px', margin: '0 auto', fontWeight: 400
+              }}
+            >
+              {headings.subtitle}
+            </motion.p>
+          </div>
+
+          <motion.div 
+            ref={containerRef}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            initial={{ opacity: 0, x: 50 }}
+            animate={isInView ? { opacity: 1, x: 0 } : {}}
+            transition={{ duration: 0.8, delay: 0.2 }}
             style={{
-              fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px',
-              textTransform: 'uppercase', marginBottom: '20px', fontWeight: 600
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '32px',
+              marginTop: '-40px',
+              paddingTop: '40px',
+              overflowX: 'auto',
+              paddingBottom: '60px',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none'
             }}
+            className="hide-scrollbar healing-scroll-container"
           >
-            Our Methodology
+            <div style={{ display: 'flex', gap: '32px', width: 'max-content', minHeight: '460px', flexShrink: 0 }}>
+              {items.slice(0, 6).map((item) => (
+                <WellbeingCard key={item.id} item={item} />
+              ))}
+            </div>
+            {items.length > 6 && (
+              <div style={{ display: 'flex', gap: '32px', width: 'max-content', minHeight: '460px', flexShrink: 0 }}>
+                {items.slice(6).map((item) => (
+                  <WellbeingCard key={item.id} item={item} />
+                ))}
+              </div>
+            )}
           </motion.div>
-          <motion.h2
-            initial={{ y: 20, opacity: 0 }}
-            animate={isInView ? { y: 0, opacity: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            style={{
-              fontFamily: 'Cormorant Garamond, serif',
-              fontSize: 'clamp(40px, 5vw, 64px)',
-              fontWeight: 700, color: 'var(--dark)',
-              marginBottom: '16px', lineHeight: 1.1, letterSpacing: '-0.5px'
-            }}
-          >
-            12 Wellbeing <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>Processes</span>
-          </motion.h2>
-          <motion.p
-            initial={{ y: 20, opacity: 0 }}
-            animate={isInView ? { y: 0, opacity: 1 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            style={{
-              fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7,
-              maxWidth: '600px', margin: '0 auto', fontWeight: 400
-            }}
-          >
-            A comprehensive framework for holistic transformation — mind, body and soul.
-          </motion.p>
         </div>
 
-        {/* Grid — 6 per row on desktop */}
-        <div className="wellbeing-grid">
-          {items.map((item, i) => (
-            <WellbeingCard key={item.id || i} item={item} index={i} />
-          ))}
+        <style>{`
+          .hide-scrollbar::-webkit-scrollbar { display: none; }
+          .healing-section { padding: 40px 0 100px 60px; }
+          .healing-header { padding-right: 60px; }
+          .healing-scroll-container { padding-right: 60px !important; }
+          .healing-card { width: 340px; }
+          
+          @media (max-width: 768px) {
+            .healing-section { padding: 40px 0 60px 20px; }
+            .healing-header { padding-right: 20px; }
+            .healing-scroll-container { padding-right: 20px !important; }
+            .healing-card { width: calc(76vw); min-width: 234px; max-width: 306px; }
+          }
+        `}</style>
+      </section>
+    </div>
+  )
+}
+
+function WellbeingCard({ item }) {
+  const [hovered, setHovered] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const currentImageSrc = item.image || ''
+
+  return (
+    <div 
+      className="healing-card"
+      style={{
+        flexShrink: 0,
+        position: 'relative',
+        borderRadius: '24px',
+        overflow: 'hidden',
+        boxShadow: hovered ? '0 30px 60px rgba(101, 50, 57, 0.2)' : '0 20px 40px rgba(101, 50, 57, 0.1)',
+        transition: 'all 0.4s ease',
+        transform: hovered ? 'translateY(-8px)' : 'translateY(0)',
+        WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+        isolation: 'isolate'
+      }}
+    >
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{ height: '460px', position: 'relative' }}
+      >
+        {currentImageSrc && (
+          <img
+            src={currentImageSrc}
+            alt={item.title}
+            style={{
+              width: '100%', height: '100%', objectFit: 'cover',
+              transform: hovered ? 'scale(1.05)' : 'scale(1)',
+              transition: 'transform 0.8s ease'
+            }}
+          />
+        )}
+
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: hovered 
+            ? 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)'
+            : 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)',
+          transition: 'background 0.5s ease'
+        }} />
+
+        <div style={{
+          position: 'absolute', bottom: '30px', left: '30px', right: '30px',
+          color: 'var(--white)',
+        }}>
+          <h3 style={{
+            fontFamily: 'Cormorant Garamond, serif', fontSize: '28px',
+            fontWeight: 600, lineHeight: 1.1, marginBottom: '8px',
+            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
+          }}>
+            {item.title}
+          </h3>
+          <p style={{ fontSize: '14px', fontStyle: 'italic', opacity: 0.9, marginBottom: '12px' }}>
+            {item.subtitle}
+          </p>
+          {expanded && item.readMoreText && (
+            <div style={{ 
+               marginTop: '12px', marginBottom: '16px'
+            }}>
+               <p style={{
+                  fontSize: '14px', color: 'rgba(255,255,255,0.95)', lineHeight: 1.6,
+                  fontFamily: 'DM Sans, sans-serif', margin: 0,
+                  textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+               }}>
+                  {item.readMoreText}
+               </p>
+            </div>
+          )}
+
+          {item.readMoreText && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setExpanded(!expanded) }}
+              style={{
+                background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: '50px', padding: '6px 16px', fontSize: '11px', fontWeight: 700,
+                letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--white)',
+                cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px',
+                backdropFilter: 'blur(8px)', transition: 'all 0.3s ease',
+                marginTop: expanded ? '0px' : '10px'
+              }}
+            >
+              {expanded ? 'CLOSE' : 'READ MORE'}
+              <FiChevronDown size={12} style={{ transform: expanded ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.3s ease' }} />
+            </button>
+          )}
         </div>
       </div>
-
-      <style>{`
-        .wellbeing-section { padding: 80px 60px; }
-        .wellbeing-grid {
-          display: grid;
-          grid-template-columns: repeat(6, 1fr);
-          gap: 20px;
-        }
-        @media (max-width: 1200px) {
-          .wellbeing-grid { grid-template-columns: repeat(4, 1fr); }
-        }
-        @media (max-width: 900px) {
-          .wellbeing-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
-        }
-        @media (max-width: 768px) {
-          .wellbeing-section { padding: 60px 20px; }
-          .wellbeing-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
-        }
-      `}</style>
-    </section>
+    </div>
   )
 }

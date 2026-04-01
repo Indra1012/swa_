@@ -8,22 +8,20 @@ import MediaGallerySection from '../sections/MediaGallerySection'
 import TestimonialsSection from '../sections/TestimonialsSection'
 import WellbeingSection from '../sections/WellbeingSection'
 import CTABanner from '../sections/CTABanner'
-import FAQSection from '../sections/FAQSection'
 
 export default function Home() {
   return (
     <main style={{ overflowX: 'hidden' }}>
       <HeroSection />
       <TaglineSection />
-      <HealingTechniques />
-      <StatsSection />
       <ServicesSection />
-      <WhyUsSection />
-      <MediaGallerySection />
+      <HealingTechniques />
       <TestimonialsSection />
       <WellbeingSection />
+      <StatsSection />
+      <WhyUsSection />
+      <MediaGallerySection />
       <CTABanner />
-      <FAQSection />
     </main>
   )
 }

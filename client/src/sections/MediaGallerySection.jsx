@@ -1,71 +1,79 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
-import { FiX, FiPlay } from 'react-icons/fi'
+import { FiX, FiPlay, FiEye, FiEyeOff, FiChevronDown, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import axios from 'axios'
 
 const API = import.meta.env.VITE_API_URL
 
 const FALLBACK_GALLERY = [
-  { _id: '1', url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80', type: 'image', sizeVariant: 'landscape' },
-  { _id: '2', url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', type: 'image', sizeVariant: 'portrait' },
+  { _id: '1', url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80', type: 'image', sizeVariant: 'medium' },
+  { _id: '2', url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', type: 'image', sizeVariant: 'large' },
   { _id: '3', url: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80', type: 'image', sizeVariant: 'medium' },
-  { _id: '4', url: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800&q=80', type: 'image', sizeVariant: 'small' },
-  { _id: '5', url: 'https://images.unsplash.com/photo-1528715471579-d1bcf0ba5e83?w=800&q=80', type: 'image', sizeVariant: 'large' },
-  { _id: '6', url: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800&q=80', type: 'image', sizeVariant: 'small' },
-  { _id: '7', url: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80', type: 'image', sizeVariant: 'medium' },
-  { _id: '8', url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80', type: 'image', sizeVariant: 'landscape' },
-  { _id: '9', url: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&q=80', type: 'image', sizeVariant: 'large' },
-  { _id: '10', url: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80', type: 'image', sizeVariant: 'portrait' },
+  { _id: '4', url: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800&q=80', type: 'image', sizeVariant: 'large' },
+  { _id: '5', url: 'https://images.unsplash.com/photo-1528715471579-d1bcf0ba5e83?w=800&q=80', type: 'image', sizeVariant: 'medium' },
+  { _id: '6', url: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800&q=80', type: 'image', sizeVariant: 'large' },
 ]
 
 const SIZE_MAP = {
-  small:     { width: '220px', height: '200px' },
   medium:    { width: '300px', height: '240px' },
   large:     { width: '400px', height: '280px' },
-  portrait:  { width: '200px', height: '320px' },
-  landscape: { width: '460px', height: '230px' },
 }
 
-function GalleryCard({ item, onClick }) {
+// ─── Gallery Card ────────────────────────────────────────────────────────────
+function GalleryCard({ item, onClick, stagger }) {
   const [hovered, setHovered] = useState(false)
+  const [expanded, setExpanded] = useState(false)
   const size = SIZE_MAP[item.sizeVariant] || SIZE_MAP.medium
+  const hasDesc = item.description && item.description.trim().length > 0
+
+  const handleReadMore = (e) => {
+    e.stopPropagation()
+    setExpanded(v => !v)
+  }
 
   return (
     <div
       onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      onClick={() => onClick(item)}
+      onMouseLeave={() => { setHovered(false); setExpanded(false) }}
+      onClick={() => { if (!expanded) onClick(item) }}
+      className="gallery-card"
       style={{
         flexShrink: 0,
-        width: size.width,
-        height: size.height,
+        width: `calc(${size.width} * var(--gallery-scale, 1))`,
+        height: `calc(${size.height} * var(--gallery-scale, 1))`,
         borderRadius: '20px',
         overflow: 'hidden',
-        cursor: 'pointer',
+        WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+        isolation: 'isolate',
+        cursor: expanded ? 'default' : 'pointer',
         position: 'relative',
-        transform: hovered ? 'scale(1.03)' : 'scale(1)',
+        transform: `translateY(${stagger ? '20px' : '-20px'}) scale(${hovered ? 1.02 : 1})`,
         transition: 'transform 0.4s ease, box-shadow 0.4s ease',
-        boxShadow: hovered ? '0 20px 40px rgba(0,0,0,0.3)' : '0 6px 20px rgba(0,0,0,0.15)'
+        boxShadow: hovered ? '0 30px 50px rgba(0,0,0,0.3)' : '0 10px 30px rgba(0,0,0,0.15)'
       }}
     >
+      {/* Media */}
       {item.type === 'video' ? (
         <>
           <video
             src={item.url}
-            muted loop playsInline
+            muted loop playsInline autoPlay
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'rgba(0,0,0,0.3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center'
+            background: hovered ? 'rgba(0,0,0,0.1)' : 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            transition: 'background 0.3s ease'
           }}>
             <div style={{
               width: '48px', height: '48px', borderRadius: '50%',
-              background: 'rgba(255,255,255,0.92)',
+              background: 'rgba(255,255,255,0.7)',
+              backdropFilter: 'blur(4px)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               transform: hovered ? 'scale(1.12)' : 'scale(1)',
-              transition: 'transform 0.3s ease'
+              transition: 'transform 0.3s ease, opacity 0.3s ease',
+              opacity: hovered ? 1 : 0.4
             }}>
               <FiPlay size={18} color="var(--dark)" style={{ marginLeft: '3px' }} />
             </div>
@@ -78,21 +86,96 @@ function GalleryCard({ item, onClick }) {
             alt=""
             style={{
               width: '100%', height: '100%', objectFit: 'cover',
-              transform: hovered ? 'scale(1.08)' : 'scale(1)',
+              transform: hovered ? 'scale(1.06)' : 'scale(1)',
               transition: 'transform 0.6s ease'
             }}
           />
+          {/* Subtle gradient for image readability, darkens slightly when expanded */}
           <div style={{
             position: 'absolute', inset: 0,
-            background: hovered ? 'rgba(101,50,57,0.18)' : 'transparent',
-            transition: 'background 0.4s ease'
+            background: hovered || expanded
+              ? 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)'
+              : 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)',
+            transition: 'background 0.5s ease',
+            pointerEvents: 'none'
           }} />
         </>
+      )}
+
+      {/* Content Container positioned exactly like WellbeingCard */}
+      {(item.title || item.subtitle || hasDesc) && (
+        <div style={{
+          position: 'absolute', bottom: '20px', left: '20px', right: '20px',
+          color: 'var(--white)',
+          zIndex: 5,
+        }}>
+          {/* Title */}
+          {item.title && (
+            <h3 style={{
+              fontFamily: 'Cormorant Garamond, serif', fontSize: '24px',
+              fontWeight: 600, lineHeight: 1.1, marginBottom: '6px',
+              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
+            }}>
+              {item.title}
+            </h3>
+          )}
+          
+          {/* Subtitle */}
+          {item.subtitle && (
+            <p style={{ fontSize: '13px', fontStyle: 'italic', opacity: 0.9, marginBottom: '8px', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+              {item.subtitle}
+            </p>
+          )}
+
+          {/* Inline description (NO modal) */}
+          <AnimatePresence initial={false}>
+            {expanded && hasDesc && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div className="gallery-desc-scroll" style={{ marginTop: '10px', marginBottom: '16px', maxHeight: '110px', overflowY: 'auto', paddingRight: '4px' }}>
+                  <p style={{
+                    fontSize: '13px', color: 'rgba(255,255,255,0.95)', lineHeight: 1.6,
+                    fontFamily: 'DM Sans, sans-serif', margin: 0,
+                    textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+                  }}>
+                    {item.description}
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Read More Button */}
+          {hasDesc && (hovered || expanded) && (
+            <button
+              onClick={handleReadMore}
+              style={{
+                background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)',
+                borderRadius: '50px', padding: '6px 14px', fontSize: '10px', fontWeight: 700,
+                letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--white)',
+                cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px',
+                backdropFilter: 'blur(8px)', transition: 'all 0.3s ease',
+                marginTop: expanded ? '0px' : '6px'
+              }}
+            >
+              {expanded ? 'CLOSE' : 'READ MORE'}
+              <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.3 }}>
+                <FiChevronDown size={12} />
+              </motion.div>
+            </button>
+          )}
+        </div>
       )}
     </div>
   )
 }
 
+// ─── Lightbox ────────────────────────────────────────────────────────────────
 function Lightbox({ item, onClose }) {
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose() }
@@ -132,186 +215,244 @@ function Lightbox({ item, onClose }) {
         exit={{ scale: 0.88, opacity: 0 }}
         transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
         onClick={(e) => e.stopPropagation()}
-        style={{
-          maxWidth: '90vw', maxHeight: '88vh',
-          borderRadius: '16px', overflow: 'hidden'
-        }}
+        style={{ maxWidth: '90vw', maxHeight: '88vh', borderRadius: '16px', overflow: 'hidden' }}
       >
         {item.type === 'video' ? (
-          <video
-            src={item.url}
-            controls autoPlay
-            style={{ maxWidth: '90vw', maxHeight: '88vh', display: 'block' }}
-          />
+          <video src={item.url} controls autoPlay style={{ maxWidth: '90vw', maxHeight: '88vh', display: 'block' }} />
         ) : (
-          <img
-            src={item.url}
-            alt=""
-            style={{ maxWidth: '90vw', maxHeight: '88vh', display: 'block', objectFit: 'contain' }}
-          />
+          <img src={item.url} alt="" style={{ maxWidth: '90vw', maxHeight: '88vh', display: 'block', objectFit: 'contain' }} />
         )}
       </motion.div>
     </motion.div>
   )
 }
 
-export default function MediaGallerySection() {
-  const [items, setItems] = useState([])
-  const [lightbox, setLightbox] = useState(null)
-  const [paused, setPaused] = useState(false)
-  const sectionRef = useRef(null)
-  const row1Ref = useRef(null)
-  const row2Ref = useRef(null)
-  const anim1Ref = useRef(null)
-  const anim2Ref = useRef(null)
+// ─── Scrolling Row ────────────────────────────────────────────────────────────
+function ScrollRow({ items, direction, paused, onPause, onResume, staggerFlip }) {
+  const containerRef = useRef(null)
 
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  })
-  const headerY = useTransform(scrollYProgress, [0, 1], [60, -60])
+  // Auto-scroll loop
+  useEffect(() => {
+    if (paused) return
+    let animationFrameId
+    const scrollStep = () => {
+      if (containerRef.current) {
+        const el = containerRef.current
+        if (direction === 'left') {
+          if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 2) {
+            el.scrollLeft = 0 // Instant reset
+          } else {
+            el.scrollLeft += 1
+          }
+        } else {
+          // Rightward scrolling setup
+          if (el.scrollLeft <= 2) {
+             el.scrollLeft = el.scrollWidth - el.clientWidth
+          } else {
+             el.scrollLeft -= 1
+          }
+        }
+      }
+      animationFrameId = requestAnimationFrame(scrollStep)
+    }
+    animationFrameId = requestAnimationFrame(scrollStep)
+    return () => cancelAnimationFrame(animationFrameId)
+  }, [paused, direction])
+
+  const handleScrollLeft = () => {
+    if (containerRef.current) {
+       containerRef.current.style.scrollBehavior = 'smooth'
+       containerRef.current.scrollBy({ left: -400 })
+       setTimeout(() => { if(containerRef.current) containerRef.current.style.scrollBehavior = 'auto' }, 400)
+    }
+  }
+  const handleScrollRight = () => {
+    if (containerRef.current) {
+       containerRef.current.style.scrollBehavior = 'smooth'
+       containerRef.current.scrollBy({ left: 400 })
+       setTimeout(() => { if(containerRef.current) containerRef.current.style.scrollBehavior = 'auto' }, 400)
+    }
+  }
+
+  // Multiply items for smooth illusion
+  const loopItems = items.length < 8
+    ? [...items, ...items, ...items, ...items, ...items]
+    : [...items, ...items, ...items]
+
+  return (
+    <div style={{ position: 'relative', width: '100%' }} onMouseEnter={onPause} onMouseLeave={onResume}>
+      
+      {/* Scroll Left Btn */}
+      <button 
+        onClick={handleScrollLeft}
+        style={{
+          position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)',
+          zIndex: 10, width: '48px', height: '48px', borderRadius: '50%',
+          background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,1)', color: 'var(--dark)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 8px 24px rgba(101,50,57,0.15)', cursor: 'pointer',
+          transition: 'all 0.3s ease'
+        }}
+        className="gallery-nav-btn"
+      >
+        <FiChevronLeft size={24} />
+      </button>
+
+      <div
+        ref={containerRef}
+        className="hide-scrollbar"
+        onTouchStart={onPause}
+        onTouchEnd={onResume}
+        style={{
+          display: 'flex', gap: '24px', padding: '40px 60px',
+          overflowX: 'auto', scrollBehavior: 'auto'
+        }}
+      >
+        {loopItems.map((item, i) => (
+          <GalleryCard key={`${direction}-${i}`} item={item} onClick={() => {}} stagger={staggerFlip ? i % 2 !== 0 : i % 2 === 0} />
+        ))}
+      </div>
+
+      {/* Scroll Right Btn */}
+      <button 
+        onClick={handleScrollRight}
+        style={{
+          position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)',
+          zIndex: 10, width: '48px', height: '48px', borderRadius: '50%',
+          background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(10px)',
+          border: '1px solid rgba(255,255,255,1)', color: 'var(--dark)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          boxShadow: '0 8px 24px rgba(101,50,57,0.15)', cursor: 'pointer',
+          transition: 'all 0.3s ease'
+        }}
+        className="gallery-nav-btn"
+      >
+        <FiChevronRight size={24} />
+      </button>
+    </div>
+  )
+}
+
+// ─── Main Section ─────────────────────────────────────────────────────────────
+export default function MediaGallerySection() {
+  const [items, setItems]       = useState([])
+  const [lightbox, setLightbox] = useState(null)
+  const [paused, setPaused]     = useState(false)
+  const [loaded, setLoaded]     = useState(false)
+  const [sectionVisible, setSectionVisible] = useState(true)
+  const [headings, setHeadings] = useState({ tagline: 'Our World', title: 'Moments of transformation' })
+  const sectionRef = useRef(null)
+
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] })
+  const headerY       = useTransform(scrollYProgress, [0, 1], [60, -60])
   const headerOpacity = useTransform(scrollYProgress, [0, 0.15, 0.7, 1], [0, 1, 1, 0])
 
   useEffect(() => {
     const load = async () => {
       try {
-        const res = await axios.get(`${API}/api/sections/gallery`)
+        const [res, contRes] = await Promise.all([
+          axios.get(`${API}/api/sections/gallery`),
+          axios.get(`${API}/api/content/gallery`).catch(() => ({ data: [] }))
+        ])
+        const cmap = {}
+        ;(contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
+        if (Object.keys(cmap).length > 0) {
+          setHeadings(h => ({ tagline: cmap.tagline || h.tagline, title: cmap.title || h.title }))
+          if (cmap.visible !== undefined) setSectionVisible(cmap.visible !== 'false')
+        }
         const fetched = res.data.items || []
         setItems(fetched.length > 0 ? fetched : FALLBACK_GALLERY)
       } catch {
         setItems(FALLBACK_GALLERY)
+      } finally {
+        setLoaded(true)
       }
     }
     load()
   }, [])
 
-  // Initialize row2 at midpoint so reverse-scroll works
-  useEffect(() => {
-    if (items.length === 0 || !row2Ref.current) return
-    const mid = row2Ref.current.scrollWidth / 2
-    row2Ref.current.scrollLeft = mid
-  }, [items])
+  // Don't render anything until data is loaded — prevents hooks-order crash
+  if (!loaded) return null
+  // Full section hidden from admin toggle
+  if (!sectionVisible) return null
 
-  // Auto-scroll animation
-  useEffect(() => {
-    if (items.length === 0) return
-
-    const step = () => {
-      if (!paused) {
-        if (row1Ref.current) {
-          row1Ref.current.scrollLeft += 0.9
-          if (row1Ref.current.scrollLeft >= row1Ref.current.scrollWidth / 2) {
-            row1Ref.current.scrollLeft = 0
-          }
-        }
-        if (row2Ref.current) {
-          row2Ref.current.scrollLeft -= 0.7
-          if (row2Ref.current.scrollLeft <= 0) {
-            row2Ref.current.scrollLeft = row2Ref.current.scrollWidth / 2
-          }
-        }
-      }
-      anim1Ref.current = requestAnimationFrame(step)
-    }
-
-    anim1Ref.current = requestAnimationFrame(step)
-    return () => {
-      if (anim1Ref.current) cancelAnimationFrame(anim1Ref.current)
-    }
-  }, [paused, items])
-
-  if (items.length === 0) return null
-
-  // Split into 2 rows
-  const half = Math.ceil(items.length / 2)
-  const row1 = items.slice(0, half)
-  const row2 = items.slice(half).length > 0 ? items.slice(half) : items.slice(0, half)
-
-  // Double for infinite loop
-  const row1Items = [...row1, ...row1]
-  const row2Items = [...row2, ...row2]
+  // ≤5 items → single row, >5 → split into 2 rows
+  const twoRows = items.length > 5
+  const row1 = twoRows ? items.slice(0, Math.ceil(items.length / 2)) : items
+  const row2 = twoRows ? items.slice(Math.ceil(items.length / 2)) : []
 
   return (
     <section
       ref={sectionRef}
       className="media-gallery-section"
-      style={{ background: 'var(--dark)', overflow: 'hidden', margin: 0 }}
+      style={{ background: 'transparent', overflow: 'hidden', margin: 0 }}
     >
       {/* Header */}
       <motion.div
         style={{
-          textAlign: 'center',
-          maxWidth: '800px',
-          margin: '0 auto 60px',
-          y: headerY,
-          opacity: headerOpacity,
-          padding: '0 20px'
+          textAlign: 'center', maxWidth: '800px',
+          margin: '0 auto 50px',
+          y: headerY, opacity: headerOpacity, padding: '0 20px'
         }}
       >
-        <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '24px'
-        }}>
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
           <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-          <span style={{
-            fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px',
-            textTransform: 'uppercase', fontWeight: 700
-          }}>
-            Our World
+          <span style={{ fontSize: '13px', color: 'var(--dark)', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 700 }}>
+            {headings.tagline}
           </span>
         </div>
         <h2 style={{
           fontFamily: 'Cormorant Garamond, serif',
-          fontSize: 'clamp(36px, 5vw, 60px)',
-          fontWeight: 700, color: 'var(--white)',
-          lineHeight: 1.1, letterSpacing: '-0.5px'
+          fontSize: 'clamp(40px, 6vw, 76px)',
+          fontWeight: 700, color: 'var(--dark)',
+          lineHeight: 1.1, letterSpacing: '-0.5px',
+          marginBottom: '0', whiteSpace: 'nowrap'
         }}>
-          Moments of <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>transformation</span>
+          {headings.title.split(' ').length > 1 ? (
+            <>
+              {headings.title.split(' ').slice(0, -1).join(' ')}{' '}
+              <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>
+                {headings.title.split(' ').slice(-1)}
+              </span>
+            </>
+          ) : headings.title}
         </h2>
       </motion.div>
 
-      {/* Row 1 — scrolls left */}
-      <div
-        ref={row1Ref}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onTouchStart={() => setPaused(true)}
-        onTouchEnd={() => setPaused(false)}
-        className="gallery-row hide-scrollbar"
-        style={{
-          display: 'flex', gap: '16px',
-          overflowX: 'auto',
-          paddingBottom: '16px',
-          scrollbarWidth: 'none', msOverflowStyle: 'none',
-          WebkitMaskImage: 'linear-gradient(to right, transparent, black 4%, black 96%, transparent)',
-          maskImage: 'linear-gradient(to right, transparent, black 4%, black 96%, transparent)',
-        }}
-      >
-        {row1Items.map((item, i) => (
-          <GalleryCard key={`r1-${i}`} item={item} onClick={setLightbox} />
-        ))}
-      </div>
+      {/* Gallery Rows — hidden/shown by admin toggle */}
+      <AnimatePresence>
+        {sectionVisible && (
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 30 }}
+            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
+            {/* Row 1 — always shown, scrolls left */}
+            <ScrollRow
+              items={row1}
+              direction="left"
+              paused={paused}
+              onPause={() => setPaused(true)}
+              onResume={() => setPaused(false)}
+              staggerFlip={true}
+            />
 
-      {/* Row 2 — scrolls right */}
-      <div
-        ref={row2Ref}
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onTouchStart={() => setPaused(true)}
-        onTouchEnd={() => setPaused(false)}
-        className="gallery-row hide-scrollbar"
-        style={{
-          display: 'flex', gap: '16px',
-          overflowX: 'auto',
-          paddingTop: '16px',
-          scrollbarWidth: 'none', msOverflowStyle: 'none',
-          WebkitMaskImage: 'linear-gradient(to right, transparent, black 4%, black 96%, transparent)',
-          maskImage: 'linear-gradient(to right, transparent, black 4%, black 96%, transparent)',
-        }}
-      >
-        {row2Items.map((item, i) => (
-          <GalleryCard key={`r2-${i}`} item={item} onClick={setLightbox} />
-        ))}
-      </div>
+            {/* Row 2 — only when items > 5, scrolls right */}
+            {twoRows && (
+              <ScrollRow
+                items={row2}
+                direction="right"
+                paused={paused}
+                onPause={() => setPaused(true)}
+                onResume={() => setPaused(false)}
+                staggerFlip={false}
+              />
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Lightbox */}
       <AnimatePresence>
@@ -319,12 +460,20 @@ export default function MediaGallerySection() {
       </AnimatePresence>
 
       <style>{`
-        .media-gallery-section { padding: 80px 0; }
-        .gallery-row { padding-left: 40px; padding-right: 40px; }
+        :root { --gallery-scale: 1.1; }
+        .media-gallery-section { padding: 100px 0; }
+        .gallery-nav-btn { opacity: 0; }
+        .media-gallery-section:hover .gallery-nav-btn { opacity: 1; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        .gallery-desc-scroll::-webkit-scrollbar { width: 3px; }
+        .gallery-desc-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
+        .gallery-desc-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 4px; }
         @media (max-width: 768px) {
+          :root { --gallery-scale: 1; }
           .media-gallery-section { padding: 60px 0; }
-          .gallery-row { padding-left: 20px; padding-right: 20px; gap: 10px !important; }
+          .gallery-nav-btn { display: none !important; }
         }
       `}</style>
     </section>

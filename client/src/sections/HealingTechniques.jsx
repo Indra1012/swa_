@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import { FiArrowUpRight, FiChevronDown } from 'react-icons/fi'
 import { TECHNIQUES as FALLBACK_TECHNIQUES } from '../constants/techniques'
 import axios from 'axios'
@@ -10,7 +10,12 @@ const API = import.meta.env.VITE_API_URL
 export default function HealingTechniques() {
   const navigate = useNavigate()
   const sectionRef = useRef(null)
+  const headerRef = useRef(null)
   const containerRef = useRef(null)
+  const { scrollYProgress } = useScroll({ target: headerRef, offset: ["start 95%", "start 20%"] })
+  const headerY = useTransform(scrollYProgress, [0, 1], [80, 0])
+  const headerScale = useTransform(scrollYProgress, [0, 1], [0.5, 1])
+  const headerOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
   const isInView = useInView(sectionRef, { once: true, margin: '-100px 0px' })
   const [isHovered, setIsHovered] = useState(false)
   const [techniques, setTechniques] = useState([])
@@ -49,10 +54,10 @@ export default function HealingTechniques() {
             images: [t.image]
           })))
         } else {
-          setTechniques(FALLBACK_TECHNIQUES)
+          setTechniques(FALLBACK_TECHNIQUES.map(t => ({ ...t, readMoreText: t.purpose || t.readMoreText || '' })))
         }
       } catch {
-        setTechniques(FALLBACK_TECHNIQUES)
+        setTechniques(FALLBACK_TECHNIQUES.map(t => ({ ...t, readMoreText: t.purpose || t.readMoreText || '' })))
       }
     }
     load()
@@ -86,12 +91,20 @@ export default function HealingTechniques() {
         style={{ background: 'transparent', margin: 0 }}
       >
         <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
-          <div className="healing-header float-subtle" style={{ marginBottom: '60px', textAlign: 'center' }}>
+          <motion.div 
+            ref={headerRef}
+            className="healing-header float-subtle" 
+            style={{ 
+              marginBottom: '60px', 
+              textAlign: 'center',
+              y: headerY,
+              scale: headerScale,
+              opacity: headerOpacity,
+              transformOrigin: 'center bottom'
+            }}
+          >
 
-            <motion.h2
-              initial={{ y: 20, opacity: 0 }}
-              animate={isInView ? { y: 0, opacity: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.1 }}
+            <h2
               style={{
                 fontFamily: 'Cormorant Garamond, serif',
                 fontSize: 'clamp(48px, 6vw, 76px)',
@@ -105,28 +118,25 @@ export default function HealingTechniques() {
               {headings.title.split(' ').length > 1 ? (
                 <>
                   {headings.title.split(' ').slice(0, -1).join(' ')}{' '}
-                  <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>
+                  <span style={{ fontStyle: 'italic', fontWeight: 600, color: 'var(--dark)' }}>
                     {headings.title.split(' ').slice(-1)}
                   </span>
                 </>
               ) : (
                 headings.title
               )}
-            </motion.h2>
+            </h2>
             {headings.subtitle && (
-              <motion.p
-                initial={{ y: 20, opacity: 0 }}
-                animate={isInView ? { y: 0, opacity: 1 } : {}}
-                transition={{ duration: 0.6, delay: 0.2 }}
+              <p
                 style={{
                   fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7,
                   maxWidth: '600px', margin: '0 auto', fontWeight: 400
                 }}
               >
                 {headings.subtitle}
-              </motion.p>
+              </p>
             )}
-          </div>
+          </motion.div>
 
           <motion.div
             ref={containerRef}

@@ -36,7 +36,7 @@ const createMeetEvent = async ({ name, email, company, date, timeSlot }) => {
     const calEmail = process.env.GOOGLE_CALENDAR_EMAIL || process.env.NODEMAILER_USER
 
     const event = {
-      summary:     `SWA Wellness Demo — ${company}`,
+      summary:     `SWA Wellbeing Demo — ${company}`,
       description: `30-min demo call with ${name} from ${company}.\nBooking email: ${email}`,
       start: { dateTime: startDt.toISOString(), timeZone: 'Asia/Kolkata' },
       end:   { dateTime: endDt.toISOString(),   timeZone: 'Asia/Kolkata' },

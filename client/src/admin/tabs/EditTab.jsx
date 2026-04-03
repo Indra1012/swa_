@@ -124,13 +124,13 @@ function HeroManager() {
   const [headline, setHeadline] = useState('')
   const [subline, setSubline] = useState('')
   const [mediaMode, setMediaMode] = useState('image') // 'image' | 'video' | 'link'
-  const [linkUrl, setLinkUrl] = useState('')
+  const [linkUrls, setLinkUrls] = useState(['', '', ''])
   const [saving, setSaving] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
 
-  const [uploadedImg, setUploadedImg] = useState('')
+  const [uploadedImgs, setUploadedImgs] = useState([])
   const [uploadedVid, setUploadedVid] = useState('')
 
   const imgRef = useRef(null)
@@ -150,15 +150,26 @@ function HeroManager() {
           if (i.key === 'headline') setHeadline(i.value)
           if (i.key === 'subline') setSubline(i.value)
           if (i.key === 'mediaType') setMediaMode(i.value)
-          if (i.key === 'mediaUrl') setLinkUrl(i.value)
+          if (i.key === 'mediaUrl') {
+            try {
+              const parsed = JSON.parse(i.value)
+              if (Array.isArray(parsed)) {
+                setLinkUrls([parsed[0] || '', parsed[1] || '', parsed[2] || ''])
+              } else {
+                setLinkUrls([i.value, '', ''])
+              }
+            } catch {
+              setLinkUrls([i.value, '', ''])
+            }
+          }
         })
       }
 
       const media = mediaRes.data.media || []
-      const imgItem = media.find(m => m.type !== 'video')
+      const imgItems = media.filter(m => m.type !== 'video')
       const vidItem = media.find(m => m.type === 'video')
 
-      if (imgItem) setUploadedImg(imgItem.url)
+      setUploadedImgs(imgItems)
       if (vidItem) setUploadedVid(vidItem.url)
     } catch { }
   }
@@ -174,8 +185,8 @@ function HeroManager() {
         axios.put(`${API}/api/content`, { section: 'hero', key: 'mediaType', value: mediaMode }, { headers: authH() }),
       ]
 
-      // Also update linkUrl, even if empty string, so it overrides old values
-      updates.push(axios.put(`${API}/api/content`, { section: 'hero', key: 'mediaUrl', value: linkUrl }, { headers: authH() }))
+      const validLinks = linkUrls.filter(l => l.trim().length > 0)
+      updates.push(axios.put(`${API}/api/content`, { section: 'hero', key: 'mediaUrl', value: JSON.stringify(validLinks) }, { headers: authH() }))
 
       await Promise.all(updates)
       setMsg('Saved successfully!')
@@ -198,9 +209,8 @@ function HeroManager() {
 
       const res = await axios.post(`${API}/api/media/upload`, fd, { headers: { ...authH(), 'Content-Type': 'multipart/form-data' } })
 
-      // Update preview immediately using returned URL
-      if (res.data?.media?.url) {
-        if (type === 'image') setUploadedImg(res.data.media.url)
+      if (res.data?.media) {
+        if (type === 'image') setUploadedImgs(prev => [...prev, res.data.media])
         if (type === 'video') setUploadedVid(res.data.media.url)
       }
 
@@ -218,6 +228,13 @@ function HeroManager() {
     }
   }
 
+  const deleteUploadedImage = async (id) => {
+    try {
+      await axios.delete(`${API}/api/media/${id}`, { headers: authH() })
+      setUploadedImgs(prev => prev.filter(m => m._id !== id))
+    } catch { setErr('Failed to delete image') }
+  }
+
   const modeBtnStyle = (active) => ({
     padding: '8px 18px', borderRadius: '8px', border: 'none',
     fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 600,
@@ -225,19 +242,6 @@ function HeroManager() {
     background: active ? 'var(--dark)' : 'transparent',
     color: active ? 'var(--white)' : 'var(--secondary)',
   })
-
-  // Determine what to show in preview
-  let previewUrl = ''
-  let isVideoPreview = false
-  if (mediaMode === 'link') {
-    previewUrl = linkUrl
-    isVideoPreview = /\.(mp4|webm|ogg)(\?|$)/i.test(linkUrl)
-  } else if (mediaMode === 'video') {
-    previewUrl = uploadedVid
-    isVideoPreview = true
-  } else {
-    previewUrl = uploadedImg
-  }
 
   return (
     <>
@@ -261,12 +265,25 @@ function HeroManager() {
         {/* Image upload */}
         {mediaMode === 'image' && (
           <div>
-            <input ref={imgRef} type="file" accept="image/*" onChange={e => uploadFile(e, 'image')} style={{ display: 'none' }} />
-            <SBtn onClick={() => imgRef.current?.click()} disabled={uploading} variant="ghost">
-              <FiUpload size={13} /> {uploading ? 'Uploading...' : 'Upload Hero Image'}
-            </SBtn>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              {uploadedImgs.map(img => (
+                <div key={img._id} style={{ position: 'relative', width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(204,199,185,0.4)' }}>
+                  <img src={img.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <button onClick={() => deleteUploadedImage(img._id)} style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}><FiX size={12} /></button>
+                </div>
+              ))}
+              {uploadedImgs.length < 3 && (
+                <div style={{ width: '120px', height: '80px', borderRadius: '8px', border: '1px dashed rgba(204,199,185,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(250,248,245,0.5)' }}>
+                  <input ref={imgRef} type="file" accept="image/*" onChange={e => uploadFile(e, 'image')} style={{ display: 'none' }} />
+                  <button onClick={() => imgRef.current?.click()} disabled={uploading} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--secondary)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                    <FiUpload size={16} />
+                    <span style={{ fontSize: '10px', textTransform: 'uppercase', fontWeight: 600 }}>{uploading ? '...' : 'Upload'}</span>
+                  </button>
+                </div>
+              )}
+            </div>
             <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.5)', marginTop: '8px' }}>
-              Accepts JPG, PNG, WebP. Will display as the full-screen hero background.
+              Accepts JPG, PNG, WebP. Upload up to 3 images which will automatically crossfade like a slideshow.
             </p>
           </div>
         )}
@@ -286,40 +303,21 @@ function HeroManager() {
 
         {/* Link / URL input */}
         {mediaMode === 'link' && (
-          <div>
-            <Field
-              label="Image or Video URL"
-              value={linkUrl}
-              onChange={setLinkUrl}
-              placeholder="https://example.com/your-background.jpg"
-            />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            {[0, 1, 2].map(idx => (
+              <Field
+                key={idx}
+                label={`Image / Video URL ${idx + 1}`}
+                value={linkUrls[idx]}
+                onChange={v => { const n = [...linkUrls]; n[idx] = v; setLinkUrls(n) }}
+                placeholder="https://example.com/your-background.jpg"
+              />
+            ))}
             <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.5)', marginTop: '-4px' }}>
-              Paste any direct image or video URL. Video links (ending .mp4, .webm) will autoplay.
+              Paste up to 3 direct image URLs for a slideshow, or 1 Video URL. (If any link is a .mp4/.webm video, others are ignored).
             </p>
           </div>
         )}
-
-        {/* --- LIVE PREVIEW BOX --- */}
-        <div style={{ marginTop: '20px', padding: '12px', background: 'var(--bg)', borderRadius: '12px', border: '1px solid rgba(204,199,185,0.4)' }}>
-          <p style={{ fontSize: '11px', color: 'var(--secondary)', marginBottom: '10px', fontWeight: 600, textTransform: 'uppercase' }}>
-            Current Hero Preview:
-            <span style={{ color: 'var(--primary)', marginLeft: '6px' }}>
-              ({mediaMode === 'link' ? 'External Link' : 'Uploaded File'})
-            </span>
-          </p>
-
-          <div style={{ width: '100%', height: '180px', borderRadius: '8px', overflow: 'hidden', background: '#e0dfdb', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {previewUrl ? (
-              isVideoPreview ? (
-                <video src={previewUrl} autoPlay loop muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              ) : (
-                <img src={previewUrl} alt="Hero Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              )
-            ) : (
-              <p style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>No media provided</p>
-            )}
-          </div>
-        </div>
       </div>
 
       {/* ── HEADLINE — multiline so admin can press Enter for new lines ── */}
@@ -565,7 +563,7 @@ function ExpertiseManager() {
       const map = {}
       d.forEach(i => { map[i.key] = i.value })
       setGlobalData({
-        subheading: map.services_subheading || 'Wellness for every environment.'
+        subheading: map.services_subheading || 'Wellbeing for every environment.'
       })
 
       const res = await axios.get(`${API}/api/sections/services?t=${now}`)
@@ -688,7 +686,7 @@ function ExpertiseManager() {
       {/* Global Headers */}
       <div style={{ background: 'var(--bg)', borderRadius: '10px', padding: '16px', border: '1px solid rgba(204,199,185,0.3)', marginBottom: '24px' }}>
         <p style={{ fontSize: '11px', fontWeight: 700, color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Section Titles</p>
-        <Field label="Subheading" value={globalData.subheading} onChange={v => setGlobalData(g => ({ ...g, subheading: v }))} placeholder="Wellness for every..." />
+        <Field label="Subheading" value={globalData.subheading} onChange={v => setGlobalData(g => ({ ...g, subheading: v }))} placeholder="Wellbeing for every..." />
         <SBtn onClick={saveGlobal} disabled={loading}><FiCheck size={12} /> {globalSaved ? 'Titles Saved!' : 'Save Titles'}</SBtn>
       </div>
 
@@ -704,7 +702,7 @@ function ExpertiseManager() {
                 <Field label="Slug (For URL)" value={draft.typeSlug} onChange={v => setDraft(n => ({ ...n, typeSlug: v }))} placeholder="e.g. corporate" />
                 <Field label="Display Order (e.g. 1)" value={draft.order} onChange={v => setDraft(n => ({ ...n, order: v }))} placeholder="1" />
               </div>
-              <Field label="Card Title" value={draft.title} onChange={v => setDraft(n => ({ ...n, title: v }))} placeholder="Corporate Wellness" />
+              <Field label="Card Title" value={draft.title} onChange={v => setDraft(n => ({ ...n, title: v }))} placeholder="Corporate Wellbeing" />
               <Field label="Headline" value={draft.headline} onChange={v => setDraft(n => ({ ...n, headline: v }))} multiline placeholder="Build a Resilient Workforce" />
               <Field label="Description" value={draft.description} onChange={v => setDraft(n => ({ ...n, description: v }))} multiline />
 
@@ -783,12 +781,12 @@ function ExpertiseManager() {
       {/* Add New */}
       {adding && (
         <div style={{ background: 'rgba(175,122,109,0.06)', borderRadius: '10px', padding: '16px', marginTop: '12px', border: '1px dashed rgba(175,122,109,0.3)' }}>
-          <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>New Service Card</p>
+          <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>New Program Card</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-            <Field label="Title" value={draft.title} onChange={v => { setDraft(n => ({ ...n, title: v })); if (!draft.typeSlug) setDraft(n => ({ ...n, typeSlug: v.toLowerCase().replace(/[^a-z0-9]+/g, '-') })) }} placeholder="e.g. Corporate Wellness" />
+            <Field label="Title" value={draft.title} onChange={v => { setDraft(n => ({ ...n, title: v })); if (!draft.typeSlug) setDraft(n => ({ ...n, typeSlug: v.toLowerCase().replace(/[^a-z0-9]+/g, '-') })) }} placeholder="e.g. Corporate Wellbeing" />
             <Field label="Display Order" value={draft.order} onChange={v => setDraft(n => ({ ...n, order: v }))} placeholder="1" />
           </div>
-          <Field label="Slug (For URL)" value={draft.typeSlug} onChange={v => setDraft(n => ({ ...n, typeSlug: v }))} placeholder="corporate-wellness" />
+          <Field label="Slug (For URL)" value={draft.typeSlug} onChange={v => setDraft(n => ({ ...n, typeSlug: v }))} placeholder="corporate-wellbeing" />
           <Field label="Headline" value={draft.headline} onChange={v => setDraft(n => ({ ...n, headline: v }))} multiline />
           <Field label="Description" value={draft.description} onChange={v => setDraft(n => ({ ...n, description: v }))} multiline />
           <p style={{ fontSize: '11px', color: 'var(--secondary)', marginBottom: '16px' }}>Save first to unlock image/video uploading.</p>
@@ -799,7 +797,7 @@ function ExpertiseManager() {
         </div>
       )}
       {!adding && (
-        <SBtn onClick={() => { setAdding(true); setDraft({ title: '', typeSlug: '', headline: '', description: '', image: '', mediaMode: 'image', order: items.length + 1 }); setUploadedImg(''); setUploadedVid(''); setLinkUrl(''); setMediaMode('image'); setErr(''); setMsg(''); }} variant="ghost" style={{ marginTop: '8px', width: '100%', justifyContent: 'center' }}><FiPlus size={13} /> Add New Service Card</SBtn>
+        <SBtn onClick={() => { setAdding(true); setDraft({ title: '', typeSlug: '', headline: '', description: '', image: '', mediaMode: 'image', order: items.length + 1 }); setUploadedImg(''); setUploadedVid(''); setLinkUrl(''); setMediaMode('image'); setErr(''); setMsg(''); }} variant="ghost" style={{ marginTop: '8px', width: '100%', justifyContent: 'center' }}><FiPlus size={13} /> Add New Program Card</SBtn>
       )}
     </div>
   )
@@ -815,8 +813,7 @@ function TestimonialsManager() {
   const [err, setErr] = useState('')
   const [loaded, setLoaded] = useState(false)
   const [headings, setHeadings] = useState({
-    tagline: 'Voices of SWA',
-    title: 'Client Testimonials',
+    title: 'Voices of SWA',
     subtitle: 'Hear directly from the organizations and individuals experiencing the profound shifts of a mindful workplace.'
   })
 
@@ -832,9 +829,8 @@ function TestimonialsManager() {
         ; (contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
       if (Object.keys(cmap).length > 0) {
         setHeadings(h => ({
-          tagline: cmap.tagline || h.tagline,
-          title: cmap.title || h.title,
-          subtitle: cmap.subtitle || h.subtitle
+          title: cmap.title !== undefined ? cmap.title : h.title,
+          subtitle: cmap.subtitle !== undefined ? cmap.subtitle : h.subtitle
         }))
       }
       setLoaded(true)
@@ -896,7 +892,6 @@ function TestimonialsManager() {
       {/* Headings Editor */}
       <div style={{ marginBottom: '32px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
         <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px' }}>Section Headings</p>
-        <ContentField section="testimonials" field={{ key: 'tagline', label: 'Tagline', value: headings.tagline }} />
         <ContentField section="testimonials" field={{ key: 'title', label: 'Main Title', value: headings.title }} />
         <ContentField section="testimonials" field={{ key: 'subtitle', label: 'Sub Title (Description)', value: headings.subtitle }} />
       </div>
@@ -1163,11 +1158,11 @@ function StatsManager() {
 
 // ─── 7b. FAQ MANAGER ─────────────────────────────────────────────────────────
 function FaqManager() {
-  const [items, setItems]   = useState([])
-  const [err, setErr]       = useState('')
+  const [items, setItems] = useState([])
+  const [err, setErr] = useState('')
   const [loaded, setLoaded] = useState(false)
   const [editId, setEditId] = useState(null)
-  const [draft, setDraft]   = useState({})
+  const [draft, setDraft] = useState({})
   const [adding, setAdding] = useState(false)
   const [newItem, setNewItem] = useState({ question: '', answer: '', order: '' })
 
@@ -1175,8 +1170,8 @@ function FaqManager() {
     try {
       const res = await axios.get(`${API}/api/sections/faqs`)
       setItems(res.data.items || [])
-    } catch { 
-      setErr('Failed to load FAQs.') 
+    } catch {
+      setErr('Failed to load FAQs.')
     } finally {
       setLoaded(true)
     }
@@ -1515,7 +1510,8 @@ function ContentField({ field, section }) {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
-  const isLong = value.length > 80
+  const isArrayField = ['offerings', 'formats', 'outcomes'].includes(field.key)
+  const isLong = value.length > 80 || isArrayField
 
   const handleSave = async () => {
     setSaving(true); setError('')
@@ -1542,7 +1538,7 @@ function ContentField({ field, section }) {
       {editing ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           {isLong ? (
-            <textarea value={value} onChange={e => setValue(e.target.value)} rows={4} autoFocus style={{ width: '100%', padding: '11px 13px', border: '1.5px solid var(--secondary)', borderRadius: '8px', fontSize: '14px', fontFamily: 'DM Sans, sans-serif', outline: 'none', background: 'var(--bg)', color: 'var(--dark)', resize: 'vertical', lineHeight: 1.7, marginBottom: '10px', boxSizing: 'border-box' }} />
+            <textarea value={value} onChange={e => setValue(e.target.value)} rows={isArrayField ? 5 : 4} autoFocus style={{ width: '100%', padding: '11px 13px', border: '1.5px solid var(--secondary)', borderRadius: '8px', fontSize: '14px', fontFamily: 'DM Sans, sans-serif', outline: 'none', background: 'var(--bg)', color: 'var(--dark)', resize: 'vertical', lineHeight: 1.7, marginBottom: '10px', boxSizing: 'border-box' }} />
           ) : (
             <input type="text" value={value} onChange={e => setValue(e.target.value)} autoFocus style={{ width: '100%', padding: '10px 13px', border: '1.5px solid var(--secondary)', borderRadius: '8px', fontSize: '14px', fontFamily: 'DM Sans, sans-serif', outline: 'none', background: 'var(--bg)', color: 'var(--dark)', marginBottom: '10px', boxSizing: 'border-box' }} />
           )}
@@ -1564,26 +1560,38 @@ const PAGE_CONTENT = {
   services: [
     {
       group: 'Corporate', section: 'corporate', fields: [
-        { key: 'headline', label: 'Headline', value: 'Build a Resilient, High-Performing Workforce' },
-        { key: 'subheadline', label: 'Subheadline', value: 'Empower your teams with structured wellness programs.' },
-        { key: 'challenge', label: 'The Challenge', value: "Today's workplaces are facing rising stress, burnout, and disengagement." },
-        { key: 'approach', label: 'Our Approach', value: 'At SWA, we design customized wellness programs aligned with your organizational goals.' },
+        { key: 'challenge', label: 'The Challenge', value: "Today's workplaces are facing rising stress, burnout, disengagement, and declining focus. While organizations push for higher performance, the emotional and mental foundation of employees is often overlooked." },
+        { key: 'approach', label: 'Our Approach', value: 'At SWA, we design customized wellbeing programs aligned with your organizational goals. Our approach is practical, structured, and outcome-driven—ensuring real behavioral change, not just temporary motivation.' },
+        { key: 'offerings', label: 'What We Offer (One per line)', value: "Corporate Wellbeing Programs\nEmotional Resilience Workshops\nStress Management Sessions\nLeadership & Mindset Training" },
+        { key: 'formats', label: 'Program Formats (One per line)', value: "On-site workshops\nVirtual sessions\nMulti-session engagement programs\nLeadership interventions" },
+        { key: 'outcomes', label: 'Outcomes You Can Expect (One per line)', value: "Improved employee focus and productivity\nReduced stress and burnout\nHigher engagement and retention\nStronger team dynamics" },
       ]
     },
     {
       group: 'Education', section: 'education', fields: [
-        { key: 'headline', label: 'Headline', value: 'Building Emotionally Strong & Focused Students' },
-        { key: 'subheadline', label: 'Subheadline', value: 'Helping students and educators manage stress and build emotional resilience.' },
-        { key: 'challenge', label: 'The Challenge', value: 'Students today face increasing academic pressure and emotional stress.' },
-        { key: 'approach', label: 'Our Approach', value: 'We deliver simple, practical, and age-appropriate programs.' },
+        { key: 'challenge', label: 'The Challenge', value: 'Students today face increasing academic pressure, distractions, and emotional stress—impacting both performance and wellbeing. Educators also face challenges in managing student engagement and emotional balance in classrooms.' },
+        { key: 'approach', label: 'Our Approach', value: 'We deliver simple, practical, and age-appropriate programs that help students understand and manage their thoughts, emotions, and stress effectively.' },
+        { key: 'offerings', label: 'What We Offer (One per line)', value: "Student Wellbeing Programs\nStress & Exam Anxiety Management\nFocus & Concentration Sessions\nTeacher Wellbeing Programs" },
+        { key: 'formats', label: 'Program Formats (One per line)', value: "School & college workshops\nInteractive group sessions\nOngoing wellbeing programs" },
+        { key: 'outcomes', label: 'Outcomes You Can Expect (One per line)', value: "Improved focus and academic performance\nBetter emotional balance\nReduced stress and anxiety\nHealthier learning environment" },
       ]
     },
     {
       group: 'Community', section: 'community', fields: [
-        { key: 'headline', label: 'Headline', value: 'Creating Healthier, More Resilient Communities' },
-        { key: 'subheadline', label: 'Subheadline', value: 'Driving large-scale wellbeing initiatives that help individuals live more balanced lives.' },
-        { key: 'need', label: 'The Need', value: "Stress and emotional challenges impact entire communities." },
-        { key: 'approach', label: 'Our Approach', value: 'We partner with organizations, NGOs, and institutions to deliver impactful programs.' },
+        { key: 'challenge', label: 'The Challenge', value: 'In today’s fast-changing world, stress and emotional challenges are not limited to workplaces—they impact entire communities. There is a growing need for accessible and practical wellbeing solutions at scale.' },
+        { key: 'approach', label: 'Our Approach', value: 'We partner with organizations, NGOs, and institutions to deliver impactful community wellbeing programs that are simple, scalable, and effective.' },
+        { key: 'offerings', label: 'What We Offer (One per line)', value: "Community Wellbeing Programs\nStress Awareness Campaigns\nGroup Workshops & Sessions\nPublic Wellbeing Initiatives" },
+        { key: 'formats', label: 'Program Formats (One per line)', value: "Large group sessions\nAwareness drives\nWorkshops & events" },
+        { key: 'outcomes', label: 'Outcomes You Can Expect (One per line)', value: "Increased awareness of mental wellbeing\nPractical tools for daily stress management\nStronger, more resilient communities" },
+      ]
+    },
+    {
+      group: 'Government', section: 'government', fields: [
+        { key: 'challenge', label: 'The Challenge', value: 'Public servants operate in high-stress, unpredictable environments. Constant pressure and critical decision-making can lead to chronic stress, impacting their wellbeing and the quality of public service.' },
+        { key: 'approach', label: 'Our Approach', value: 'We provide practical, evidence-based wellbeing programs tailored for the public sector, helping teams build resilience, manage stress, and maintain focus in demanding roles.' },
+        { key: 'offerings', label: 'What We Offer (One per line)', value: "Stress Management for First Responders\nLeadership & Decision-Making under Pressure\nMental Resilience Training\nPublic Sector Wellbeing Programs" },
+        { key: 'formats', label: 'Program Formats (One per line)', value: "Department-wide initiatives\nTargeted workshops\nSpecialized training camps" },
+        { key: 'outcomes', label: 'Outcomes You Can Expect (One per line)', value: "Enhanced crisis management capabilities\nReduced occupational burnout\nImproved team cohesion and morale\nBetter public service delivery" },
       ]
     },
   ],
@@ -1591,8 +1599,8 @@ const PAGE_CONTENT = {
     {
       group: 'Founder', section: 'about', fields: [
         { key: 'founderName', label: 'Founder Name', value: 'Dhruvi Shah' },
-        { key: 'founderTitle', label: 'Founder Title', value: 'Founder & Head Coach – SWA Wellness' },
-        { key: 'founderBio', label: 'Founder Bio', value: 'Dhruvi Shah is the Founder and Head Wellness Coach at SWA Wellness.' },
+        { key: 'founderTitle', label: 'Founder Title', value: 'Founder & Head Coach – SWA Wellbeing' },
+        { key: 'founderBio', label: 'Founder Bio', value: 'Dhruvi Shah is the Founder and Head Wellbeing Coach at SWA Wellbeing.' },
         { key: 'founderQuote', label: 'Founder Quote', value: 'To help individuals understand and master their emotions.' },
       ]
     },
@@ -1601,7 +1609,7 @@ const PAGE_CONTENT = {
     {
       group: 'Blogs Section', section: 'blogs', fields: [
         { key: 'heading', label: 'Section Heading', value: 'Latest Insights' },
-        { key: 'subtext', label: 'Subtext', value: 'Explore our latest articles on wellness, mindfulness, and organizational health.' },
+        { key: 'subtext', label: 'Subtext', value: 'Explore our latest articles on wellbeing, mindfulness, and organizational health.' },
         { key: 'ctaText', label: 'CTA Button Text', value: 'Read All Articles' },
       ]
     },
@@ -1610,10 +1618,158 @@ const PAGE_CONTENT = {
 
 const PAGES = [
   { id: 'home', label: 'Home' },
-  { id: 'services', label: 'Services' },
+  { id: 'services', label: 'Programs' },
   { id: 'about', label: 'About' },
   { id: 'blogs', label: 'Blogs' },
 ]
+
+// ─── CLIENT LOGOS MANAGER ──────────────────────────────────────────────────
+function ClientLogosManager() {
+  const [items, setItems] = useState([])
+  const [adding, setAdding] = useState(false)
+  const [editId, setEditId] = useState(null)
+  const [draft, setDraft] = useState({})
+  const [newFile, setNewFile] = useState(null)
+  const [err, setErr] = useState('')
+  const [uploading, setUploading] = useState(null)
+  const [creating, setCreating] = useState(false)
+  const fileRefs = useRef({})
+  const newFileRef = useRef(null)
+
+  const load = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/api/client-logos?t=${Date.now()}`)
+      setItems(res.data.items || [])
+    } catch { setErr('Failed to load logos.') }
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  const save = async (id) => {
+    try {
+      await axios.put(`${API}/api/client-logos/${id}`, draft, { headers: authH() })
+      setEditId(null); load()
+    } catch { setErr('Save failed.') }
+  }
+
+  const del = async (id) => {
+    if (!window.confirm('Delete this logo?')) return
+    try {
+      await axios.delete(`${API}/api/client-logos/${id}`, { headers: authH() })
+      load()
+    } catch (err) { setErr(err.response?.data?.error || err.message || 'Delete failed.') }
+  }
+
+  const create = async () => {
+    if (!draft.name) return setErr('Name is required.')
+
+    setCreating(true); setErr('')
+    try {
+      const res = await axios.post(`${API}/api/client-logos`, { ...draft, url: draft.url || 'https://via.placeholder.com/150' }, { headers: authH() })
+
+      if (newFile) {
+        const newId = res.data.item._id
+        const fd = new FormData()
+        fd.append('file', newFile)
+        await axios.post(`${API}/api/client-logos/${newId}/image`, fd, {
+          headers: { ...authH(), 'Content-Type': 'multipart/form-data' }
+        })
+      }
+
+      setDraft({})
+      setNewFile(null)
+      setAdding(false); load()
+    } catch { setErr('Create failed.') }
+    finally { setCreating(false) }
+  }
+
+  const uploadImg = async (id, file) => {
+    if (!file) return
+    setUploading(id)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      await axios.post(`${API}/api/client-logos/${id}/image`, fd, {
+        headers: { ...authH(), 'Content-Type': 'multipart/form-data' }
+      })
+      load()
+    } catch { setErr('Image upload failed.') }
+    finally { setUploading(null) }
+  }
+
+  return (
+    <>
+      <ErrMsg msg={err} />
+      {items.map(item => (
+        <div key={item._id} style={{ background: 'var(--bg)', borderRadius: '10px', padding: '14px 16px', marginBottom: '10px', border: '1px solid rgba(204,199,185,0.25)' }}>
+          {editId === item._id ? (
+            <>
+              <Field label="Company Name" value={draft.name ?? item.name} onChange={v => setDraft(d => ({ ...d, name: v }))} />
+              <Field label="Link URL (Optional link when clicked)" value={draft.link ?? item.link ?? ''} onChange={v => setDraft(d => ({ ...d, link: v }))} placeholder="https://..." />
+              <div style={{ marginBottom: '8px' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>Display Order</p>
+                <input type="text" value={draft.order !== undefined ? draft.order : (item.order ?? '')} onChange={e => setDraft(d => ({ ...d, order: e.target.value }))} placeholder="0" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid rgba(204,199,185,0.4)', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }} />
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                <SBtn onClick={() => save(item._id)}><FiCheck size={12} /> Save</SBtn>
+                <SBtn onClick={() => { setEditId(null); setDraft({}) }} variant="ghost"><FiX size={12} /> Cancel</SBtn>
+              </div>
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              {item.url && (
+                <div style={{ background: 'var(--white)', padding: '6px', borderRadius: '6px' }}>
+                  <img src={item.url} alt="" style={{ height: '32px', objectFit: 'contain', width: '100px', display: 'block' }} />
+                </div>
+              )}
+              <div style={{ flex: 1, minWidth: '120px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--dark)', margin: 0 }}>{item.name}</p>
+                {item.link && <p style={{ fontSize: '11px', color: 'var(--secondary)', margin: '2px 0 0' }}>{item.link}</p>}
+                <p style={{ fontSize: '11px', color: 'var(--secondary)', margin: '2px 0 0' }}>Order: {item.order}</p>
+              </div>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <input type="file" accept="image/*" style={{ display: 'none' }} ref={el => fileRefs.current[item._id] = el} onChange={e => uploadImg(item._id, e.target.files?.[0])} />
+                <SBtn onClick={() => fileRefs.current[item._id]?.click()} disabled={uploading === item._id} variant="ghost" style={{ padding: '6px 10px' }}><FiUpload size={12} /> {uploading === item._id ? '...' : 'Replace IMG'}</SBtn>
+                <SBtn onClick={() => { setEditId(item._id); setDraft({}) }} variant="ghost" style={{ padding: '6px 10px' }}><FiEdit3 size={12} /></SBtn>
+                <SBtn onClick={() => del(item._id)} variant="danger" style={{ padding: '6px 10px' }}><FiTrash2 size={12} /></SBtn>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {adding ? (
+        <div style={{ background: 'rgba(175,122,109,0.06)', borderRadius: '10px', padding: '16px', marginTop: '12px', border: '1px dashed rgba(175,122,109,0.3)' }}>
+          <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>New Client Logo</p>
+          <Field label="Company Name" value={draft.name || ''} onChange={v => setDraft(d => ({ ...d, name: v }))} placeholder="ex. Acme Corp" />
+
+          <div style={{ marginBottom: '12px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>Upload Logo Image</p>
+            <input type="file" accept="image/*" style={{ display: 'none' }} ref={newFileRef} onChange={e => setNewFile(e.target.files?.[0])} />
+            <SBtn onClick={() => newFileRef.current?.click()} variant="ghost" style={{ width: '100%', justifyContent: 'center' }}>
+              <FiUpload size={13} /> {newFile ? newFile.name : 'Choose local file...'}
+            </SBtn>
+            <p style={{ fontSize: '10px', color: 'rgba(101,50,57,0.5)', marginTop: '6px', textAlign: 'center' }}>
+              For best display in the marquee, try to upload a rectangular logo.
+            </p>
+          </div>
+
+          <Field label="Link URL (Optional click destination)" value={draft.link || ''} onChange={v => setDraft(d => ({ ...d, link: v }))} placeholder="https://..." />
+          <div style={{ marginBottom: '12px' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>Display Order</p>
+            <input type="text" value={draft.order || ''} onChange={e => setDraft(d => ({ ...d, order: e.target.value }))} placeholder="1" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid rgba(204,199,185,0.4)', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }} />
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <SBtn onClick={create} disabled={creating}><FiPlus size={12} /> {creating ? 'Saving...' : 'Add'}</SBtn>
+            <SBtn onClick={() => { setAdding(false); setDraft({}); setNewFile(null); setErr('') }} variant="ghost"><FiX size={12} /> Cancel</SBtn>
+          </div>
+        </div>
+      ) : (
+        <SBtn onClick={() => { setAdding(true); setDraft({}); setNewFile(null); setErr('') }} variant="ghost" style={{ marginTop: '8px' }}><FiPlus size={13} /> Add Client Logo</SBtn>
+      )}
+    </>
+  )
+}
 
 // ─── MAIN EDIT TAB ────────────────────────────────────────────────────────────
 export default function EditTab() {
@@ -1681,7 +1837,10 @@ export default function EditTab() {
             <SectionAccordion title="Hero Banner" defaultOpen>
               <HeroManager />
             </SectionAccordion>
-            <SectionAccordion title="Our Services">
+            <SectionAccordion title="Client Logos (Hero Marquee)">
+              <ClientLogosManager />
+            </SectionAccordion>
+            <SectionAccordion title="Our Programs">
               <ExpertiseManager />
             </SectionAccordion>
             <SectionAccordion title="Healing Techniques">

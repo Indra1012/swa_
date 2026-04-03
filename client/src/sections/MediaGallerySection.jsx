@@ -343,10 +343,12 @@ export default function MediaGallerySection() {
   const [sectionVisible, setSectionVisible] = useState(true)
   const [headings, setHeadings] = useState({ tagline: 'Our World', title: 'Moments of transformation' })
   const sectionRef = useRef(null)
+  const headerRef = useRef(null)
 
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] })
-  const headerY       = useTransform(scrollYProgress, [0, 1], [60, -60])
-  const headerOpacity = useTransform(scrollYProgress, [0, 0.15, 0.7, 1], [0, 1, 1, 0])
+  const { scrollYProgress } = useScroll({ target: headerRef, offset: ['start 95%', 'start 15%'] })
+  const headerY       = useTransform(scrollYProgress, [0, 1], [80, 0])
+  const headerOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
+  const headerScale   = useTransform(scrollYProgress, [0, 1], [0.5, 1])
 
   useEffect(() => {
     const load = async () => {
@@ -390,18 +392,14 @@ export default function MediaGallerySection() {
     >
       {/* Header */}
       <motion.div
+        ref={headerRef}
         style={{
           textAlign: 'center', maxWidth: '800px',
           margin: '0 auto 50px',
-          y: headerY, opacity: headerOpacity, padding: '0 20px'
+          y: headerY, opacity: headerOpacity, scale: headerScale, padding: '0 20px',
+          transformOrigin: 'center bottom'
         }}
       >
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', marginBottom: '32px' }}>
-          <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-          <span style={{ fontSize: '13px', color: 'var(--dark)', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 700 }}>
-            {headings.tagline}
-          </span>
-        </div>
         <h2 style={{
           fontFamily: 'Cormorant Garamond, serif',
           fontSize: 'clamp(40px, 6vw, 76px)',
@@ -461,7 +459,7 @@ export default function MediaGallerySection() {
 
       <style>{`
         :root { --gallery-scale: 1.1; }
-        .media-gallery-section { padding: 100px 0; }
+        .media-gallery-section { padding: 40px 0 100px 0; }
         .gallery-nav-btn { opacity: 0; }
         .media-gallery-section:hover .gallery-nav-btn { opacity: 1; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
@@ -472,7 +470,7 @@ export default function MediaGallerySection() {
         .gallery-desc-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 4px; }
         @media (max-width: 768px) {
           :root { --gallery-scale: 1; }
-          .media-gallery-section { padding: 60px 0; }
+          .media-gallery-section { padding: 20px 0 60px 0; }
           .gallery-nav-btn { display: none !important; }
         }
       `}</style>

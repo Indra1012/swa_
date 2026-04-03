@@ -156,7 +156,7 @@ export default function Navbar() {
               onClick={() => navigate('/services')}
               style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
             >
-              Services
+              Programs
               <motion.div
                  animate={{ rotate: servicesOpen ? 180 : 0 }}
                  transition={{ duration: 0.3 }}
@@ -176,13 +176,13 @@ export default function Navbar() {
                     position: 'absolute',
                     top: '100%',
                     left: '50%',
-                    background: 'rgba(250, 248, 245, 0.75)', /* Increased transparency for light glass */
-                    backdropFilter: 'blur(30px)',
-                    WebkitBackdropFilter: 'blur(30px)',
+                    background: 'rgba(250,247,242,0.95)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
                     padding: '8px',
                     borderRadius: '20px',
                     boxShadow: '0 20px 40px rgba(101, 50, 57, 0.08)',
-                    border: '1px solid rgba(0, 0, 0, 0.04)', /* Much thinner, subtle dark border */
+                    border: '1px solid rgba(204,199,185,0.3)',
                     display: 'flex',
                     flexDirection: 'row',
                     gap: '4px',
@@ -198,7 +198,8 @@ export default function Navbar() {
                   {[
                     { id: 'corporate', name: 'Corporate Solutions' },
                     { id: 'education', name: 'Educational Environments' },
-                    { id: 'community', name: 'Community Outreaches' }
+                    { id: 'community', name: 'Community Outreaches' },
+                    { id: 'government', name: 'Government Initiatives' }
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -405,7 +406,7 @@ export default function Navbar() {
               }}
               onClick={() => setDrawerServicesOpen(!drawerServicesOpen)}
             >
-              Services
+              Programs
               <motion.div animate={{ rotate: drawerServicesOpen ? 180 : 0 }}>
                 <FiChevronDown size={16} />
               </motion.div>
@@ -422,7 +423,8 @@ export default function Navbar() {
                     {[
                       { id: 'corporate', name: 'Corporate Solutions' },
                       { id: 'education', name: 'Educational Environments' },
-                      { id: 'community', name: 'Community Outreaches' }
+                      { id: 'community', name: 'Community Outreaches' },
+                      { id: 'government', name: 'Government Initiatives' }
                     ].map((item) => (
                       <button
                         key={item.id}

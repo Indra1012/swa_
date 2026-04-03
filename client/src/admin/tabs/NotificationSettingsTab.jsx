@@ -220,7 +220,7 @@ export default function NotificationSettingsTab() {
             {renderField(
               'Primary Admin Email',
               notificationEmail, setNotificationEmail,
-              'email1', 'admin@swa-wellness.com',
+              'email1', 'admin@swa-wellbeing.com',
               true, FiMail
             )}
 
@@ -228,7 +228,7 @@ export default function NotificationSettingsTab() {
             {renderField(
               'CC Email',
               ccEmail, setCcEmail,
-              'cc', 'founder@swa-wellness.com',
+              'cc', 'founder@swa-wellbeing.com',
               false, FiBell
             )}
 
@@ -263,13 +263,13 @@ export default function NotificationSettingsTab() {
                   {renderField(
                     'Admin Email 2',
                     notificationEmail2, setNotificationEmail2,
-                    'email2', 'admin2@swa-wellness.com',
+                    'email2', 'admin2@swa-wellbeing.com',
                     false, FiMail
                   )}
                   {renderField(
                     'Admin Email 3',
                     notificationEmail3, setNotificationEmail3,
-                    'email3', 'admin3@swa-wellness.com',
+                    'email3', 'admin3@swa-wellbeing.com',
                     false, FiMail
                   )}
                 </motion.div>

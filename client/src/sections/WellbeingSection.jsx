@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import { FiChevronDown } from 'react-icons/fi'
 import axios from 'axios'
 
@@ -15,7 +15,7 @@ const FALLBACK_WELLBEING = [
   { id: '7', title: 'Sleep Hygiene', subtitle: 'Restorative rest', image: 'https://images.unsplash.com/photo-1511295742362-92c96b1cf484?w=400&q=80', readMoreText: 'Building healthy sleep rituals and routines that support deep, restorative rest and waking vitality.' },
   { id: '8', title: 'Mindful Nutrition', subtitle: 'Conscious eating', image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80', readMoreText: 'Developing a healthy relationship with food through awareness, presence, and intuitive eating principles.' },
   { id: '9', title: 'Digital Detox', subtitle: 'Reclaim presence', image: 'https://images.unsplash.com/photo-1473091534298-04dcbce3278c?w=400&q=80', readMoreText: 'Intentional practices for creating healthy boundaries with technology to restore attention and inner peace.' },
-  { id: '10', title: 'Social Wellness', subtitle: 'Authentic connection', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80', readMoreText: 'Cultivating meaningful relationships and community bonds that nourish the soul and support resilience.' },
+  { id: '10', title: 'Social Wellbeing', subtitle: 'Authentic connection', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80', readMoreText: 'Cultivating meaningful relationships and community bonds that nourish the soul and support resilience.' },
   { id: '11', title: 'Purpose Clarity', subtitle: 'Your inner compass', image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', readMoreText: 'Deep inquiry practices to uncover your authentic values and align daily actions with deeper purpose.' },
   { id: '12', title: 'Inner Resilience', subtitle: 'Bouncing forward', image: 'https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=400&q=80', readMoreText: 'Building the psychological flexibility and inner strength to navigate life\'s challenges with grace.' },
 ]
@@ -28,7 +28,12 @@ export default function WellbeingSection() {
   })
   const [visible, setVisible] = useState(true)
   const sectionRef = useRef(null)
+  const headerRef = useRef(null)
   const containerRef = useRef(null)
+  const { scrollYProgress } = useScroll({ target: headerRef, offset: ["start 95%", "start 15%"] })
+  const headerY = useTransform(scrollYProgress, [0, 1], [80, 0])
+  const headerScale = useTransform(scrollYProgress, [0, 1], [0.5, 1])
+  const headerOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
   const isInView = useInView(sectionRef, { once: true, margin: '-100px 0px' })
   const [isHovered, setIsHovered] = useState(false)
 
@@ -94,11 +99,19 @@ export default function WellbeingSection() {
       >
         <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
           {/* Header */}
-          <div className="healing-header" style={{ textAlign: 'center', marginBottom: '60px' }}>
-            <motion.h2
-              initial={{ y: 20, opacity: 0 }}
-              animate={isInView ? { y: 0, opacity: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.1 }}
+          <motion.div 
+            ref={headerRef}
+            className="healing-header" 
+            style={{ 
+              textAlign: 'center', 
+              marginBottom: '60px',
+              y: headerY,
+              scale: headerScale,
+              opacity: headerOpacity,
+              transformOrigin: 'center bottom'
+            }}
+          >
+            <h2
               style={{
                 fontFamily: 'Cormorant Garamond, serif',
                 fontSize: 'clamp(40px, 5vw, 64px)',
@@ -109,26 +122,23 @@ export default function WellbeingSection() {
               {headings.title.split(' ').length > 1 ? (
                 <>
                   {headings.title.split(' ').slice(0, -1).join(' ')}{' '}
-                  <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>
+                  <span style={{ fontStyle: 'italic', fontWeight: 600, color: 'var(--dark)' }}>
                     {headings.title.split(' ').slice(-1)}
                   </span>
                 </>
               ) : (
                 headings.title
               )}
-            </motion.h2>
-            <motion.p
-              initial={{ y: 20, opacity: 0 }}
-              animate={isInView ? { y: 0, opacity: 1 } : {}}
-              transition={{ duration: 0.6, delay: 0.2 }}
+            </h2>
+            <p
               style={{
-                fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7,
-                maxWidth: '600px', margin: '0 auto', fontWeight: 400
+                fontSize: '18px', color: 'var(--dark)', lineHeight: 1.7,
+                maxWidth: '600px', margin: '0 auto', fontWeight: 500
               }}
             >
               {headings.subtitle}
-            </motion.p>
-          </div>
+            </p>
+          </motion.div>
 
           <motion.div 
             ref={containerRef}

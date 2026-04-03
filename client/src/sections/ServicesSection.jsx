@@ -9,10 +9,10 @@ const API = import.meta.env.VITE_API_URL
 const DEFAULT_SERVICES = [
   {
     type: 'corporate',
-    title: 'Corporate Wellness',
+    title: 'Corporate Wellbeing',
     image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&q=80',
     headline: 'Build a Resilient, High-Performing Workforce',
-    description: 'Empower teams with structured wellness programs to reduce stress and drive performance.',
+    description: 'Empower teams with structured wellbeing programs to reduce stress and drive performance.',
   },
   {
     type: 'education',
@@ -27,6 +27,13 @@ const DEFAULT_SERVICES = [
     image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80',
     headline: 'Healthier, More Resilient Communities',
     description: 'Driving wellbeing initiatives that help individuals manage stress and live balanced lives.',
+  },
+  {
+    type: 'government',
+    title: 'Government',
+    image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80',
+    headline: 'Empowering Public Servants',
+    description: 'Equipping government teams with the mental resilience needed to serve effectively.',
   }
 ]
 
@@ -35,7 +42,7 @@ export default function ServicesSection() {
   const sectionRef = useRef(null)
   const [activeIndex, setActiveIndex] = useState(0)
   const [headings, setHeadings] = useState({
-    subtitle: 'Wellness for every environment.'
+    subtitle: 'Wellbeing for every environment.'
   })
   const [services, setServices] = useState(DEFAULT_SERVICES)
 
@@ -325,7 +332,7 @@ export default function ServicesSection() {
                         }}
                         onClick={(e) => {
                           e.stopPropagation()
-                          navigate('/services/' + service.type)
+                          navigate('/services/' + (service.typeSlug || service.type))
                         }}
                         onMouseEnter={e => {
                           e.currentTarget.style.transform = 'translateY(-4px)'

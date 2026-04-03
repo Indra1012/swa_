@@ -5,22 +5,22 @@ import { FiLayers, FiTarget, FiHeart, FiShield } from 'react-icons/fi'
 const PILLARS = [
   {
     title: "Rooted in Real Connection",
-    desc: "We go beyond surface-level wellness. Our programs are experiential, tapping directly into the heart of human connection to foster environments where emotional intelligence thrives organically.",
+    desc: "We go beyond basic wellness. Our interactive programs build genuine human connections, helping emotional intelligence grow naturally in your teams.",
     icon: FiLayers
   },
   {
     title: "Science Meets Wisdom",
-    desc: "By blending the practical rigor of modern psychology with the grounded depth of eastern philosophies, we deliver tools that are both immediately actionable and deeply profound.",
+    desc: "We combine modern psychology with timeless eastern philosophies. The result is simple, practical tools you can use immediately to improve your daily life.",
     icon: FiTarget
   },
   {
-    title: "Tailored to Your Ecosystem",
-    desc: "No two cultures are the same. We take time to understand the unique emotional and psychological landscape of your workplace or community, designing solutions that feel native to your people.",
+    title: "Made for Your Culture",
+    desc: "Every workplace is unique. We take the time to understand your specific environment and create programs that perfectly fit your people's needs.",
     icon: FiHeart
   },
   {
-    title: "Sustainable Transformation",
-    desc: "We don't do quick fixes. Our entire methodology is designed to create lasting, compounding ripples of wellbeing that protect against burnout and elevate life satisfaction long-term.",
+    title: "Lasting Change",
+    desc: "We don't believe in quick fixes. Our methods are designed to build long-term wellbeing, prevent burnout, and genuinely improve how people feel every day.",
     icon: FiShield
   }
 ]
@@ -145,7 +145,7 @@ export default function WhyUsSection() {
             marginBottom: '0',
             whiteSpace: 'nowrap'
           }}>
-            True wellness is a <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>continuous journey.</span>
+            True wellbeing is a <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>continuous journey.</span>
           </h2>
         </motion.div>
 
@@ -163,7 +163,7 @@ export default function WhyUsSection() {
           <p style={{
             fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7, fontWeight: 400, margin: 0
           }}>
-            We move past quick fixes to provide structured, practical wellness programs that create real, lasting changes in your environment.
+            We move past quick fixes to provide structured, practical wellbeing programs that create real, lasting changes in your environment.
           </p>
         </motion.div>
 

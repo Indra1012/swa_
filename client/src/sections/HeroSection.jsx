@@ -1,12 +1,13 @@
 import { useRef, useState, useEffect } from 'react'
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
 
 const API = import.meta.env.VITE_API_URL
 
 export default function HeroSection() {
   const containerRef = useRef(null)
-  const [mediaUrl, setMediaUrl] = useState('')
+  const [mediaUrls, setMediaUrls] = useState([])
+  const [currentSlide, setCurrentSlide] = useState(0)
   const [mediaType, setMediaType] = useState('image') // 'image' | 'video'
   const [headline, setHeadline] = useState("It's time to bring the SWA Magic")
   const [subline, setSubline] = useState('to your place and people')
@@ -34,50 +35,69 @@ export default function HeroSection() {
         const items = txtRes.data.items || []
 
         let savedMediaType = 'image'
-        let savedMediaUrl = ''
+        let savedMediaUrls = []
 
         items.forEach(item => {
           if (item.key === 'headline' && item.value?.trim()) setHeadline(item.value.trim())
-          if (item.key === 'subline'  && item.value?.trim()) setSubline(item.value.trim())
+          if (item.key === 'subline' && item.value?.trim()) setSubline(item.value.trim())
           if (item.key === 'mediaType') savedMediaType = item.value
-          if (item.key === 'mediaUrl')  savedMediaUrl  = item.value
+          if (item.key === 'mediaUrl') {
+            try {
+              const parsed = JSON.parse(item.value)
+              if (Array.isArray(parsed)) {
+                savedMediaUrls = parsed.filter(u => u)
+              } else {
+                savedMediaUrls = [item.value]
+              }
+            } catch {
+              savedMediaUrls = [item.value]
+            }
+          }
         })
 
-        if (savedMediaType === 'link' && savedMediaUrl) {
-          // Paste-link mode — auto-detect video vs image by URL extension
-          const isVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(savedMediaUrl)
+        if (savedMediaType === 'link' && savedMediaUrls.length > 0) {
+          const isVideo = /\.(mp4|webm|ogg)(\?|$)/i.test(savedMediaUrls[0])
           setMediaType(isVideo ? 'video' : 'image')
-          setMediaUrl(savedMediaUrl)
+          setMediaUrls(savedMediaUrls)
 
         } else if (savedMediaType === 'video') {
-          // Video upload mode — find the video MediaItem specifically
           const videoItem = media.find(m => m.type === 'video') || media[0]
           if (videoItem) {
-            setMediaUrl(videoItem.url)
+            setMediaUrls([videoItem.url])
             setMediaType('video')
           } else {
             setMediaType('image')
-            setMediaUrl('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80')
+            setMediaUrls(['https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80'])
           }
 
         } else if (media.length > 0) {
-          // Image upload mode — find the image MediaItem specifically
-          const imgItem = media.find(m => m.type !== 'video') || media[0]
-          setMediaUrl(imgItem.url)
-          setMediaType('image')
-
+          const imgItems = media.filter(m => m.type !== 'video')
+          if (imgItems.length > 0) {
+            setMediaUrls(imgItems.map(m => m.url).slice(0, 3))
+            setMediaType('image')
+          } else {
+            setMediaType('image')
+            setMediaUrls(['https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80'])
+          }
         } else {
-          // Nothing in DB at all — fallback
           setMediaType('image')
-          setMediaUrl('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80')
+          setMediaUrls(['https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80'])
         }
       } catch {
         setMediaType('image')
-        setMediaUrl('https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80')
+        setMediaUrls(['https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1600&q=80'])
       }
     }
     load()
   }, [])
+
+  useEffect(() => {
+    if (mediaType !== 'image' || mediaUrls.length <= 1) return
+    const timer = setInterval(() => {
+      setCurrentSlide(prev => (prev + 1) % mediaUrls.length)
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [mediaUrls, mediaType])
 
   // Render text with newline support (admin can press Enter in admin textarea)
   const renderLines = (text) =>
@@ -103,10 +123,10 @@ export default function HeroSection() {
       <motion.div style={{ position: 'absolute', inset: -150, zIndex: 0, y: bgY }}>
 
         {/* VIDEO background (uploaded or link) */}
-        {mediaType === 'video' && mediaUrl ? (
+        {mediaType === 'video' && mediaUrls.length > 0 ? (
           <video
-            key={mediaUrl}
-            src={mediaUrl}
+            key={mediaUrls[0]}
+            src={mediaUrls[0]}
             autoPlay muted loop playsInline
             style={{
               width: '100%', height: '100%',
@@ -114,19 +134,24 @@ export default function HeroSection() {
             }}
           />
         ) : (
-          /* IMAGE background */
-          <motion.img
-            initial={{ scale: 1.15 }}
-            animate={{ scale: 1 }}
-            transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
-            src={mediaUrl || fallbackImg}
-            alt="SWA Wellness"
-            loading="eager"
-            style={{
-              width: '100%', height: '100%',
-              objectFit: 'cover', objectPosition: 'center', filter: 'brightness(1.05)'
-            }}
-          />
+          /* IMAGE background carousel */
+          <AnimatePresence mode="wait">
+            <motion.img
+              key={currentSlide}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1.4, ease: [0.25, 0.1, 0.25, 1] }}
+              src={mediaUrls[currentSlide] || fallbackImg}
+              alt="SWA Wellbeing"
+              loading="eager"
+              style={{
+                position: 'absolute', inset: 0,
+                width: '100%', height: '100%',
+                objectFit: 'cover', objectPosition: 'center', filter: 'brightness(1.05)'
+              }}
+            />
+          </AnimatePresence>
         )}
 
         {/* Full-coverage Brand Color Overlay (like the screenshot) */}

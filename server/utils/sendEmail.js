@@ -15,7 +15,7 @@ const transporter = nodemailer.createTransport({
 const sendEmail = async ({ to, cc, subject, html }) => {
   try {
     const info = await transporter.sendMail({
-      from:    `"SWA Wellness" <${process.env.NODEMAILER_USER}>`,
+      from:    `"SWA Wellbeing" <${process.env.NODEMAILER_USER}>`,
       to,
       ...(cc && { cc }),
       subject,
@@ -79,7 +79,7 @@ const bookingConfirmationTemplate = (booking) => `
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Booking Confirmed — SWA Wellness</title>
+  <title>Booking Confirmed — SWA Wellbeing</title>
 </head>
 <body style="margin:0;padding:0;background:#F7F1EA;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 
@@ -90,7 +90,7 @@ const bookingConfirmationTemplate = (booking) => `
         <!-- ── TOP BAND ── -->
         <tr>
           <td style="background:linear-gradient(135deg,#3B2A1A 0%,#5C3D2E 100%);padding:36px 40px 28px;text-align:center;">
-            <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#C4956A;">SWA WELLNESS</p>
+            <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#C4956A;">SWA WELLBEING</p>
             <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:26px;font-weight:400;color:#F5ECD7;letter-spacing:0.5px;">
               Your Demo is Confirmed
             </h1>
@@ -154,9 +154,9 @@ const bookingConfirmationTemplate = (booking) => `
         <!-- ── FOOTER ── -->
         <tr>
           <td style="background:#FAF6F1;border-top:1px solid #EDE0CF;padding:20px 40px;text-align:center;">
-            <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#A0845C;letter-spacing:1px;text-transform:uppercase;">SWA Wellness</p>
+            <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#A0845C;letter-spacing:1px;text-transform:uppercase;">SWA Wellbeing</p>
             <p style="margin:0;font-size:11px;color:#B8A898;">Where Self Meets Its True Essence</p>
-            <p style="margin:8px 0 0;font-size:11px;color:#C4B5A5;">© 2025 SWA Wellness. All rights reserved.</p>
+            <p style="margin:8px 0 0;font-size:11px;color:#C4B5A5;">© 2025 SWA Wellbeing. All rights reserved.</p>
           </td>
         </tr>
 
@@ -241,7 +241,7 @@ const bookingNotificationTemplate = (booking) => `
         <tr>
           <td style="background:#FAF6F1;border-top:1px solid #EDE0CF;padding:20px 40px;text-align:center;">
             <p style="margin:0;font-size:12px;color:#A0845C;font-weight:600;">SWA Admin Dashboard — Confidential</p>
-            <p style="margin:4px 0 0;font-size:11px;color:#C4B5A5;">© 2025 SWA Wellness. Do not forward.</p>
+            <p style="margin:4px 0 0;font-size:11px;color:#C4B5A5;">© 2025 SWA Wellbeing. Do not forward.</p>
           </td>
         </tr>
 

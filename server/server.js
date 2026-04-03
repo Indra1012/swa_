@@ -1,4 +1,4 @@
-const express    = require('express')
+const express    = require('express') // Nodemon restart trigger
 const dotenv     = require('dotenv')
 const cors       = require('cors')
 const helmet     = require('helmet')
@@ -87,13 +87,14 @@ const connectDB = require('./config/db')
 connectDB()
 
 // ── ROUTES ──
-app.use('/api/auth',     require('./routes/auth.routes'))
-app.use('/api/bookings', require('./routes/booking.routes'))
-app.use('/api/media',    require('./routes/media.routes'))
-app.use('/api/content',  require('./routes/content.routes'))
-app.use('/api/slots',    require('./routes/slot.routes'))
-app.use('/api/admin',    require('./routes/admin.routes'))
-app.use('/api/sections', require('./routes/sections.routes'))
+app.use('/api/auth',         require('./routes/auth.routes'))
+app.use('/api/bookings',     require('./routes/booking.routes'))
+app.use('/api/media',        require('./routes/media.routes'))
+app.use('/api/content',      require('./routes/content.routes'))
+app.use('/api/slots',        require('./routes/slot.routes'))
+app.use('/api/admin',        require('./routes/admin.routes'))
+app.use('/api/sections',     require('./routes/sections.routes'))
+app.use('/api/client-logos', require('./routes/clientLogos.routes'))
 
 // ── HEALTH CHECK ──
 app.get('/api/health', (req, res) => {

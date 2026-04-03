@@ -1,11 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import axios from 'axios'
 
 const API = import.meta.env.VITE_API_URL
 import { FiPlus, FiMinus } from 'react-icons/fi'
 import { FAQS } from '../constants/faqs'
-import useScrollFade from '../hooks/useScrollFade'
 
 function FAQItem({ faq, index, isOpen, onToggle }) {
   return (
@@ -109,7 +108,13 @@ export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState(null)
   const [faqs, setFaqs] = useState([])
   const sectionRef = useRef(null)
-  useScrollFade(sectionRef)
+  const headerRef = useRef(null)
+  const { scrollYProgress: slideProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] })
+  const { scrollYProgress } = useScroll({ target: headerRef, offset: ["start 95%", "start 15%"] })
+  const headerY = useTransform(scrollYProgress, [0, 1], [80, 0])
+  const headerScale = useTransform(scrollYProgress, [0, 1], [0.5, 1])
+  const headerOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
+  const listY = useTransform(slideProgress, [0, 1], [60, -60])
 
   useEffect(() => {
     const fetchFaqs = async () => {
@@ -134,15 +139,25 @@ export default function FAQSection() {
   return (
     <section
       ref={sectionRef}
-      className="fade-up faq-section"
+      className="faq-section"
       style={{
         background: 'var(--dark3)',
         margin: 0
       }}
     >
-      <div className="section-inner">
+      <div className="section-inner" style={{ position: 'relative' }}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+        <motion.div 
+          ref={headerRef}
+          style={{ 
+            textAlign: 'center', 
+            marginBottom: '50px',
+            y: headerY,
+            scale: headerScale,
+            opacity: headerOpacity,
+            transformOrigin: 'center bottom'
+          }}
+        >
           <h2 style={{
             fontFamily: 'Cormorant Garamond, serif',
             fontSize: 'clamp(28px, 3.5vw, 48px)',
@@ -153,15 +168,16 @@ export default function FAQSection() {
           }}>
             Frequently Asked <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>Questions</span>
           </h2>
-        </div>
+        </motion.div>
 
         {/* FAQ list */}
-        <div style={{
+        <motion.div style={{
           maxWidth: '860px',
           margin: '0 auto',
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px'
+          gap: '12px',
+          y: listY
         }}>
           {faqs.map((faq, i) => (
             <FAQItem
@@ -172,7 +188,7 @@ export default function FAQSection() {
               onToggle={handleToggle}
             />
           ))}
-        </div>
+        </motion.div>
       </div>
       <style>{`
         .faq-section { padding: 80px 60px; }

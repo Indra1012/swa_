@@ -14,14 +14,18 @@ function TestimonialCard({ testimonial }) {
       onMouseLeave={() => setHovered(false)}
       className="testimonial-card"
       style={{
-        width: 'clamp(280px, 85vw, 420px)',
+        width: 'clamp(240px, 80vw, 300px)',
+        minHeight: '400px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
         flexShrink: 0,
         position: 'relative',
         background: hovered ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
         border: '1px solid',
         borderColor: hovered ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
-        borderRadius: '32px',
-        padding: '48px 40px',
+        borderRadius: '24px',
+        padding: '48px 32px',
         transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         transform: hovered ? 'translateY(-12px)' : 'translateY(0)',
         boxShadow: hovered ? '0 30px 60px rgba(0,0,0,0.3)' : 'none',
@@ -32,8 +36,8 @@ function TestimonialCard({ testimonial }) {
         className="testimonial-quote-mark"
         style={{
           position: 'absolute',
-          top: '-10px', right: '10px',
-          fontSize: '180px', fontFamily: 'Cormorant Garamond, serif',
+          top: '-5px', right: '10px',
+          fontSize: '140px', fontFamily: 'Cormorant Garamond, serif',
           color: 'rgba(255,255,255,0.05)',
           lineHeight: 1, pointerEvents: 'none',
           userSelect: 'none',
@@ -47,9 +51,9 @@ function TestimonialCard({ testimonial }) {
           className="testimonial-company"
           style={{
             fontFamily: 'Cormorant Garamond, serif',
-            fontSize: '24px', fontWeight: 600,
+            fontSize: '20px', fontWeight: 600,
             color: 'var(--primary)',
-            marginBottom: '16px',
+            marginBottom: '12px',
             letterSpacing: '0.5px'
           }}>
           {testimonial.name}
@@ -57,12 +61,12 @@ function TestimonialCard({ testimonial }) {
 
         <div style={{
           display: 'flex', gap: '4px',
-          marginBottom: '24px'
+          marginBottom: '20px'
         }}>
           {[...Array(5)].map((_, i) => (
             <span key={i} style={{
               color: i < (testimonial.rating || 5) ? 'rgba(226,212,186,0.9)' : 'rgba(226,212,186,0.3)',
-              fontSize: '16px',
+              fontSize: '14px',
               opacity: 0.9
             }}>★</span>
           ))}
@@ -72,11 +76,13 @@ function TestimonialCard({ testimonial }) {
           className="testimonial-quote"
           style={{
             fontFamily: 'Cormorant Garamond, serif',
-            fontSize: '22px', fontWeight: 600,
+            fontSize: '19px', fontWeight: 600,
             color: 'var(--white)',
-            marginBottom: '16px',
+            marginBottom: '14px',
             lineHeight: 1.4,
-            letterSpacing: '-0.3px'
+            letterSpacing: '-0.3px',
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word'
           }}>
           "{testimonial.quote}"
         </p>
@@ -84,10 +90,12 @@ function TestimonialCard({ testimonial }) {
         <p
           className="testimonial-text"
           style={{
-            fontSize: '15px',
+            fontSize: '13px',
             color: 'rgba(255,255,255,0.6)',
             lineHeight: 1.8,
-            fontFamily: 'DM Sans, sans-serif'
+            fontFamily: 'DM Sans, sans-serif',
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word'
           }}>
           {testimonial.text}
         </p>
@@ -151,8 +159,7 @@ export default function TestimonialsSection() {
   const sectionRef = useRef(null)
   const [testimonials, setTestimonials] = useState([])
   const [headings, setHeadings] = useState({
-    tagline: 'Voices of SWA',
-    title: 'Client Testimonials',
+    title: 'Voices of SWA',
     subtitle: 'Hear directly from the organizations and individuals experiencing the profound shifts of a mindful workplace.'
   })
 
@@ -169,9 +176,8 @@ export default function TestimonialsSection() {
           ; (contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
         if (Object.keys(cmap).length > 0) {
           setHeadings(h => ({
-            tagline: cmap.tagline || h.tagline,
-            title: cmap.title || h.title,
-            subtitle: cmap.subtitle || h.subtitle
+            title: cmap.title !== undefined ? cmap.title : h.title,
+            subtitle: cmap.subtitle !== undefined ? cmap.subtitle : h.subtitle
           }))
         }
 
@@ -200,14 +206,14 @@ export default function TestimonialsSection() {
     fetchTestimonials()
   }, [])
 
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  })
+  const headerRef = useRef(null)
+  const { scrollYProgress: slideProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] })
+  const { scrollYProgress } = useScroll({ target: headerRef, offset: ["start 95%", "start 15%"] })
 
-  const headerY = useTransform(scrollYProgress, [0, 1], [80, -80])
-  const headerOpacity = useTransform(scrollYProgress, [0, 0.15, 0.7, 1], [0, 1, 1, 0])
-  const headerScale = useTransform(scrollYProgress, [0, 0.2, 0.7, 1], [0.92, 1, 1, 0.95])
+  const headerY = useTransform(scrollYProgress, [0, 1], [80, 0])
+  const headerOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
+  const headerScale = useTransform(scrollYProgress, [0, 1], [0.5, 1])
+  const cardsY = useTransform(slideProgress, [0, 1], [60, -60])
 
   return (
     <section
@@ -227,39 +233,26 @@ export default function TestimonialsSection() {
         zIndex: 1
       }}>
         <motion.div
+          ref={headerRef}
           style={{
             textAlign: 'center',
-            maxWidth: '1000px',
-            margin: '0 auto 60px',
+            maxWidth: '900px',
+            margin: '0 auto 40px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             y: headerY,
             opacity: headerOpacity,
-            scale: headerScale
+            scale: headerScale,
+            transformOrigin: 'center bottom'
           }}
         >
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '32px'
-          }}>
-            <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-            <span style={{
-              fontSize: '13px', color: 'var(--accent)', letterSpacing: '3px',
-              textTransform: 'uppercase', fontWeight: 700
-            }}>
-              {headings.tagline}
-            </span>
-          </div>
-
           <h2 style={{
             fontFamily: 'Cormorant Garamond, serif',
-            fontSize: 'clamp(40px, 6vw, 76px)',
+            fontSize: 'clamp(36px, 5vw, 64px)',
             fontWeight: 700,
             color: 'var(--white)',
-            marginBottom: '32px',
+            marginBottom: '20px',
             lineHeight: 1.1,
             letterSpacing: '-0.5px',
             whiteSpace: 'pre-wrap'
@@ -268,9 +261,9 @@ export default function TestimonialsSection() {
           </h2>
 
           <p style={{
-            fontSize: '18px',
+            fontSize: '17px',
             color: 'rgba(255,255,255,0.55)',
-            marginBottom: '48px',
+            marginBottom: '32px',
             fontWeight: 400,
             maxWidth: '600px',
             whiteSpace: 'pre-line'
@@ -280,21 +273,26 @@ export default function TestimonialsSection() {
         </motion.div>
       </div>
 
-      <div style={{ position: 'relative', zIndex: 1 }}>
+      <motion.div style={{ position: 'relative', zIndex: 1, y: cardsY }}>
         {testimonials.length > 0 && (
           <MarqueeTrack testimonials={testimonials} />
         )}
-      </div>
+      </motion.div>
       <style>{`
-        .testimonials-section { padding: 80px 0; }
+        .testimonials-section { padding: 60px 0; }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
         @media (max-width: 768px) {
-          .testimonials-section { padding: 60px 0; }
-          .testimonial-card { padding: 24px 20px !important; border-radius: 20px !important; }
-          .testimonial-company { font-size: 20px !important; margin-bottom: 12px !important; }
-          .testimonial-quote { font-size: 18px !important; margin-bottom: 12px !important; line-height: 1.3 !important; }
-          .testimonial-text { font-size: 14px !important; line-height: 1.6 !important; }
-          .testimonial-quote-mark { font-size: 120px !important; top: -5px !important; right: 5px !important; }
+          .testimonials-section { padding: 40px 0; }
+          .testimonial-card { 
+            width: clamp(200px, 75vw, 240px) !important;
+            min-height: 320px !important; 
+            padding: 32px 24px !important; 
+            border-radius: 16px !important; 
+          }
+          .testimonial-company { font-size: 16px !important; margin-bottom: 8px !important; }
+          .testimonial-quote { font-size: 15px !important; margin-bottom: 10px !important; line-height: 1.3 !important; }
+          .testimonial-text { font-size: 11px !important; line-height: 1.6 !important; }
+          .testimonial-quote-mark { font-size: 100px !important; top: -2px !important; right: 5px !important; }
         }
       `}</style>
     </section>

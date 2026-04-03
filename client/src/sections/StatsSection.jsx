@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import axios from 'axios'
 
 const API = import.meta.env.VITE_API_URL
@@ -103,8 +103,13 @@ function StatItem({ stat, index, isInView }) {
 
 export default function StatsSection() {
   const sectionRef = useRef(null)
+  const headerRef = useRef(null)
   const [stats, setStats] = useState([])
   const [headings, setHeadings] = useState({ title: 'Our global impact' })
+  const { scrollYProgress } = useScroll({ target: headerRef, offset: ["start 95%", "start 15%"] })
+  const headerY = useTransform(scrollYProgress, [0, 1], [80, 0])
+  const headerScale = useTransform(scrollYProgress, [0, 1], [0.5, 1])
+  const headerOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
   const isInView = useInView(sectionRef, { once: true, margin: '-50px 0px' })
 
   useEffect(() => {
@@ -167,7 +172,18 @@ export default function StatsSection() {
       viewport={{ once: true, margin: '-100px' }}
       transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}>
         {/* Compact Title */}
-        <div className="float-subtle" style={{ textAlign: 'center', marginBottom: '80px' }}>
+        <motion.div 
+          ref={headerRef}
+          className="float-subtle" 
+          style={{ 
+            textAlign: 'center', 
+            marginBottom: '80px',
+            y: headerY,
+            scale: headerScale,
+            opacity: headerOpacity,
+            transformOrigin: 'center bottom'
+          }}
+        >
           <h2 style={{
             fontFamily: 'Cormorant Garamond, serif',
             fontSize: 'clamp(36px, 4vw, 52px)',
@@ -186,7 +202,7 @@ export default function StatsSection() {
               headings.title
             )}
           </h2>
-        </div>
+        </motion.div>
 
         {/* Horizontal flex layout */}
         <div 

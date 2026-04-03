@@ -7,24 +7,24 @@ import BlogModal from '../components/BlogModal'
 const BLOGS = [
   {
     id: 1,
-    category: 'Wellness Festival',
+    category: 'Wellbeing Festival',
     title: '4 Years of Spreading Joy at Flipkart during BBD Sale',
     image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=600&q=80',
     excerpt: 'How we brought lasting wellbeing to thousands of employees during India\'s biggest sale season.',
-    body: 'For four consecutive years, SWA has partnered with Flipkart to bring holistic wellbeing experiences to thousands of employees during their biggest sale season. From mindfulness corners to high-energy wellness games, we created spaces of joy amid the hustle. This year was the most impactful yet, with over 3,000 employees participating in curated experiences designed to restore balance and boost morale.'
+    body: 'For four consecutive years, SWA has partnered with Flipkart to bring holistic wellbeing experiences to thousands of employees during their biggest sale season. From mindfulness corners to high-energy wellbeing games, we created spaces of joy amid the hustle. This year was the most impactful yet, with over 3,000 employees participating in curated experiences designed to restore balance and boost morale.'
   },
   {
     id: 2,
-    category: 'Wellness Retreat',
+    category: 'Wellbeing Retreat',
     title: 'A Journey to Rejuvenate the Mind, Body, Heart, and Soul',
     image: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80',
-    excerpt: 'Inside the Transformational Wellness Retreat for BPCL Leaders — 3 days of deep renewal.',
-    body: 'Inside the Transformational Wellness Retreat for BPCL Leaders — a 3-day immersive experience that took senior leadership on a journey of self-discovery through ancient healing techniques, group therapy, and nature immersion. Participants emerged with renewed purpose, deeper connections, and practical tools for leading with empathy and clarity.'
+    excerpt: 'Inside the Transformational Wellbeing Retreat for BPCL Leaders — 3 days of deep renewal.',
+    body: 'Inside the Transformational Wellbeing Retreat for BPCL Leaders — a 3-day immersive experience that took senior leadership on a journey of self-discovery through ancient healing techniques, group therapy, and nature immersion. Participants emerged with renewed purpose, deeper connections, and practical tools for leading with empathy and clarity.'
   },
   {
     id: 3,
     category: 'Zen Garden',
-    title: 'Zen Garden: A Revolutionary Wellness Space',
+    title: 'Zen Garden: A Revolutionary Wellbeing Space',
     image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80',
     excerpt: 'How we turned an unused office corner into a sanctuary of calm that changed everything.',
     body: 'We transformed an unused office corner into a thriving Zen Garden — a sanctuary of calm in the middle of one of India\'s fastest-moving companies. Featuring sound bowls, breathing stations, and art therapy walls, the space has seen over 500 visits in its first month. Employees report lower stress, higher focus, and a genuine sense of being cared for by their organization.'

@@ -1,7 +1,7 @@
 export const TECHNIQUES = [
   {
     id: 'psych',
-    title: 'Psychological Wellness',
+    title: 'Psychological Wellbeing',
     subtitle: 'Mind',
     focus: 'Thoughts, beliefs, and emotional awareness',
     techniques: ['Eastern & Western Psychology','Cognitive & Behavioural Techniques','Psychotherapy-based practices','Positive Psychology','NLP (Neuro-Linguistic Programming)'],
@@ -28,7 +28,7 @@ export const TECHNIQUES = [
   {
     id: 'somatic',
     title: 'Body & Somatic',
-    subtitle: 'Wellness',
+    subtitle: 'Wellbeing',
     focus: 'Mind-body connection and physical energy',
     techniques: ['Somatic awareness practices','Body-mind therapies','Movement-based practices','Zumba and yoga sessions'],
     purpose: 'Helps release stored stress, regulate the nervous system, and reconnect with the body.',
@@ -54,7 +54,7 @@ export const TECHNIQUES = [
   {
     id: 'social',
     title: 'Social & Community',
-    subtitle: 'Wellness',
+    subtitle: 'Wellbeing',
     focus: 'Relationships, belonging, and social connection',
     techniques: ['Peer support circles','Group reflection activities','Communication & relationship exercises','Community engagement experiences'],
     purpose: 'Strengthens social bonds and builds supportive environments for wellbeing.',
@@ -67,7 +67,7 @@ export const TECHNIQUES = [
   {
     id: 'nature',
     title: 'Nature & Environmental',
-    subtitle: 'Wellness',
+    subtitle: 'Wellbeing',
     focus: 'Connection with environment and sensory awareness',
     techniques: ['Nature-based therapy','Outdoor mindfulness experiences','Sensory awareness activities','Environmental reflection practices'],
     purpose: 'Encourages grounding, creativity, and emotional restoration through nature.',

@@ -17,18 +17,18 @@ const SECTIONS = [
 const DEFAULT_CONTENT = {
   hero: [
     { key: 'headline', label: 'Main Headline', value: 'Where Self Meets Its True Essence' },
-    { key: 'tagline', label: 'Tagline', value: 'Science-backed wellness programs for organizations, institutions & communities.' },
+    { key: 'tagline', label: 'Tagline', value: 'Science-backed wellbeing programs for organizations, institutions & communities.' },
     { key: 'videoUrl', label: 'Video URL', value: 'https://www.youtube.com/embed/dQw4w9WgXcQ' }
   ],
   tagline: [
-    { key: 'heading', label: 'Section Heading', value: 'Bringing lasting wellness to your' },
-    { key: 'subtext', label: 'Subtext', value: 'We compassionately create wellness programs and mindfulness spaces to improve holistic wellbeing.' },
+    { key: 'heading', label: 'Section Heading', value: 'Bringing lasting wellbeing to your' },
+    { key: 'subtext', label: 'Subtext', value: 'We compassionately create wellbeing programs and mindfulness spaces to improve holistic wellbeing.' },
     { key: 'ctaText', label: 'CTA Button Text', value: 'Contact us for a demo' }
   ],
   about: [
     { key: 'founderName', label: 'Founder Name', value: 'Dhruvi Shah' },
-    { key: 'founderTitle', label: 'Founder Title', value: 'Founder & Head Coach – SWA Wellness' },
-    { key: 'founderBio', label: 'Founder Bio', value: 'Dhruvi Shah is the Founder and Head Wellness Coach at SWA Wellness, where she focuses on building emotionally resilient individuals and conscious leaders.' },
+    { key: 'founderTitle', label: 'Founder Title', value: 'Founder & Head Coach – SWA Wellbeing' },
+    { key: 'founderBio', label: 'Founder Bio', value: 'Dhruvi Shah is the Founder and Head Wellbeing Coach at SWA Wellbeing, where she focuses on building emotionally resilient individuals and conscious leaders.' },
     { key: 'founderQuote', label: 'Founder Quote', value: 'To help individuals understand and master their emotions before those emotions begin to shape their decisions.' }
   ],
   stats: [
@@ -40,9 +40,9 @@ const DEFAULT_CONTENT = {
   ],
   corporate: [
     { key: 'headline', label: 'Banner Headline', value: 'Build a Resilient, High-Performing Workforce' },
-    { key: 'subheadline', label: 'Banner Subheadline', value: 'Empower your teams with structured wellness programs designed to reduce stress, improve focus, and drive sustainable performance.' },
+    { key: 'subheadline', label: 'Banner Subheadline', value: 'Empower your teams with structured wellbeing programs designed to reduce stress, improve focus, and drive sustainable performance.' },
     { key: 'challenge', label: 'The Challenge', value: "Today's workplaces are facing rising stress, burnout, disengagement, and declining focus." },
-    { key: 'approach', label: 'Our Approach', value: 'At SWA, we design customized wellness programs aligned with your organizational goals.' }
+    { key: 'approach', label: 'Our Approach', value: 'At SWA, we design customized wellbeing programs aligned with your organizational goals.' }
   ],
   education: [
     { key: 'headline', label: 'Banner Headline', value: 'Building Emotionally Strong & Focused Students' },
@@ -54,7 +54,7 @@ const DEFAULT_CONTENT = {
     { key: 'headline', label: 'Banner Headline', value: 'Creating Healthier, More Resilient Communities' },
     { key: 'subheadline', label: 'Banner Subheadline', value: 'Driving large-scale wellbeing initiatives that help individuals manage stress, build resilience, and live more balanced lives.' },
     { key: 'need', label: 'The Need', value: "In today's fast-changing world, stress and emotional challenges are not limited to workplaces — they impact entire communities." },
-    { key: 'approach', label: 'Our Approach', value: 'We partner with organizations, NGOs, and institutions to deliver impactful community wellness programs.' }
+    { key: 'approach', label: 'Our Approach', value: 'We partner with organizations, NGOs, and institutions to deliver impactful community wellbeing programs.' }
   ],
   faq: [
     { key: 'heading', label: 'Section Heading', value: 'Frequently Asked Questions' },

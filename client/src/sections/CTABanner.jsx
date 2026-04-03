@@ -10,11 +10,11 @@ const SLIDES = [
   },
   {
     image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=1400&q=80',
-    title: 'Transform your organization with the power of wellness'
+    title: 'Transform your organization with the power of wellbeing'
   },
   {
     image: 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=1400&q=80',
-    title: 'Join 450+ organizations on the journey to lasting wellbeing'
+    title: 'Join forward-thinking organizations on the journey to lasting wellbeing'
   }
 ]
 

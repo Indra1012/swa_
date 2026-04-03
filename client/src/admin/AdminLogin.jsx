@@ -213,7 +213,7 @@ export default function AdminLogin() {
               type="email"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="admin@swa-wellness.com"
+              placeholder="admin@swa-wellbeing.com"
               onFocus={() => setEmailFocused(true)}
               onBlur={() => setEmailFocused(false)}
               onKeyDown={e => e.key === 'Enter' && handleEmailLogin()}

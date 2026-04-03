@@ -7,7 +7,7 @@ const seedAdmin = async () => {
   try {
     await connectDB()
 
-    const email    = process.env.ADMIN_EMAIL || 'admin@swa-wellness.com'
+    const email    = process.env.ADMIN_EMAIL || 'admin@swa-wellbeing.com'
     const password = 'SWA@admin2025'
     const name     = 'SWA Admin'
 

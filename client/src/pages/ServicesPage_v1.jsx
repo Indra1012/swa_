@@ -59,12 +59,12 @@ const SERVICES_DATA = [
     id: 'corporate',
     tag: 'Corporate Solutions',
     headline: 'Build a Resilient, High-Performing Workforce',
-    subheadline: 'Empower your teams with structured wellness and resilience programs designed to reduce stress, improve focus, and drive sustainable performance.',
+    subheadline: 'Empower your teams with structured wellbeing and resilience programs designed to reduce stress, improve focus, and drive sustainable performance.',
     cta: 'Book a Corporate Consultation',
     challenge: 'Today’s workplaces are facing rising stress, burnout, disengagement, and declining focus. While organizations push for higher performance, the emotional and mental foundation of employees is often overlooked.',
-    approach: 'At SWA, we design customized wellness programs aligned with your organizational goals. Our approach is practical, structured, and outcome-driven—ensuring real behavioral change, not just temporary motivation.',
+    approach: 'At SWA, we design customized wellbeing programs aligned with your organizational goals. Our approach is practical, structured, and outcome-driven—ensuring real behavioral change, not just temporary motivation.',
     offerings: [
-      'Corporate Wellness Programs',
+      'Corporate Wellbeing Programs',
       'Emotional Resilience Workshops',
       'Stress Management Sessions',
       'Leadership & Mindset Training'
@@ -92,7 +92,7 @@ const SERVICES_DATA = [
     challenge: 'Students today face increasing academic pressure, distractions, and emotional stress—impacting both performance and wellbeing. Educators also face challenges in managing student engagement and emotional balance in classrooms.',
     approach: 'We deliver simple, practical, and age-appropriate programs that help students understand and manage their thoughts, emotions, and stress effectively.',
     offerings: [
-      'Student Wellness Programs',
+      'Student Wellbeing Programs',
       'Stress & Exam Anxiety Management',
       'Focus & Concentration Sessions',
       'Teacher Wellbeing Programs'
@@ -117,9 +117,9 @@ const SERVICES_DATA = [
     subheadline: 'Driving large-scale wellbeing initiatives that help individuals manage stress, build resilience, and live more balanced lives.',
     cta: 'Collaborate With Us',
     challenge: 'In today’s fast-changing world, stress and emotional challenges are not limited to workplaces—they impact entire communities. There is a growing need for accessible and practical wellbeing solutions at scale.',
-    approach: 'We partner with organizations, NGOs, and institutions to deliver impactful community wellness programs that are simple, scalable, and effective.',
+    approach: 'We partner with organizations, NGOs, and institutions to deliver impactful community wellbeing programs that are simple, scalable, and effective.',
     offerings: [
-      'Community Wellness Programs',
+      'Community Wellbeing Programs',
       'Stress Awareness Campaigns',
       'Group Workshops & Sessions',
       'Public Wellbeing Initiatives'

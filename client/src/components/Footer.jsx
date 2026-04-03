@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 const FOOTER_SECTIONS = [
   {
-    title: 'Services',
+    title: 'Programs',
     links: [
-      { label: 'Corporate Wellness', path: '/services/corporate' },
+      { label: 'Corporate Wellbeing', path: '/services/corporate' },
       { label: 'Education Programs', path: '/services/education' },
-      { label: 'Community Wellness', path: '/services/community' }
+      { label: 'Community Wellbeing', path: '/services/community' },
+      { label: 'Government', path: '/services/government' }
     ]
   },
   {
@@ -84,14 +85,14 @@ export default function Footer() {
             fontSize: '13px', color: 'var(--secondary)',
             lineHeight: 1.8, maxWidth: '260px', marginBottom: '24px'
           }}>
-            We compassionately create wellness programs and mindfulness spaces to improve holistic wellbeing for organizations, institutions, and individuals.
+            We compassionately create wellbeing programs and mindfulness spaces to improve holistic wellbeing for organizations, institutions, and individuals.
           </p>
 
           {/* Social / Contact icons */}
           <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
             {[
               { icon: <FiPhone />, label: 'Phone', url: 'tel:+919998310041' },
-              { icon: <FiLinkedin />, label: 'LinkedIn', url: 'https://www.linkedin.com/company/swa-wellness890/' },
+              { icon: <FiLinkedin />, label: 'LinkedIn', url: 'https://www.linkedin.com/company/swa-wellbeing890/' },
               { icon: <FiInstagram />, label: 'Instagram', url: 'https://www.instagram.com/swa.spaces?igsh=ZXpvOHI2eGE4cDVq' }
             ].map(({ icon, label, url }) => (
               <a
@@ -194,7 +195,7 @@ export default function Footer() {
         padding: '20px 0', textAlign: 'center',
         fontSize: '12px', color: 'rgba(101,50,57,0.45)'
       }}>
-        Copyright © 2025 SWA Wellness. All rights reserved.
+        Copyright © 2025 SWA Wellbeing. All rights reserved.
       </div>
       
       <style>{`

@@ -6,11 +6,21 @@ const API = import.meta.env.VITE_API_URL
 
 const DEFAULT_WORDS = ['community', 'workplace', 'institution']
 
+const STATIC_LOGOS = [
+  { name: 'Narayana Health', url: 'https://logo.clearbit.com/narayanahealth.org' },
+  { name: 'Yes Bank', url: 'https://logo.clearbit.com/yesbank.in' },
+  { name: 'Amazon', url: 'https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg' },
+  { name: 'Aditya Birla Group', url: 'https://logo.clearbit.com/adityabirla.com' },
+  { name: 'Deloitte', url: 'https://upload.wikimedia.org/wikipedia/commons/5/56/Deloitte.svg' },
+  { name: 'Bharat Petroleum', url: 'https://logo.clearbit.com/bharatpetroleum.in' }
+]
+
 export default function TaglineSection() {
   const sectionRef = useRef(null)
   const [words, setWords] = useState(DEFAULT_WORDS)
-  const [interval, setIntervalMs] = useState(2500)
+  const [intervalMs, setIntervalMs] = useState(2500)
   const [activeIndex, setActiveIndex] = useState(0)
+  const [clientLogos, setClientLogos] = useState(STATIC_LOGOS)
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -24,15 +34,15 @@ export default function TaglineSection() {
   const subScale = useTransform(scrollYProgress, [0, 0.5, 0.85, 1], [0.35, 1, 1, 0.95])
   const subY = useTransform(scrollYProgress, [0, 1], [80, 0])
 
-  // Fetch animated words from DB
+  // Fetch animated words and client logos from DB
   useEffect(() => {
-    const load = async () => {
+    const loadContent = async () => {
       try {
         const res = await axios.get(`${API}/api/content/tagline`)
         const items = res.data.items || []
         items.forEach(item => {
           if (item.key === 'animatedWords') {
-            try { setWords(JSON.parse(item.value)) } catch {}
+            try { setWords(JSON.parse(item.value)) } catch { }
           }
           if (item.key === 'animationInterval') {
             const ms = parseInt(item.value)
@@ -41,7 +51,16 @@ export default function TaglineSection() {
         })
       } catch { /* use defaults */ }
     }
-    load()
+    const loadLogos = async () => {
+      try {
+        const res = await axios.get(`${API}/api/client-logos`)
+        if (res.data.items && res.data.items.length > 0) {
+          setClientLogos(res.data.items)
+        }
+      } catch { /* use defaults */ }
+    }
+    loadContent()
+    loadLogos()
   }, [])
 
   // Cycle through words
@@ -49,105 +68,177 @@ export default function TaglineSection() {
     if (words.length <= 1) return
     const timer = setInterval(() => {
       setActiveIndex(prev => (prev + 1) % words.length)
-    }, interval)
+    }, intervalMs)
     return () => clearInterval(timer)
-  }, [words, interval])
+  }, [words, intervalMs])
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden' }}>
-    <section
-      ref={sectionRef}
-      className="tagline-section"
-      style={{
-        background: 'transparent',
-        textAlign: 'center',
-        position: 'relative',
-        zIndex: 2,
-        overflow: 'hidden',
-        margin: 0,
-        marginTop: -20
-      }}
-    >
-      <motion.div 
-        style={{ 
-          maxWidth: '800px', 
-          margin: '0 auto',
-          y, opacity, scale
-        }}
-      >
-
-        <h2 style={{
-          fontFamily: 'Cormorant Garamond, serif',
-          fontSize: 'clamp(40px, 5vw, 64px)',
-          fontWeight: 700, 
-          color: 'var(--dark)',
-          lineHeight: 1.1, 
-          marginBottom: '28px',
-          letterSpacing: '-0.5px'
-        }}>
-          Bringing lasting wellness to your{' '}
-          <span style={{
-            display: 'inline-block',
-            position: 'relative',
-            height: 'clamp(44px, 5.5vw, 70px)',
-            overflow: 'hidden',
-            verticalAlign: 'bottom',
-            minWidth: '200px'
-          }}>
-            <AnimatePresence mode="wait">
-              <motion.span
-                key={activeIndex}
-                initial={{ y: 40, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                exit={{ y: -40, opacity: 0 }}
-                transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-                style={{
-                  display: 'inline-block',
-                  color: 'var(--secondary)',
-                  fontStyle: 'italic',
-                  fontWeight: 500
-                }}
-              >
-                {words[activeIndex]}
-              </motion.span>
-            </AnimatePresence>
-          </span>
-        </h2>
-      </motion.div>
-
-      <motion.div
+      <section
+        ref={sectionRef}
+        className="tagline-section"
         style={{
-          maxWidth: '800px',
-          margin: '0 auto',
-          y: subY,
-          opacity: subOpacity,
-          scale: subScale,
-          textAlign: 'center'
+          background: 'transparent',
+          textAlign: 'center',
+          position: 'relative',
+          zIndex: 2,
+          overflow: 'hidden',
+          margin: 0,
+          marginTop: -20
         }}
       >
-        <p 
-          className="tagline-subtext"
+        <motion.div
           style={{
-          color: 'var(--secondary)',
-          maxWidth: '560px', 
-          margin: '0 auto',
-          opacity: 0.85,
-          fontFamily: 'DM Sans, sans-serif'
-        }}>
-          We compassionately create wellness programs and mindfulness spaces
-          to improve holistic wellbeing across every environment.
-        </p>
-      </motion.div>
-      <style>{`
-        .tagline-section { padding: 40px 60px 40px; }
-        .tagline-subtext { font-size: 17px; line-height: 1.7; }
+            maxWidth: '800px',
+            margin: '0 auto',
+            padding: '0 20px',
+            y, opacity, scale
+          }}
+        >
+
+          <h2 style={{
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: 'clamp(40px, 5vw, 64px)',
+            fontWeight: 700,
+            color: 'var(--dark)',
+            lineHeight: 1.1,
+            marginBottom: '28px',
+            letterSpacing: '-0.5px'
+          }}>
+            Bringing lasting wellbeing to your{' '}
+            <span style={{
+              display: 'inline-block',
+              position: 'relative',
+              height: 'clamp(44px, 5.5vw, 70px)',
+              overflow: 'hidden',
+              verticalAlign: 'bottom',
+              minWidth: '200px'
+            }}>
+              <AnimatePresence mode="wait">
+                <motion.span
+                  key={activeIndex}
+                  initial={{ y: 40, opacity: 0 }}
+                  animate={{ y: 0, opacity: 1 }}
+                  exit={{ y: -40, opacity: 0 }}
+                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                  style={{
+                    display: 'inline-block',
+                    color: 'var(--secondary)',
+                    fontStyle: 'italic',
+                    fontWeight: 500
+                  }}
+                >
+                  {words[activeIndex]}
+                </motion.span>
+              </AnimatePresence>
+            </span>
+          </h2>
+        </motion.div>
+
+        <motion.div
+          style={{
+            width: '100%',
+            maxWidth: '1200px',
+            margin: '0 auto',
+            y: subY,
+            opacity: subOpacity,
+            scale: subScale,
+            textAlign: 'center'
+          }}
+        >
+          <p
+            className="tagline-subtext"
+            style={{
+              color: 'var(--dark)',
+              maxWidth: '560px',
+              margin: '0 auto',
+              fontWeight: 500,
+              fontFamily: 'DM Sans, sans-serif'
+            }}>
+            We compassionately create wellbeing programs and mindfulness spaces
+            to improve holistic wellbeing across every environment.
+          </p>
+
+          {/* Client Logos Marquee */}
+          <div style={{ marginTop: '60px', width: '100%', overflow: 'hidden' }}>
+            <p style={{
+              fontSize: '14px',
+              color: 'var(--dark)',
+              fontWeight: 600,
+              marginBottom: '32px',
+              fontFamily: 'DM Sans, sans-serif'
+            }}>
+              Loved by leading organizations worldwide
+            </p>
+
+            <div className="logo-marquee-container" style={{
+              position: 'relative',
+              width: '100%',
+              overflow: 'hidden',
+              WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+              maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
+            }}>
+              <div className="logo-marquee-track">
+                {[...clientLogos, ...clientLogos, ...clientLogos, ...clientLogos].map((logo, i) => (
+                  <div key={i} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 30px' }}>
+                    {logo.link ? (
+                      <a href={logo.link} target="_blank" rel="noopener noreferrer" style={{ display: 'flex' }}>
+                        <img
+                          src={logo.url}
+                          alt={logo.name}
+                          className="client-logo-img"
+                          style={{
+                            height: logo.name === 'Deloitte' || logo.name === 'Amazon' ? '28px' : '40px',
+                            objectFit: 'contain'
+                          }}
+                        />
+                      </a>
+                    ) : (
+                      <img
+                        src={logo.url}
+                        alt={logo.name}
+                        className="client-logo-img"
+                        style={{
+                          height: logo.name === 'Deloitte' || logo.name === 'Amazon' ? '28px' : '40px',
+                          objectFit: 'contain'
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+        <style>{`
+        .tagline-section { padding: 40px 0 80px; }
+        .tagline-subtext { font-size: 17px; line-height: 1.7; padding: 0 20px; }
+        .client-logo-img { transition: opacity 0.3s ease; opacity: 0.85; filter: grayscale(20%); border-radius: 12px; }
+        .client-logo-img:hover { opacity: 1; filter: grayscale(0%); }
+        
+        .logo-marquee-track {
+          display: flex;
+          align-items: center;
+          width: max-content;
+          animation: logo-scroll 30s linear infinite;
+        }
+
+        .logo-marquee-track:hover {
+          animation-play-state: paused;
+        }
+
+        @keyframes logo-scroll {
+          from { transform: translateX(0); }
+          to { transform: translateX(-33.333333%); }
+        }
         
         @media (max-width: 768px) {
-          .tagline-section { padding: 40px 20px 60px; }
+          .tagline-section { padding: 40px 0 60px; }
           .tagline-subtext { font-size: 16px; line-height: 1.6; }
         }
       `}</style>
-    </section>
+      </section>
     </div>
   )
 }
+

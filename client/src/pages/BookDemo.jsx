@@ -169,7 +169,7 @@ export default function BookDemo() {
                 lineHeight: 1.1, letterSpacing: '-1.5px',
                 marginBottom: '32px'
               }}>
-                Experience <span style={{ fontWeight: 600, color: 'var(--dark)' }}>SWA Wellness</span>
+                Experience <span style={{ fontWeight: 600, color: 'var(--dark)' }}>SWA Wellbeing</span>
               </h1>
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(8px, 2vw, 16px)', flexWrap: 'nowrap' }}>
@@ -210,7 +210,7 @@ export default function BookDemo() {
                 {isVideoExpanded && (
                   <iframe
                     src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                    title="SWA Wellness Demo"
+                    title="SWA Wellbeing Demo"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     style={{ width: '100%', height: '100%', border: 'none' }}

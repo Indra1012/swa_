@@ -1,4 +1,4 @@
-﻿import { useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -15,10 +15,10 @@ import SlotSettingsTab from './tabs/SlotSettingsTab'
 import NotificationSettingsTab from './tabs/NotificationSettingsTab'
 
 const TABS = [
-  { id: 'overview',      label: 'Overview',              icon: <FiGrid size={18} /> },
-  { id: 'edit',          label: 'Edit',                  icon: <FiEdit3 size={18} /> },
-  { id: 'bookings',      label: 'Bookings',              icon: <FiCalendar size={18} /> },
-  { id: 'slots',         label: 'Slot Settings',         icon: <FiClock size={18} /> },
+  { id: 'overview', label: 'Overview', icon: <FiGrid size={18} /> },
+  { id: 'edit', label: 'Edit', icon: <FiEdit3 size={18} /> },
+  { id: 'bookings', label: 'Bookings', icon: <FiCalendar size={18} /> },
+  { id: 'slots', label: 'Slot Settings', icon: <FiClock size={18} /> },
   { id: 'notifications', label: 'Notification Settings', icon: <FiBell size={18} /> }
 ]
 
@@ -34,12 +34,12 @@ export default function AdminDashboard() {
 
   const renderTab = () => {
     switch (activeTab) {
-      case 'overview':      return <OverviewTab />
-      case 'edit':          return <EditTab />
-      case 'bookings':      return <BookingsTab />
-      case 'slots':         return <SlotSettingsTab />
+      case 'overview': return <OverviewTab />
+      case 'edit': return <EditTab />
+      case 'bookings': return <BookingsTab />
+      case 'slots': return <SlotSettingsTab />
       case 'notifications': return <NotificationSettingsTab />
-      default:              return <OverviewTab />
+      default: return <OverviewTab />
     }
   }
 

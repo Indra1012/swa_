@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import axios from 'axios'
 import useScrollFade from '../hooks/useScrollFade'
 import { TECHNIQUES } from '../constants/techniques'
 
@@ -113,17 +114,7 @@ function TechniqueEditorial({ tech, index }) {
         }}
         className="editorial-content"
       >
-        <span style={{
-          display: 'inline-block',
-          fontSize: '10px',
-          fontWeight: 700,
-          color: 'var(--dark)',
-          letterSpacing: '3px',
-          textTransform: 'uppercase',
-          marginBottom: '10px',
-        }}>
-          0{index + 1} &mdash; Modality
-        </span>
+
 
         <h2 style={{
           fontFamily: 'Cormorant Garamond, serif',
@@ -140,7 +131,7 @@ function TechniqueEditorial({ tech, index }) {
         <p style={{
           fontSize: '14px', color: 'var(--secondary)', fontWeight: 400, lineHeight: 1.5, marginBottom: '16px', marginTop: 0
         }}>
-          <span style={{ color: 'var(--dark)', fontWeight: 600 }}>Focus:</span> {tech.focus}
+          {tech.focus}
         </p>
 
         <div style={{ marginBottom: '20px' }}>
@@ -162,13 +153,6 @@ function TechniqueEditorial({ tech, index }) {
 
         {/* Minimalist Purpose Block - Italics purely */}
         <div>
-          <h5 style={{
-            fontSize: '10px', color: 'var(--dark)', fontWeight: 700,
-            textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '4px',
-            opacity: 0.6
-          }}>
-            Purpose
-          </h5>
           <p style={{
             margin: 0, fontSize: '18px', color: 'var(--dark)',
             lineHeight: 1.3, fontStyle: 'italic', fontFamily: 'Cormorant Garamond, serif'
@@ -181,8 +165,55 @@ function TechniqueEditorial({ tech, index }) {
   )
 }
 
-export default function HealingTechniquesPage() {
+export default function BlogsPage() {
   const { hash } = useLocation()
+  
+  const [blogs, setBlogs] = useState(TECHNIQUES)
+  const [headings, setHeadings] = useState({
+    title: 'SWA Insights',
+    subtitle: 'Honest insights on stress, resilience, and the inner work behind lasting performance.'
+  })
+
+  useEffect(() => {
+    const API = import.meta.env.VITE_API_URL || ''
+    const now = Date.now()
+    
+    // Fetch Cards
+    axios.get(`${API}/api/sections/techniques/healing`)
+      .then(res => {
+        const data = res.data;
+        if (data && data.items && data.items.length > 0) {
+           const mappedBlogs = data.items.map(item => ({
+              id: item._id,
+              title: item.title || '',
+              subtitle: item.subtitle || '',
+              focus: item.focus || '',
+              techniques: item.readMoreText ? item.readMoreText.split('\n').filter(t => t.trim() !== '') : [],
+              purpose: item.purpose || '',
+              image: item.image || '',
+              images: item.images ? item.images.map(img => img.url).filter(Boolean) : []
+           }))
+           setBlogs(mappedBlogs)
+        }
+      })
+      .catch(err => console.error("Could not fetch live blogs configuration", err))
+      
+    // Fetch Global Headings
+    axios.get(`${API}/api/content/healing?t=${now}`)
+      .then(res => {
+         const cmap = {}
+         const arr = res.data.items || res.data || []
+         arr.forEach(i => cmap[i.key] = i.value)
+         if (Object.keys(cmap).length > 0) {
+            setHeadings(prev => ({
+               title: cmap.title || prev.title,
+               subtitle: cmap.subtitle || prev.subtitle
+            }))
+         }
+      })
+      .catch(err => console.error("Could not fetch global headings", err))
+  }, [])
+
   // Hash scrolling logic, highly precise with setTimeout
   useEffect(() => {
     if (hash) {
@@ -253,26 +284,7 @@ export default function HealingTechniquesPage() {
               }}
               style={{ paddingTop: '40px', paddingBottom: '20px', paddingLeft: '40px', paddingRight: '40px', textAlign: 'center', maxWidth: '1000px', margin: '0 auto', marginBottom: '40px' }}
             >
-              <motion.div
-                variants={{
-                  hidden: { opacity: 0, y: -40 },
-                  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] } }
-                }}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '32px'
-                }}
-              >
-                <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-                <span style={{
-                  fontSize: '13px', color: 'var(--dark)', letterSpacing: '3px',
-                  textTransform: 'uppercase', fontWeight: 700
-                }}>
-                  Our Core Modalities
-                </span>
-              </motion.div>
+              {/* Subheading removed as requested */}
 
               <motion.h1
                 variants={{
@@ -287,10 +299,13 @@ export default function HealingTechniquesPage() {
                   lineHeight: 1.1,
                   letterSpacing: '-0.5px',
                   marginBottom: '32px',
-                  whiteSpace: 'nowrap'
                 }}
               >
-                The SWA Healing <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>Techniques</span>
+                {headings.title.split(' ').map((word, idx) => (
+                  <span key={idx} style={idx > 0 ? { fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' } : { marginRight: '14px' }}>
+                    {word}{' '}
+                  </span>
+                ))}
               </motion.h1>
 
               <motion.p
@@ -299,16 +314,16 @@ export default function HealingTechniquesPage() {
                   show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] } }
                 }}
                 style={{
-                  fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.8, fontWeight: 400
+                  fontSize: '18px', color: 'var(--dark)', lineHeight: 1.8, fontWeight: 500
                 }}
               >
-                Scientifically-curated holistic modalities designed for complete mind, body, and space restoration.
+                {headings.subtitle}
               </motion.p>
             </motion.section>
 
             {/* Techniques Scrolling Blocks */}
             <div className="techniques-grid">
-              {TECHNIQUES.map((tech, i) => (
+              {blogs.map((tech, i) => (
                 <TechniqueEditorial key={tech.id} tech={tech} index={i} />
               ))}
             </div>

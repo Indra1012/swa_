@@ -1,9 +1,9 @@
 const express = require('express')
 const protect = require('../middleware/protect')
 const adminOnly = require('../middleware/adminOnly')
-const { uploadSingle } = require('../middleware/upload')
+const { uploadSingle, uploadMultiple } = require('../middleware/upload')
 const {
-  getTechniques, createTechnique, updateTechnique, deleteTechnique, uploadTechniqueImage,
+  getTechniques, createTechnique, updateTechnique, deleteTechnique, uploadTechniqueImage, uploadTechniqueImages, deleteTechniqueSpecificImage,
   getTestimonials, createTestimonial, updateTestimonial, deleteTestimonial,
   getStats, createStat, updateStat, deleteStat,
   getFaqs, createFaq, updateFaq, deleteFaq,
@@ -27,6 +27,8 @@ router.post('/techniques', protect, adminOnly, createTechnique)
 router.put('/techniques/:id', protect, adminOnly, updateTechnique)
 router.delete('/techniques/:id', protect, adminOnly, deleteTechnique)
 router.post('/techniques/:id/image', protect, adminOnly, uploadSingle, uploadTechniqueImage)
+router.post('/techniques/:id/images', protect, adminOnly, uploadMultiple, uploadTechniqueImages)
+router.put('/techniques/:id/image/delete', protect, adminOnly, deleteTechniqueSpecificImage)
 
 // ── TESTIMONIALS ─────────────────────────────────────────────────
 router.get('/testimonials', getTestimonials)

@@ -5,9 +5,16 @@ const healingTechniqueSchema = new mongoose.Schema(
     category: { type: String, enum: ['healing', 'wellbeing'], required: true, index: true },
     title:    { type: String, required: true, trim: true },
     subtitle: { type: String, default: '', trim: true },
-    image:    { type: String, default: '' },          // Cloudinary URL or pasted URL
-    publicId: { type: String, default: '' },          // Cloudinary public_id (empty if pasted URL)
+    mediaMode: { type: String, default: 'image' },    // 'image' or 'video'
+    image:    { type: String, default: '' },          // Single image or video url (legacy/fallback)
+    publicId: { type: String, default: '' },          // Cloudinary public_id for single image/video
+    images: {
+      type: [{ url: String, publicId: String }],      // Array of up to 3 images
+      default: []
+    },
     readMoreText: { type: String, default: '' },
+    focus: { type: String, default: '' },
+    purpose: { type: String, default: '' },
     order:    { type: Number, default: 0 },
   },
   { timestamps: true }

@@ -47,7 +47,7 @@ export default function Navbar() {
   const goToTechnique = useCallback((technique) => {
     setDrawerOpen(false)
     setHealingOpen(false)
-    navigate(`/healing-techniques/${technique.id}`)
+    navigate(`/blogs#${technique.id}`)
   }, [navigate])
 
   const handleServicesEnter = () => {
@@ -199,7 +199,7 @@ export default function Navbar() {
                     { id: 'corporate', name: 'Corporate Solutions' },
                     { id: 'education', name: 'Educational Environments' },
                     { id: 'community', name: 'Community Outreaches' },
-                    { id: 'government', name: 'Government Initiatives' }
+                    { id: 'government', name: 'Government Wellness' }
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -254,7 +254,7 @@ export default function Navbar() {
           <li>
             <button
               className="desktop-nav-link"
-              onClick={() => navigate('/healing-techniques')}
+              onClick={() => navigate('/blogs')}
             >
               Blogs
             </button>
@@ -424,7 +424,7 @@ export default function Navbar() {
                       { id: 'corporate', name: 'Corporate Solutions' },
                       { id: 'education', name: 'Educational Environments' },
                       { id: 'community', name: 'Community Outreaches' },
-                      { id: 'government', name: 'Government Initiatives' }
+                      { id: 'government', name: 'Government Wellness' }
                     ].map((item) => (
                       <button
                         key={item.id}
@@ -467,7 +467,7 @@ export default function Navbar() {
               padding: '14px 0', width: '100%',
               borderBottom: '1px solid rgba(204,199,185,0.25)'
             }}
-            onClick={() => { navigate('/healing-techniques'); setDrawerOpen(false) }}
+            onClick={() => { navigate('/blogs'); setDrawerOpen(false) }}
           >
             Blogs
           </button>

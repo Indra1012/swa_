@@ -1,18 +1,21 @@
-const express    = require('express') // Nodemon restart trigger
-const dotenv     = require('dotenv')
-const cors       = require('cors')
-const helmet     = require('helmet')
-const morgan     = require('morgan')
+const express = require('express') // Nodemon restart trigger
+const dotenv = require('dotenv')
+const cors = require('cors')
+const helmet = require('helmet')
+const morgan = require('morgan')
 const compression = require('compression')
-const session    = require('express-session')
-const rateLimit  = require('express-rate-limit')
-const passport   = require('passport')
+const session = require('express-session')
+const rateLimit = require('express-rate-limit')
+const passport = require('passport')
+const mongoSanitize = require('express-mongo-sanitize')
+const hpp = require('hpp')
+const MongoStore = require('connect-mongo')
 
 dotenv.config()
 
 // ── ENV VALIDATION ──
 const requiredEnvVars = ['MONGO_URI', 'JWT_SECRET', 'SESSION_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET']
-const missingEnvVars  = requiredEnvVars.filter(key => !process.env[key])
+const missingEnvVars = requiredEnvVars.filter(key => !process.env[key])
 if (missingEnvVars.length > 0) {
   console.error('──────────────────────────────────────────────')
   console.error('❌ MISSING REQUIRED ENV VARIABLES:')
@@ -24,10 +27,15 @@ if (missingEnvVars.length > 0) {
 
 const app = express()
 
+// ── LOAD BALANCER / PROXY TRUST ──
+// Extremely critical for online deployment (Vercel Frontend -> Render/AWS/Heroku Backend)
+// Ensures Rate Limiter reads the *actual* user IP, not the Proxy IP over and over causing instant mass-blocks.
+app.set('trust proxy', 1)
+
 // ── RATE LIMITING ──
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV === 'production' ? 100 : 5000,
+  max: process.env.NODE_ENV === 'production' ? 1000 : 5000,
   message: { error: 'Too many requests from this IP, please try again after 15 minutes.' },
   standardHeaders: true,
   legacyHeaders: false,
@@ -44,6 +52,10 @@ app.use(cors({
 }))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+
+// ── SECURITY GUARDS ──
+app.use(mongoSanitize()) // Blocks NoSQL injection attacks (e.g. { "$gt": "" }) natively across req.body/params/query
+app.use(hpp())           // Blocks HTTP Parameter Pollution exploits
 app.use(compression())
 
 // ── MORGAN: log every request with sanitized body ──
@@ -51,7 +63,7 @@ morgan.token('body', (req) => {
   if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
     const sanitized = { ...req.body }
     if (sanitized.password) sanitized.password = '***'
-    if (sanitized.token)    sanitized.token    = '***'
+    if (sanitized.token) sanitized.token = '***'
     return JSON.stringify(sanitized)
   }
   return '-'
@@ -60,13 +72,18 @@ app.use(morgan('[:date[clf]] :method :url :status :response-time ms — :body'))
 
 // ── SESSION ──
 app.use(session({
+  store: MongoStore.create({ 
+    mongoUrl: process.env.MONGO_URI,
+    collectionName: 'sessions', // Ensures 2k+ scalable concurrent user sessions without wiping Node RAM
+    ttl: 24 * 60 * 60
+  }),
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure:   process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge:   24 * 60 * 60 * 1000  // 24 hours
+    maxAge: 24 * 60 * 60 * 1000  // 24 hours
   }
 }))
 
@@ -87,22 +104,23 @@ const connectDB = require('./config/db')
 connectDB()
 
 // ── ROUTES ──
-app.use('/api/auth',         require('./routes/auth.routes'))
-app.use('/api/bookings',     require('./routes/booking.routes'))
-app.use('/api/media',        require('./routes/media.routes'))
-app.use('/api/content',      require('./routes/content.routes'))
-app.use('/api/slots',        require('./routes/slot.routes'))
-app.use('/api/admin',        require('./routes/admin.routes'))
-app.use('/api/sections',     require('./routes/sections.routes'))
+app.use('/api/auth', require('./routes/auth.routes'))
+app.use('/api/bookings', require('./routes/booking.routes'))
+app.use('/api/media', require('./routes/media.routes'))
+app.use('/api/content', require('./routes/content.routes'))
+app.use('/api/slots', require('./routes/slot.routes'))
+app.use('/api/admin', require('./routes/admin.routes'))
+app.use('/api/sections', require('./routes/sections.routes'))
 app.use('/api/client-logos', require('./routes/clientLogos.routes'))
+app.use('/api/team',         require('./routes/teamMember.routes'))
 
 // ── HEALTH CHECK ──
 app.get('/api/health', (req, res) => {
   res.json({
-    status:      'ok',
-    message:     'SWA API is running',
+    status: 'ok',
+    message: 'SWA API is running',
     environment: process.env.NODE_ENV || 'development',
-    timestamp:   new Date().toISOString()
+    timestamp: new Date().toISOString()
   })
 })
 
@@ -110,9 +128,9 @@ app.get('/api/health', (req, res) => {
 app.use((req, res) => {
   console.warn(`⚠️  404 — ${req.method} ${req.originalUrl}`)
   res.status(404).json({
-    error:  'Route not found',
+    error: 'Route not found',
     method: req.method,
-    path:   req.originalUrl
+    path: req.originalUrl
   })
 })
 

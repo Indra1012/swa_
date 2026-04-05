@@ -17,12 +17,12 @@ const getTechniques = async (req, res, next) => {
     if (items.length === 0) {
       if (category === 'healing') {
         const defaults = [
-          { order: 1, title: 'Psychological Wellbeing', subtitle: 'Mind', readMoreText: 'Helps individuals understand their thoughts, build resilience, and develop healthier mental patterns.', image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80', category: 'healing' },
-          { order: 2, title: 'Emotional Expression', subtitle: '& Healing', readMoreText: 'Allows individuals to process emotions safely and develop emotional intelligence.', image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&q=80', category: 'healing' },
-          { order: 3, title: 'Body & Somatic', subtitle: 'Wellbeing', readMoreText: 'Helps release stored stress, regulate the nervous system, and reconnect with the body.', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', category: 'healing' },
-          { order: 4, title: 'Energy & Relaxation', subtitle: 'Practices', readMoreText: 'Supports relaxation, emotional balance, and recovery from daily stress.', image: 'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=800&q=80', category: 'healing' },
-          { order: 5, title: 'Social & Community', subtitle: 'Wellbeing', readMoreText: 'Strengthens social bonds and builds supportive environments for wellbeing.', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80', category: 'healing' },
-          { order: 6, title: 'Nature & Environmental', subtitle: 'Wellbeing', readMoreText: 'Encourages grounding, creativity, and emotional restoration through nature.', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=800&q=80', category: 'healing' }
+          { order: 1, title: 'Psychological Wellbeing', subtitle: 'Mind', focus: 'Thoughts, beliefs, and emotional awareness', readMoreText: 'Eastern & Western Psychology\nCognitive & Behavioural Techniques\nPsychotherapy-based practices\nPositive Psychology\nNLP (Neuro-Linguistic Programming)', purpose: 'Helps individuals understand their thoughts, build resilience, and develop healthier mental patterns.', image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80', mediaMode: 'image', images: [{url:'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80'}], category: 'healing' },
+          { order: 2, title: 'Emotional Expression', subtitle: '& Healing', focus: 'Emotional release and self-expression', readMoreText: 'Expressive Art Therapies\nPlay-based therapies\nStorytelling & reflective exercises\nInner child healing practices', purpose: 'Allows individuals to process emotions safely and develop emotional intelligence.', image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&q=80', mediaMode: 'image', images: [{url:'https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=800&q=80'}], category: 'healing' },
+          { order: 3, title: 'Body & Somatic', subtitle: 'Wellbeing', focus: 'Mind-body connection and physical energy', readMoreText: 'Somatic awareness practices\nBody-mind therapies\nMovement-based practices\nZumba and yoga sessions', purpose: 'Helps release stored stress, regulate the nervous system, and reconnect with the body.', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', mediaMode: 'image', images: [{url:'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80'}], category: 'healing' },
+          { order: 4, title: 'Energy & Relaxation', subtitle: 'Practices', focus: 'Stress reduction and nervous system regulation', readMoreText: 'Sound & vibration healing\nGuided relaxation practices\nBreathwork and grounding techniques\nLifestyle stress-management practices', purpose: 'Supports relaxation, emotional balance, and recovery from daily stress.', image: 'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=800&q=80', mediaMode: 'image', images: [{url:'https://images.unsplash.com/photo-1519834785169-98be25ec3f84?w=800&q=80'}], category: 'healing' },
+          { order: 5, title: 'Social & Community', subtitle: 'Wellbeing', focus: 'Relationships, belonging, and social connection', readMoreText: 'Peer support circles\nGroup reflection activities\nCommunication & relationship exercises\nCommunity engagement experiences', purpose: 'Strengthens social bonds and builds supportive environments for wellbeing.', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80', mediaMode: 'image', images: [{url:'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&q=80'}], category: 'healing' },
+          { order: 6, title: 'Nature & Environmental', subtitle: 'Wellbeing', focus: 'Connection with environment and sensory awareness', readMoreText: 'Nature-based therapy\nOutdoor mindfulness experiences\nSensory awareness activities\nEnvironmental reflection practices', purpose: 'Encourages grounding, creativity, and emotional restoration through nature.', image: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80', mediaMode: 'image', images: [{url:'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80'}], category: 'healing' }
         ]
         await HealingTechnique.insertMany(defaults)
       } else if (category === 'wellbeing') {
@@ -80,6 +80,96 @@ const uploadTechniqueImage = async (req, res, next) => {
     item.publicId = req.file.filename
     await item.save()
     res.json({ message: 'Image uploaded', item })
+  } catch (err) { next(err) }
+}
+
+const uploadTechniqueImages = async (req, res, next) => {
+  try {
+    if (!req.files || req.files.length === 0) return res.status(400).json({ error: 'No files uploaded' })
+    const item = await HealingTechnique.findById(req.params.id)
+    if (!item) return res.status(404).json({ error: 'Not found' })
+    
+    const isVideoUpload = req.files[0].mimetype && req.files[0].mimetype.startsWith('video/')
+    
+    if (isVideoUpload) {
+      // Clear all existing images for video upload
+      if (item.images && item.images.length > 0) {
+        for (const img of item.images) {
+          if (img.publicId) await cloudinary.uploader.destroy(img.publicId).catch(() => { })
+        }
+      } else if (item.publicId) {
+        const oldIsVideo = item.mediaMode === 'video'
+        await cloudinary.uploader.destroy(item.publicId, { resource_type: oldIsVideo ? 'video' : 'image' }).catch(() => { })
+      }
+
+      item.mediaMode = 'video'
+      item.images = []
+      item.image = req.files[0].path
+      item.publicId = req.files[0].filename
+    } else {
+      item.mediaMode = 'image'
+      
+      if (item.category === 'healing') {
+        // Enforce max 1 editable image: delete any old ones when adding a new one
+        if (item.images && item.images.length > 0) {
+          for (const img of item.images) {
+            if (img.publicId) await cloudinary.uploader.destroy(img.publicId).catch(() => { })
+          }
+        }
+        const newImages = req.files.map(file => ({
+          url: file.path,
+          publicId: file.filename
+        }))
+        item.images = newImages.slice(0, 1)
+      } else {
+        // Keep old images for other categories
+        if (!Array.isArray(item.images)) item.images = []
+        const newImages = req.files.map(file => ({
+          url: file.path,
+          publicId: file.filename
+        }))
+        item.images = [...item.images, ...newImages].slice(0, 3) // Protect max 3
+      }
+      if (item.images.length > 0) {
+        item.image = item.images[0].url;
+        item.publicId = item.images[0].publicId;
+      }
+    }
+
+    await item.save()
+    res.json({ message: 'Media uploaded', item })
+  } catch (err) { next(err) }
+}
+
+const deleteTechniqueSpecificImage = async (req, res, next) => {
+  try {
+    const item = await HealingTechnique.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Not found' });
+    
+    const { publicId } = req.body;
+    if (!publicId) return res.status(400).json({ error: 'publicId required' });
+
+    // Delete from cloudinary
+    const isVideo = item.mediaMode === 'video';
+    await cloudinary.uploader.destroy(publicId, { resource_type: isVideo ? 'video' : 'image' }).catch(() => {});
+
+    // Remove from array tracking
+    item.images = (item.images || []).filter(img => img.publicId !== publicId);
+    
+    // Fallbacks
+    if (item.publicId === publicId) {
+      if (item.images.length > 0) {
+        item.image = item.images[0].url;
+        item.publicId = item.images[0].publicId;
+      } else {
+        item.image = '';
+        item.publicId = '';
+        item.mediaMode = 'image';
+      }
+    }
+    
+    await item.save();
+    res.json({ message: 'Image removed', item });
   } catch (err) { next(err) }
 }
 
@@ -321,7 +411,7 @@ const getServiceCards = async (req, res, next) => {
         { typeSlug: 'corporate', title: 'Corporate Wellbeing', headline: 'Build a Resilient, High-Performing Workforce', description: 'Empower teams with structured wellbeing programs to reduce stress and drive performance.', image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&q=80', order: 1 },
         { typeSlug: 'education', title: 'Education Sector', headline: 'Emotionally Strong & Focused Students', description: 'Helping students and educators build emotional resilience for long-term success.', image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&q=80', order: 2 },
         { typeSlug: 'community', title: 'Community Spaces', headline: 'Healthier, More Resilient Communities', description: 'Driving wellbeing initiatives that help individuals manage stress and live balanced lives.', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1200&q=80', order: 3 },
-        { typeSlug: 'government', title: 'Government', headline: 'Empowering Public Servants', description: 'Equipping government teams with the mental resilience needed to serve effectively.', image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80', order: 4 }
+        { typeSlug: 'government', title: 'Government Wellness', headline: 'Empowering Public Servants', description: 'Equipping government teams with the mental resilience needed to serve effectively.', image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80', order: 4 }
       ]
       await ServiceCard.insertMany(defaults)
       items = await ServiceCard.find().sort({ order: 1, createdAt: 1 })
@@ -377,7 +467,7 @@ const uploadServiceImage = async (req, res, next) => {
 
 
 module.exports = {
-  getTechniques, createTechnique, updateTechnique, deleteTechnique, uploadTechniqueImage,
+  getTechniques, createTechnique, updateTechnique, deleteTechnique, uploadTechniqueImage, uploadTechniqueImages, deleteTechniqueSpecificImage,
   getTestimonials, createTestimonial, updateTestimonial, deleteTestimonial,
   getStats, createStat, updateStat, deleteStat,
   getFaqs, createFaq, updateFaq, deleteFaq,

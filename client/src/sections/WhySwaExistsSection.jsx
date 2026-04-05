@@ -43,7 +43,7 @@ export default function WhySwaExistsSection() {
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
-        padding: '80px 20px 40px'
+        padding: '80px 20px 0px'
       }}
     >
 
@@ -76,7 +76,7 @@ export default function WhySwaExistsSection() {
               lineHeight: 1.1,
               marginBottom: '32px'
             }}>
-              Why SWA <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>Exists</span>
+              Why SWA
             </h2>
 
             <p style={{

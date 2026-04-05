@@ -28,7 +28,7 @@ function ExpandableCard({ title, delay, children }) {
       onClick={() => setIsOpen(!isOpen)}
     >
       <div style={{ padding: 'clamp(20px, 4vw, 32px)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h5 style={{ margin: 0, fontSize: '12px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px' }}>
+        <h5 style={{ margin: 0, fontSize: 'clamp(18px, 4vw, 24px)', color: 'var(--dark)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px' }}>
           {title}
         </h5>
         <motion.div
@@ -148,7 +148,7 @@ const SERVICES_DATA = [
   },
   {
     id: 'government',
-    tag: 'Government Initiatives',
+    tag: 'Government Wellness',
     headlinePre: 'Empowering ',
     headlineAccent: 'Public Servants',
     accentColor: 'var(--slate)',
@@ -288,7 +288,7 @@ function ServiceFullWidthSection({ data, index }) {
             scale: cardScale, opacity: cardOpacity, y: cardY
           }}
         >
-          <h5 style={{ fontSize: '11px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '16px', opacity: 0.6 }}>
+          <h5 style={{ fontSize: 'clamp(18px, 4vw, 24px)', color: 'var(--dark)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '16px' }}>
             The Challenge
           </h5>
           <p style={{ fontSize: 'clamp(16px, 3vw, 18px)', color: 'var(--dark)', lineHeight: 1.7, margin: 0, fontWeight: 500 }}>
@@ -304,7 +304,7 @@ function ServiceFullWidthSection({ data, index }) {
             scale: cardScale, opacity: cardOpacity, y: cardY
           }}
         >
-          <h5 style={{ fontSize: '11px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '24px', opacity: 0.6 }}>
+          <h5 style={{ fontSize: 'clamp(18px, 4vw, 24px)', color: 'var(--dark)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '24px' }}>
             Our Approach
           </h5>
           <h4 style={{
@@ -358,7 +358,7 @@ function ServiceFullWidthSection({ data, index }) {
           border: '1px solid rgba(255,255,255,1)', backdropFilter: 'blur(20px)'
         }}
       >
-        <h5 style={{ fontSize: '12px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '36px' }}>
+        <h5 style={{ fontSize: 'clamp(18px, 4vw, 24px)', color: 'var(--dark)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '36px' }}>
           Outcomes {data.id === 'community' ? '' : 'You Can Expect'}
         </h5>
 

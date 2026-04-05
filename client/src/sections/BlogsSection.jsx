@@ -143,22 +143,70 @@ export default function BlogsSection() {
       >
         <div className="section-inner">
           {/* Header */}
+          {/* Header */}
           <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial="hidden"
+            whileInView="show"
             viewport={{ once: true, amount: 0.3 }}
-            transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
-            style={{ textAlign: 'center', marginBottom: '50px' }}
+            variants={{
+              hidden: { opacity: 0 },
+              show: {
+                opacity: 1,
+                transition: { staggerChildren: 0.2, delayChildren: 0.1 }
+              }
+            }}
+            style={{ textAlign: 'center', marginBottom: '50px', maxWidth: '800px', margin: '0 auto 60px' }}
           >
-            <h2 style={{
-              fontFamily: 'Cormorant Garamond, serif',
-              fontSize: 'clamp(28px, 3.5vw, 48px)',
-              fontWeight: 700,
-              color: 'var(--dark)',
-              letterSpacing: '-0.5px'
-            }}>
-              Latest from <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>SWA</span>
-            </h2>
+            <motion.div
+              variants={{
+                hidden: { opacity: 0, y: -20 },
+                show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } }
+              }}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '24px'
+              }}
+            >
+              <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
+              <span style={{
+                fontSize: '13px', color: 'var(--dark)', letterSpacing: '3px',
+                textTransform: 'uppercase', fontWeight: 700
+              }}>
+                Journal & Insights
+              </span>
+            </motion.div>
+
+            <motion.h2
+              variants={{
+                hidden: { opacity: 0, y: -20 },
+                show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } }
+              }}
+              style={{
+                fontFamily: 'Cormorant Garamond, serif',
+                fontSize: 'clamp(36px, 5vw, 64px)',
+                fontWeight: 700,
+                color: 'var(--dark)',
+                lineHeight: 1.1,
+                letterSpacing: '-0.5px',
+                marginBottom: '24px'
+              }}
+            >
+              Stories from <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>SWA</span>
+            </motion.h2>
+
+            <motion.p
+              variants={{
+                hidden: { opacity: 0, y: -20 },
+                show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] } }
+              }}
+              style={{
+                fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.8, fontWeight: 400, margin: 0
+              }}
+            >
+              Curated articles, reflections, and deep dives into the science and art of holistic wellbeing and conscious leadership.
+            </motion.p>
           </motion.div>
 
           {/* Blog grid */}

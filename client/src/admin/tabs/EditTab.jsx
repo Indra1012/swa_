@@ -355,18 +355,22 @@ function HeroManager() {
 function TechniquesManager({ category, label }) {
   const [items, setItems] = useState([])
   const [headings, setHeadings] = useState({
-    title: category === 'wellbeing' ? '12 Wellbeing Processes' : 'Healing Techniques',
-    subtitle: category === 'wellbeing' ? 'A comprehensive framework for holistic transformation — mind, body and soul.' : ''
+    title: category === 'wellbeing' ? '12 Wellbeing Processes' : (category === 'healing' ? 'SWA Insights' : 'Healing Techniques'),
+    subtitle: category === 'wellbeing' ? 'A comprehensive framework for holistic transformation — mind, body and soul.' : (category === 'healing' ? 'Honest insights on stress, resilience, and the inner work behind lasting performance.' : '')
   })
   const [savingGlobal, setSavingGlobal] = useState(false)
   const [globalSaved, setGlobalSaved] = useState(false)
   const [editId, setEditId] = useState(null)
   const [draft, setDraft] = useState({})
   const [adding, setAdding] = useState(false)
-  const [newItem, setNewItem] = useState({ title: '', subtitle: '', readMoreText: '', order: 0 })
+  const [newItem, setNewItem] = useState({ title: '', subtitle: '', focus: '', readMoreText: '', purpose: '', order: 0, pendingFiles: null, pendingMediaMode: 'image' })
   const [err, setErr] = useState('')
   const [uploading, setUploading] = useState(null)
-  const fileRefs = useRef({})
+
+  // Media modes for draft
+  const [mediaMode, setMediaMode] = useState('image')
+  const fileRef = useRef(null)
+  const fileRefNew = useRef(null)
 
   const load = useCallback(async () => {
     try {
@@ -407,26 +411,61 @@ function TechniquesManager({ category, label }) {
 
   const create = async () => {
     if (!newItem.title) return setErr('Title is required.')
+    
+    setUploading('new')
     try {
-      await axios.post(`${API}/api/sections/techniques`, { ...newItem, category }, { headers: authH() })
-      setNewItem({ title: '', subtitle: '', readMoreText: '', order: 0 })
+      const res = await axios.post(`${API}/api/sections/techniques`, { ...newItem, category }, { headers: authH() })
+      
+      if (newItem.pendingFiles && newItem.pendingFiles.length > 0) {
+        const id = res.data.item._id;
+        const fd = new FormData()
+        Array.from(newItem.pendingFiles).forEach(f => fd.append('files', f))
+        await axios.post(`${API}/api/sections/techniques/${id}/images`, fd, {
+          headers: { ...authH(), 'Content-Type': 'multipart/form-data' }
+        }).catch(() => console.error("Initial media upload failed"))
+      }
+      
+      setNewItem({ title: '', subtitle: '', focus: '', readMoreText: '', purpose: '', order: 0, pendingFiles: null, pendingMediaMode: 'image' })
       setAdding(false); load()
     } catch { setErr('Create failed.') }
+    finally { setUploading(null) }
   }
 
-  const uploadImg = async (id, file) => {
-    if (!file) return
+  const uploadMedia = async (id, files) => {
+    if (!files || files.length === 0) return
+    if (mediaMode === 'image') {
+      const maxLimit = category === 'healing' ? 1 : 3;
+      if (files.length > maxLimit) return setErr(`Maximum ${maxLimit} image(s) allowed.`);
+    }
+    if (mediaMode === 'video' && files.length > 1) return setErr('Maximum 1 video allowed.')
+
     setUploading(id)
     try {
       const fd = new FormData()
-      fd.append('file', file)
-      await axios.post(`${API}/api/sections/techniques/${id}/image`, fd, {
+      Array.from(files).forEach(file => fd.append('files', file))
+
+      await axios.post(`${API}/api/sections/techniques/${id}/images`, fd, {
         headers: { ...authH(), 'Content-Type': 'multipart/form-data' }
       })
       load()
-    } catch { setErr('Image upload failed.') }
+    } catch { setErr('Media upload failed.') }
     finally { setUploading(null) }
   }
+
+  const deleteMediaItem = async (id, publicId) => {
+    try {
+      await axios.put(`${API}/api/sections/techniques/${id}/image/delete`, { publicId }, { headers: authH() })
+      load()
+    } catch { setErr('Failed to delete media item.') }
+  }
+
+  const modeBtnStyle = (active) => ({
+    padding: '6px 14px', borderRadius: '6px', border: 'none',
+    fontFamily: 'DM Sans, sans-serif', fontSize: '11px', fontWeight: 600,
+    cursor: 'pointer', transition: 'all 0.2s',
+    background: active ? 'var(--dark)' : 'transparent',
+    color: active ? 'var(--white)' : 'var(--secondary)'
+  })
 
   const saveGlobal = async () => {
     setSavingGlobal(true); setErr('')
@@ -457,23 +496,80 @@ function TechniquesManager({ category, label }) {
         }}>
           {editId === item._id ? (
             <>
-              <Field label="Title" value={draft.title ?? item.title} onChange={v => setDraft(d => ({ ...d, title: v }))} />
-              <Field label="Subtitle" value={draft.subtitle ?? item.subtitle} onChange={v => setDraft(d => ({ ...d, subtitle: v }))} />
-              <Field label="Read More Text" value={draft.readMoreText ?? item.readMoreText} onChange={v => setDraft(d => ({ ...d, readMoreText: v }))} multiline />
+              <Field label={category === 'healing' ? "Heading" : "Title"} value={draft.title ?? item.title} onChange={v => setDraft(d => ({ ...d, title: v }))} />
+              {category !== 'healing' && <Field label="Subtitle" value={draft.subtitle ?? item.subtitle} onChange={v => setDraft(d => ({ ...d, subtitle: v }))} />}
+              {category === 'healing' && <Field label="1 Line / Focus text" value={draft.focus ?? item.focus} onChange={v => setDraft(d => ({ ...d, focus: v }))} />}
+              <Field label={category === 'healing' ? "Few Points (Write each point on a new line)" : "Read More Text"} value={draft.readMoreText ?? item.readMoreText} onChange={v => setDraft(d => ({ ...d, readMoreText: v }))} multiline />
+              {category === 'healing' && <Field label="Bottom text (Purpose) - Italicized" value={draft.purpose ?? item.purpose} onChange={v => setDraft(d => ({ ...d, purpose: v }))} multiline />}
               <div style={{ marginBottom: '8px' }}>
                 <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>Display Order</p>
                 <input type="text" value={draft.order !== undefined ? draft.order : (item.order ?? '')} onChange={e => setDraft(d => ({ ...d, order: e.target.value }))} placeholder="0" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid rgba(204,199,185,0.4)', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }} />
               </div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px', flexWrap: 'wrap' }}>
+
+              {/* Media Manager */}
+              <div style={{ marginTop: '16px', background: 'rgba(255,255,255,0.5)', padding: '16px', borderRadius: '10px', border: '1px dashed rgba(204,199,185,0.8)' }}>
+                <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Card Media</p>
+                <div style={{ display: 'inline-flex', gap: '4px', background: 'var(--bg)', borderRadius: '8px', padding: '4px', marginBottom: '12px' }}>
+                  <button style={modeBtnStyle(mediaMode === 'image')} onClick={() => setMediaMode('image')}>📷 {category === 'healing' ? 'Image' : 'Images (Max 3)'}</button>
+                  <button style={modeBtnStyle(mediaMode === 'video')} onClick={() => setMediaMode('video')}>🎬 Video</button>
+                </div>
+
+                {mediaMode === 'image' && (
+                  <div>
+                    <input ref={fileRef} type="file" accept="image/*" multiple={category !== 'healing'} onChange={e => uploadMedia(item._id, e.target.files)} style={{ display: 'none' }} />
+                    <SBtn onClick={() => fileRef.current?.click()} disabled={uploading === item._id} variant="ghost"><FiUpload size={12} /> {uploading === item._id ? 'Uploading...' : 'Upload Image'}</SBtn>
+                  </div>
+                )}
+                {mediaMode === 'video' && (
+                  <div>
+                    <input ref={fileRef} type="file" accept="video/*" onChange={e => uploadMedia(item._id, e.target.files)} style={{ display: 'none' }} />
+                    <SBtn onClick={() => fileRef.current?.click()} disabled={uploading === item._id} variant="ghost"><FiUpload size={12} /> {uploading === item._id ? 'Uploading...' : 'Upload Video'}</SBtn>
+                  </div>
+                )}
+
+                {/* Preview */}
+                <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                  {item.mediaMode === 'video' && item.image && mediaMode !== 'image' ? (
+                    <div style={{ position: 'relative' }}>
+                      <video src={item.image} autoPlay loop muted style={{ width: '120px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                      {item.publicId && <button onClick={() => deleteMediaItem(item._id, item.publicId)} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex' }}><FiX size={12} /></button>}
+                    </div>
+                  ) : mediaMode === 'image' && item.images && item.images.length > 0 ? (
+                    item.images.map((img, idx) => (
+                      <div key={idx} style={{ position: 'relative' }}>
+                        <img src={img.url} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                        {img.publicId && <button onClick={() => deleteMediaItem(item._id, img.publicId)} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex' }}><FiX size={12} /></button>}
+                      </div>
+                    ))
+                  ) : mediaMode === 'image' && item.image && item.mediaMode !== 'video' ? (
+                    <div style={{ position: 'relative' }}>
+                      <img src={item.image} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                      {item.publicId && <button onClick={() => deleteMediaItem(item._id, item.publicId)} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex' }}><FiX size={12} /></button>}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
                 <SBtn onClick={() => save(item._id)}><FiCheck size={12} /> Save</SBtn>
                 <SBtn onClick={() => { setEditId(null); setDraft({}) }} variant="ghost"><FiX size={12} /> Cancel</SBtn>
               </div>
             </>
           ) : (
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-              {item.image && (
-                <img src={item.image} alt="" style={{ width: '52px', height: '52px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0 }} />
-              )}
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {item.mediaMode === 'video' ? (
+                  <video src={item.image} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
+                ) : (item.images && item.images.length > 0) ? (
+                  item.images.map((img, idx) => (
+                    <img key={idx} src={img.url} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
+                  ))
+                ) : item.image ? (
+                  <img src={item.image} alt="" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} />
+                ) : (
+                  <div style={{ width: '40px', height: '40px', background: 'rgba(0,0,0,0.05)', borderRadius: '6px', flexShrink: 0 }} />
+                )}
+              </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '30px', height: '30px', background: 'rgba(204,199,185,0.2)', borderRadius: '6px', color: 'var(--secondary)', fontSize: '12px', fontWeight: 700 }}>
                 {item.order || 0}
               </div>
@@ -482,21 +578,7 @@ function TechniquesManager({ category, label }) {
                 <p style={{ fontSize: '12px', color: 'var(--secondary)', margin: 0 }}>{item.subtitle}</p>
               </div>
               <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
-                <input
-                  type="file" accept="image/*"
-                  style={{ display: 'none' }}
-                  ref={el => fileRefs.current[item._id] = el}
-                  onChange={e => uploadImg(item._id, e.target.files?.[0])}
-                />
-                <SBtn
-                  onClick={() => fileRefs.current[item._id]?.click()}
-                  disabled={uploading === item._id}
-                  variant="ghost"
-                  style={{ padding: '6px 10px' }}
-                >
-                  <FiUpload size={12} /> {uploading === item._id ? '...' : 'Image'}
-                </SBtn>
-                <SBtn onClick={() => { setEditId(item._id); setDraft({}) }} variant="ghost" style={{ padding: '6px 10px' }}>
+                <SBtn onClick={() => { setEditId(item._id); setDraft({}); setMediaMode(item.mediaMode || 'image') }} variant="ghost" style={{ padding: '6px 10px' }}>
                   <FiEdit3 size={12} />
                 </SBtn>
                 <SBtn onClick={() => del(item._id)} variant="danger" style={{ padding: '6px 10px' }}>
@@ -512,16 +594,47 @@ function TechniquesManager({ category, label }) {
       {adding ? (
         <div style={{ background: 'rgba(175,122,109,0.06)', borderRadius: '10px', padding: '16px', marginTop: '12px', border: '1px dashed rgba(175,122,109,0.3)' }}>
           <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--secondary)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '1px' }}>New {label}</p>
-          <Field label="Title" value={newItem.title} onChange={v => setNewItem(n => ({ ...n, title: v }))} placeholder={`${label} title`} />
-          <Field label="Subtitle" value={newItem.subtitle} onChange={v => setNewItem(n => ({ ...n, subtitle: v }))} placeholder="Short description" />
-          <Field label="Read More Text" value={newItem.readMoreText} onChange={v => setNewItem(n => ({ ...n, readMoreText: v }))} multiline placeholder="Expanded description..." />
+          <Field label={category === 'healing' ? "Heading" : "Title"} value={newItem.title} onChange={v => setNewItem(n => ({ ...n, title: v }))} placeholder={`${label} title`} />
+          {category !== 'healing' && <Field label="Subtitle" value={newItem.subtitle} onChange={v => setNewItem(n => ({ ...n, subtitle: v }))} placeholder="Short description" />}
+          {category === 'healing' && <Field label="1 Line / Focus text" value={newItem.focus} onChange={v => setNewItem(n => ({ ...n, focus: v }))} placeholder="E.g., Thoughts, beliefs..." />}
+          <Field label={category === 'healing' ? "Few Points (Write each point on a new line)" : "Read More Text"} value={newItem.readMoreText} onChange={v => setNewItem(n => ({ ...n, readMoreText: v }))} multiline placeholder={category === 'healing' ? "Point 1\nPoint 2\nPoint 3" : "Expanded description..."} />
+          {category === 'healing' && <Field label="Bottom text (Purpose) - Italicized" value={newItem.purpose} onChange={v => setNewItem(n => ({ ...n, purpose: v }))} multiline placeholder="E.g., Helps individuals understand..." />}
           <div style={{ marginBottom: '12px' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '4px' }}>Display Order</p>
             <input type="text" value={newItem.order} onChange={e => setNewItem(n => ({ ...n, order: e.target.value }))} placeholder="0" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid rgba(204,199,185,0.4)', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }} />
           </div>
+
+          <div style={{ marginTop: '16px', marginBottom: '16px', background: 'rgba(255,255,255,0.5)', padding: '16px', borderRadius: '10px', border: '1px dashed rgba(204,199,185,0.8)' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Card Media</p>
+            <div style={{ display: 'inline-flex', gap: '4px', background: 'var(--bg)', borderRadius: '8px', padding: '4px', marginBottom: '12px' }}>
+              <button style={modeBtnStyle(newItem.pendingMediaMode === 'image')} onClick={() => setNewItem(n => ({...n, pendingMediaMode: 'image', pendingFiles: null}))}>📷 {category === 'healing' ? 'Image' : 'Images (Max 3)'}</button>
+              <button style={modeBtnStyle(newItem.pendingMediaMode === 'video')} onClick={() => setNewItem(n => ({...n, pendingMediaMode: 'video', pendingFiles: null}))}>🎬 Video</button>
+            </div>
+            
+            <div>
+               <input ref={fileRefNew} type="file" accept={newItem.pendingMediaMode === 'image' ? "image/*" : "video/*"} multiple={category !== 'healing' && newItem.pendingMediaMode === 'image'} onChange={e => setNewItem(n => ({...n, pendingFiles: e.target.files}))} style={{ display: 'none' }} />
+               <SBtn onClick={() => fileRefNew.current?.click()} disabled={uploading === 'new'} variant="ghost"><FiUpload size={12} /> {uploading === 'new' ? 'Saving...' : 'Select File'}</SBtn>
+            </div>
+
+            {newItem.pendingFiles && newItem.pendingFiles.length > 0 && (
+              <div style={{ marginTop: '12px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {Array.from(newItem.pendingFiles).map((file, idx) => (
+                  <div key={idx} style={{ position: 'relative' }}>
+                    {newItem.pendingMediaMode === 'video' ? (
+                       <video src={URL.createObjectURL(file)} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                    ) : (
+                       <img src={URL.createObjectURL(file)} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                    )}
+                    <button onClick={() => setNewItem(n => ({...n, pendingFiles: null}))} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex' }}><FiX size={12} /></button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           <div style={{ display: 'flex', gap: '8px' }}>
-            <SBtn onClick={create}><FiPlus size={12} /> Add</SBtn>
-            <SBtn onClick={() => { setAdding(false); setNewItem({ title: '', subtitle: '', readMoreText: '', order: 0 }) }} variant="ghost"><FiX size={12} /> Cancel</SBtn>
+            <SBtn onClick={create} disabled={uploading === 'new'}><FiPlus size={12} /> {uploading === 'new' ? 'Saving & Uploading...' : 'Add'}</SBtn>
+            <SBtn onClick={() => { setAdding(false); setNewItem({ title: '', subtitle: '', focus: '', readMoreText: '', purpose: '', order: 0, pendingFiles: null, pendingMediaMode: 'image' }) }} variant="ghost"><FiX size={12} /> Cancel</SBtn>
           </div>
         </div>
       ) : (
@@ -1597,23 +1710,43 @@ const PAGE_CONTENT = {
   ],
   about: [
     {
-      group: 'Founder', section: 'about', fields: [
-        { key: 'founderName', label: 'Founder Name', value: 'Dhruvi Shah' },
-        { key: 'founderTitle', label: 'Founder Title', value: 'Founder & Head Coach – SWA Wellbeing' },
-        { key: 'founderBio', label: 'Founder Bio', value: 'Dhruvi Shah is the Founder and Head Wellbeing Coach at SWA Wellbeing.' },
-        { key: 'founderQuote', label: 'Founder Quote', value: 'To help individuals understand and master their emotions.' },
+      group: 'Hero Section', section: 'about', fields: [
+        { key: 'heroTitle', label: 'Hero Title', value: 'The SWA Story' },
+        { key: 'heroLine1', label: 'Hero Line 1', value: 'Master your emotions.' },
+        { key: 'heroLine2', label: 'Hero Line 2', value: 'Lead with clarity.' },
       ]
     },
-  ],
-  blogs: [
     {
-      group: 'Blogs Section', section: 'blogs', fields: [
-        { key: 'heading', label: 'Section Heading', value: 'Latest Insights' },
-        { key: 'subtext', label: 'Subtext', value: 'Explore our latest articles on wellbeing, mindfulness, and organizational health.' },
-        { key: 'ctaText', label: 'CTA Button Text', value: 'Read All Articles' },
+      group: 'Our Story Settings', section: 'about', fields: [
+        { key: 'storyTitle', label: 'Section Title', value: 'Our Story' },
+        { key: 'storySubtitle', label: 'Section Subtitle', value: 'Where It All Began' },
+        { key: 'storyQuote', label: 'Highlight Quote', value: '"SWA was born from one simple, undeniable truth — people are not machines."' },
+        { key: 'storyP1', label: 'First Paragraph Text', value: 'In a world obsessed with productivity and performance metrics, something deeply human was being lost. The stress was visible. The burnout was real. And yet, the systems meant to support people kept treating symptoms — never roots.' },
+        { key: 'storyP2', label: 'Second Highlight Text', value: 'Every program. Every session. Every technique at SWA carries the same intention: to help people think clearly, feel strongly, and perform consistently — from the inside out.' },
+      ]
+    },
+    {
+      group: 'Vision & Mission', section: 'about', fields: [
+        { key: 'visionTitle', label: 'Vision Card Title', value: 'OUR VISION' },
+        { key: 'visionQuote', label: 'Vision Highlight Quote', value: '"To build a world where emotional wellbeing and resilience are the foundation of human performance."' },
+        { key: 'visionBullets', label: 'Vision Bullets (One per line)', value: 'Workplaces that are not just productive, but mentally strong\nInstitutions that nurture intellect and emotional balance\nIndividuals who don\'t just survive — but truly thrive' },
+        { key: 'missionTitle', label: 'Mission Card Title', value: 'OUR MISSION' },
+        { key: 'missionQuote', label: 'Mission Highlight Quote', value: '"To move people beyond awareness — into real, lasting transformation."' },
+        { key: 'missionBullets', label: 'Mission Bullets (One per line)', value: 'Manage stress before it manages them\nBuild emotional strength that holds under pressure\nSustain high performance without burning out\nCultivate deep self-awareness to lead with unwavering clarity' },
+      ]
+    },
+    {
+      group: 'Core Philosophy', section: 'about_philosophy', fields: [
+        { key: 'philosophyTitle', label: 'Section Title', value: 'Core Philosophy' },
+        { key: 'philosophySubtitle', label: 'Section Subtitle', value: 'We move past quick fixes to provide structured, practical wellbeing programs that create real, lasting changes in your environment.' },
+        { key: 'pillar1', label: 'Pillar 1', value: 'Performance is driven by inner stability, not external pressure.' },
+        { key: 'pillar2', label: 'Pillar 2', value: 'Wellbeing is a skill that can be developed.' },
+        { key: 'pillar3', label: 'Pillar 3', value: 'Transformation happens through consistent experiential learning.' },
+        { key: 'pillar4', label: 'Pillar 4', value: 'Emotional awareness leads to better decisions and outcomes.' },
       ]
     },
   ],
+  blogs: []
 }
 
 const PAGES = [
@@ -1771,9 +1904,412 @@ function ClientLogosManager() {
   )
 }
 
+// ─── FOUNDER MANAGER ────────────────────────────────────────────────────────
+function FounderManager() {
+  const [name, setName] = useState('Dhruvi Shah')
+  const [title, setTitle] = useState('Founder & Head Coach')
+  const [bio1, setBio1] = useState('Dhruvi Shah is the Founder and Head Wellbeing Coach at SWA Wellbeing. With a deeply rooted background in psychology, a diploma in expressive art therapy, and rich experience as an international sound healer, she brings a uniquely holistic and integrative approach to modern mental well-being.')
+  const [bio2, setBio2] = useState('Her expertise extensively spans mental health wellbeing, Indian psychology, and leadership development—masterfully blending traditional ancient wisdom with structured contemporary practices.')
+  const [bioQuote, setBioQuote] = useState('Dhruvi is driven by a clear mission: to help individuals understand and master their emotions before those emotions begin to shape their decisions—enabling more balanced, self-aware, and effective leadership.')
+  const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [err, setErr] = useState('')
+  const [uploadedImg, setUploadedImg] = useState({ url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1200&q=80', isDefault: true })
+  const imgRef = useRef(null)
+
+  const loadData = async () => {
+    try {
+      const now = Date.now()
+      const [contentRes, mediaRes] = await Promise.all([
+        axios.get(`${API}/api/content/about?t=${now}`),
+        axios.get(`${API}/api/media/founder?t=${now}`)
+      ])
+      const items = contentRes.data.items || contentRes.data || []
+      if (Array.isArray(items)) {
+        items.forEach(i => {
+          if (i.key === 'founderName') setName(i.value)
+          if (i.key === 'founderTitle') setTitle(i.value)
+          if (i.key === 'founderBio1') setBio1(i.value)
+          if (i.key === 'founderBio2') setBio2(i.value)
+          if (i.key === 'founderBioQuote') setBioQuote(i.value)
+        })
+      }
+      const media = mediaRes.data.media || []
+      if (media.length > 0) setUploadedImg(media[media.length - 1])
+    } catch { }
+  }
+
+  useEffect(() => { loadData() }, [])
+
+  const saveAll = async () => {
+    setSaving(true); setErr(''); setMsg('')
+    try {
+      await Promise.all([
+        axios.put(`${API}/api/content`, { section: 'about', key: 'founderName', value: name }, { headers: authH() }),
+        axios.put(`${API}/api/content`, { section: 'about', key: 'founderTitle', value: title }, { headers: authH() }),
+        axios.put(`${API}/api/content`, { section: 'about', key: 'founderBio1', value: bio1 }, { headers: authH() }),
+        axios.put(`${API}/api/content`, { section: 'about', key: 'founderBio2', value: bio2 }, { headers: authH() }),
+        axios.put(`${API}/api/content`, { section: 'about', key: 'founderBioQuote', value: bioQuote }, { headers: authH() }),
+      ])
+      setMsg('Saved successfully!')
+      setTimeout(() => setMsg(''), 2500)
+    } catch (error) {
+      setErr(`Failed to save: ${error.message}`)
+    } finally { setSaving(false) }
+  }
+
+  const uploadFile = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true); setErr(''); setMsg('')
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('section', 'founder')
+      const res = await axios.post(`${API}/api/media/upload`, fd, { headers: { ...authH(), 'Content-Type': 'multipart/form-data' } })
+      if (res.data?.media) {
+        setUploadedImg(res.data.media)
+      }
+      setMsg(`Image uploaded successfully!`)
+      setTimeout(() => setMsg(''), 3000)
+    } catch (error) {
+      let errorText = 'Upload failed'
+      if (error.response?.data?.error) errorText = error.response.data.error;
+      setErr(errorText)
+    } finally {
+      setUploading(false)
+      e.target.value = null
+    }
+  }
+
+  const deleteImage = async (id) => {
+    if (uploadedImg?.isDefault) {
+      setUploadedImg(null)
+      return
+    }
+    if (!window.confirm('Delete founder image?')) return
+    try {
+      await axios.delete(`${API}/api/media/${id}`, { headers: authH() })
+      setUploadedImg(null)
+    } catch { setErr('Failed to delete image') }
+  }
+
+  return (
+    <>
+      <div style={{ marginBottom: '24px', background: 'rgba(250, 248, 245, 0.95)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(204,199,185,0.3)' }}>
+        <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Founder Photo</p>
+        <p style={{ fontSize: '12px', color: 'var(--secondary)', marginBottom: '12px' }}>This image appears beside the Founder biography block.</p>
+        {uploadedImg ? (
+          <div style={{ position: 'relative', width: 'fit-content' }}>
+            <img src={uploadedImg.url} style={{ width: '120px', height: '160px', objectFit: 'cover', borderRadius: '12px' }} alt="" />
+            <button onClick={() => deleteImage(uploadedImg._id)} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c83232', color: '#fff', border: 'none', borderRadius: '50%', width: '24px', height: '24px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px' }}>×</button>
+          </div>
+        ) : (
+          <div>
+            <input type="file" accept="image/*" style={{ display: 'none' }} ref={imgRef} onChange={uploadFile} />
+            <SBtn onClick={() => imgRef.current?.click()} disabled={uploading}>
+              <FiUpload size={13} /> {uploading ? 'Uploading...' : 'Upload Image'}
+            </SBtn>
+          </div>
+        )}
+      </div>
+
+      <Field label="Name" value={name} onChange={setName} />
+      <Field label="Title" value={title} onChange={setTitle} />
+      <Field label="Bio Paragraph 1" value={bio1} onChange={setBio1} multiline={true} />
+      <Field label="Bio Paragraph 2" value={bio2} onChange={setBio2} multiline={true} />
+      <Field label="Quote Paragraph" value={bioQuote} onChange={setBioQuote} multiline={true} />
+
+      {msg && <div style={{ color: 'var(--primary)', fontSize: '12px', marginBottom: '10px', background: 'rgba(50,200,50,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}><FiCheck size={12} style={{ marginRight: '6px' }} />{msg}</div>}
+      {err && <ErrMsg msg={err} />}
+
+      <SBtn onClick={saveAll} disabled={saving}><FiCheck size={13} /> {saving ? 'Saving...' : 'Save Text Content'}</SBtn>
+    </>
+  )
+}
+
+// ─── TEAM MANAGER ────────────────────────────────────────────────────────────
+function TeamManager() {
+  const [members, setMembers] = useState([])
+  const [view, setView] = useState('team') // 'team' | 'expert'
+  const [loading, setLoading] = useState(true)
+  const [msg, setMsg] = useState('')
+  const [err, setErr] = useState('')
+
+  // Add form state
+  const [adding, setAdding] = useState(false)
+  const [draft, setDraft] = useState({ name: '', role: '', category: 'team', order: '' })
+  const [newFile, setNewFile] = useState(null)
+  const [newPreview, setNewPreview] = useState(null)
+  const [creating, setCreating] = useState(false)
+  const newFileRef = useRef(null)
+
+  // Inline edit state
+  const [editId, setEditId] = useState(null)
+  const [editDraft, setEditDraft] = useState({})
+  const [replaceFile, setReplaceFile] = useState(null)
+  const [replacePreview, setReplacePreview] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const replaceRef = useRef(null)
+
+  const flash = (text, isErr = false) => {
+    if (isErr) setErr(text); else setMsg(text)
+    setTimeout(() => { setErr(''); setMsg('') }, 3000)
+  }
+
+  const loadMembers = async () => {
+    setLoading(true)
+    try {
+      const res = await axios.get(`${API}/api/team?t=${Date.now()}`)
+      setMembers(res.data.items || [])
+    } catch { flash('Failed to load members', true) }
+    setLoading(false)
+  }
+
+  useEffect(() => { loadMembers() }, [])
+
+  const filtered = members.filter(m => m.category === view).sort((a, b) => a.order - b.order)
+
+  // ── ADD NEW MEMBER ──
+  const handleNewFile = (e) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setNewFile(f)
+    setNewPreview(URL.createObjectURL(f))
+  }
+
+  const createMember = async () => {
+    if (!draft.name.trim() || !draft.role.trim()) return flash('Name and Role are required', true)
+    setCreating(true)
+    try {
+      // 1. Create the record
+      const res = await axios.post(`${API}/api/team`,
+        { name: draft.name, role: draft.role, category: draft.category, order: Number(draft.order) || 0 },
+        { headers: authH() }
+      )
+      const newId = res.data.item._id
+
+      // 2. If an image was selected, upload it immediately
+      if (newFile) {
+        const fd = new FormData()
+        fd.append('file', newFile)
+        await axios.post(`${API}/api/team/${newId}/image`, fd, {
+          headers: { ...authH(), 'Content-Type': 'multipart/form-data' }
+        })
+      }
+
+      flash('Member added!')
+      setAdding(false)
+      setDraft({ name: '', role: '', category: 'team', order: '' })
+      setNewFile(null); setNewPreview(null)
+      loadMembers()
+    } catch (e) { flash(e.response?.data?.error || 'Create failed', true) }
+    setCreating(false)
+  }
+
+  // ── INLINE EDIT ──
+  const startEdit = (m) => {
+    setEditId(m._id)
+    setEditDraft({ name: m.name, role: m.role, order: m.order })
+    setReplaceFile(null); setReplacePreview(null)
+  }
+
+  const handleReplaceFile = (e) => {
+    const f = e.target.files?.[0]
+    if (!f) return
+    setReplaceFile(f)
+    setReplacePreview(URL.createObjectURL(f))
+  }
+
+  const saveEdit = async (id) => {
+    setSaving(true)
+    try {
+      await axios.put(`${API}/api/team/${id}`,
+        { name: editDraft.name, role: editDraft.role, order: Number(editDraft.order) || 0 },
+        { headers: authH() }
+      )
+      if (replaceFile) {
+        setUploading(true)
+        const fd = new FormData()
+        fd.append('file', replaceFile)
+        await axios.post(`${API}/api/team/${id}/image`, fd, {
+          headers: { ...authH(), 'Content-Type': 'multipart/form-data' }
+        })
+        setUploading(false)
+      }
+      flash('Saved!')
+      setEditId(null)
+      loadMembers()
+    } catch (e) { flash(e.response?.data?.error || 'Save failed', true) }
+    setSaving(false)
+  }
+
+  const deleteMember = async (id) => {
+    if (!window.confirm('Delete this member?')) return
+    try {
+      await axios.delete(`${API}/api/team/${id}`, { headers: authH() })
+      flash('Deleted')
+      loadMembers()
+    } catch { flash('Delete failed', true) }
+  }
+
+  const cardStyle = {
+    background: 'rgba(250,248,245,0.95)', border: '1px solid rgba(204,199,185,0.3)',
+    borderRadius: '12px', padding: '14px', marginBottom: '12px',
+    display: 'flex', gap: '14px', alignItems: 'flex-start'
+  }
+
+  return (
+    <>
+      {/* Category Toggle */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+        {[{ id: 'team', label: '🧑‍💼 Our Team' }, { id: 'expert', label: '🌐 Global Experts' }].map(tab => (
+          <button key={tab.id} onClick={() => setView(tab.id)} style={{
+            padding: '8px 20px', borderRadius: '50px', border: 'none', cursor: 'pointer',
+            fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 600,
+            background: view === tab.id ? 'var(--dark)' : 'rgba(204,199,185,0.2)',
+            color: view === tab.id ? 'var(--white)' : 'var(--secondary)',
+            transition: 'all 0.2s'
+          }}>{tab.label}</button>
+        ))}
+      </div>
+
+      {/* Status messages */}
+      {msg && <div style={{ color: '#2a7a2a', fontSize: '12px', marginBottom: '10px', background: 'rgba(50,200,50,0.1)', padding: '10px', borderRadius: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}><FiCheck size={12} />{msg}</div>}
+      {err && <ErrMsg msg={err} />}
+
+      {/* Members list */}
+      {loading ? <p style={{ color: 'var(--secondary)', fontSize: '13px' }}>Loading...</p> : (
+        filtered.length === 0
+          ? <p style={{ color: 'var(--secondary)', fontSize: '13px', fontStyle: 'italic' }}>No members yet. Add one below.</p>
+          : filtered.map(m => (
+            <div key={m._id} style={cardStyle}>
+              {/* Image preview */}
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <img
+                  src={editId === m._id && replacePreview ? replacePreview : (m.url || 'https://via.placeholder.com/70x90?text=No+Image')}
+                  style={{ width: '70px', height: '90px', objectFit: 'cover', borderRadius: '8px', display: 'block' }}
+                  alt={m.name}
+                />
+                {editId === m._id && (
+                  <>
+                    <input type="file" accept="image/*" style={{ display: 'none' }} ref={replaceRef} onChange={handleReplaceFile} />
+                    <button
+                      onClick={() => replaceRef.current?.click()}
+                      title="Replace image"
+                      style={{
+                        position: 'absolute', bottom: '-6px', right: '-6px',
+                        background: 'var(--dark)', color: '#fff', border: 'none',
+                        borderRadius: '50%', width: '22px', height: '22px',
+                        cursor: 'pointer', fontSize: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}
+                    ><FiUpload size={10} /></button>
+                    {replaceFile && <p style={{ fontSize: '9px', color: 'var(--secondary)', marginTop: '4px', maxWidth: '70px', wordBreak: 'break-all' }}>{replaceFile.name}</p>}
+                  </>
+                )}
+              </div>
+
+              {/* Content */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {editId === m._id ? (
+                  <>
+                    <input
+                      value={editDraft.name} onChange={e => setEditDraft(d => ({ ...d, name: e.target.value }))}
+                      placeholder="Name"
+                      style={{ width: '100%', padding: '6px 10px', borderRadius: '6px', border: '1.5px solid rgba(204,199,185,0.4)', fontSize: '13px', fontFamily: 'DM Sans, sans-serif', marginBottom: '6px', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      value={editDraft.role} onChange={e => setEditDraft(d => ({ ...d, role: e.target.value }))}
+                      placeholder="Role / Position"
+                      style={{ width: '100%', padding: '6px 10px', borderRadius: '6px', border: '1.5px solid rgba(204,199,185,0.4)', fontSize: '13px', fontFamily: 'DM Sans, sans-serif', marginBottom: '6px', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      value={editDraft.order} onChange={e => setEditDraft(d => ({ ...d, order: e.target.value }))}
+                      placeholder="Order (e.g. 1)"
+                      type="number"
+                      style={{ width: '80px', padding: '6px 10px', borderRadius: '6px', border: '1.5px solid rgba(204,199,185,0.4)', fontSize: '13px', fontFamily: 'DM Sans, sans-serif', marginBottom: '8px', boxSizing: 'border-box' }}
+                    />
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <SBtn onClick={() => saveEdit(m._id)} disabled={saving || uploading}>
+                        <FiCheck size={11} /> {saving || uploading ? 'Saving...' : 'Save'}
+                      </SBtn>
+                      <SBtn variant="ghost" onClick={() => { setEditId(null); setReplaceFile(null); setReplacePreview(null) }}>
+                        <FiX size={11} /> Cancel
+                      </SBtn>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '16px', fontWeight: 700, color: 'var(--dark)', margin: '0 0 2px' }}>{m.name}</p>
+                    <p style={{ fontSize: '11px', color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 600, margin: '0 0 8px' }}>{m.role}</p>
+                    <p style={{ fontSize: '10px', color: 'rgba(101,50,57,0.5)', margin: '0 0 8px' }}>Order: {m.order}</p>
+                    <div style={{ display: 'flex', gap: '6px' }}>
+                      <SBtn variant="ghost" onClick={() => startEdit(m)} style={{ padding: '5px 12px', fontSize: '12px' }}>
+                        <FiEdit3 size={11} /> Edit
+                      </SBtn>
+                      <SBtn variant="danger" onClick={() => deleteMember(m._id)} style={{ padding: '5px 12px', fontSize: '12px' }}>
+                        <FiTrash2 size={11} /> Delete
+                      </SBtn>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          ))
+      )}
+
+      {/* Add Member Form */}
+      {adding ? (
+        <div style={{ background: 'rgba(250,248,245,0.97)', border: '1.5px dashed rgba(175,122,109,0.4)', borderRadius: '12px', padding: '16px', marginTop: '12px' }}>
+          <p style={{ fontSize: '12px', fontWeight: 700, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '1px' }}>➕ New Member</p>
+
+          {/* Image picker with preview */}
+          <div style={{ marginBottom: '12px' }}>
+            <input type="file" accept="image/*" style={{ display: 'none' }} ref={newFileRef} onChange={handleNewFile} />
+            {newPreview
+              ? <div style={{ position: 'relative', width: 'fit-content', marginBottom: '8px' }}>
+                <img src={newPreview} style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '8px' }} alt="preview" />
+                <button onClick={() => { setNewFile(null); setNewPreview(null) }} style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#c83232', color: '#fff', border: 'none', borderRadius: '50%', width: '20px', height: '20px', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+              </div>
+              : <SBtn variant="ghost" onClick={() => newFileRef.current?.click()} style={{ marginBottom: '8px' }}>
+                <FiUpload size={12} /> Upload Photo
+              </SBtn>
+            }
+          </div>
+
+          <Field label="Name" value={draft.name} onChange={v => setDraft(d => ({ ...d, name: v }))} placeholder="e.g. Dhruvi Shah" />
+          <Field label="Role / Position" value={draft.role} onChange={v => setDraft(d => ({ ...d, role: v }))} placeholder="e.g. Head Coach" />
+          <div style={{ marginBottom: '12px' }}>
+            <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', fontWeight: 600, marginBottom: '6px' }}>Category</p>
+            <select value={draft.category} onChange={e => setDraft(d => ({ ...d, category: e.target.value }))}
+              style={{ width: '100%', padding: '10px 13px', border: '1.5px solid rgba(204,199,185,0.35)', borderRadius: '8px', fontSize: '14px', fontFamily: 'DM Sans, sans-serif', background: 'var(--bg)', color: 'var(--dark)' }}>
+              <option value="team">Our Team (Internal)</option>
+              <option value="expert">Global Experts</option>
+            </select>
+          </div>
+          <Field label="Order (1 = first)" value={draft.order} onChange={v => setDraft(d => ({ ...d, order: v }))} placeholder="1" />
+
+          <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+            <SBtn onClick={createMember} disabled={creating}><FiPlus size={12} /> {creating ? 'Adding...' : 'Add Member'}</SBtn>
+            <SBtn variant="ghost" onClick={() => { setAdding(false); setDraft({ name: '', role: '', category: 'team', order: '' }); setNewFile(null); setNewPreview(null) }}><FiX size={12} /> Cancel</SBtn>
+          </div>
+        </div>
+      ) : (
+        <SBtn variant="ghost" onClick={() => setAdding(true)} style={{ marginTop: '8px', width: '100%', justifyContent: 'center' }}>
+          <FiPlus size={13} /> Add Member
+        </SBtn>
+      )}
+    </>
+  )
+}
+
 // ─── MAIN EDIT TAB ────────────────────────────────────────────────────────────
 export default function EditTab() {
-  const [activePage, setActivePage] = useState('home')
+  const [activePage, setActivePage] = useState(
+    () => localStorage.getItem('swa_edit_page') || 'home'
+  )
   const [liveFields, setLiveFields] = useState({})
 
   const groups = PAGE_CONTENT[activePage] || []
@@ -1816,7 +2352,10 @@ export default function EditTab() {
         {PAGES.map(page => (
           <button
             key={page.id}
-            onClick={() => setActivePage(page.id)}
+            onClick={() => {
+              setActivePage(page.id)
+              localStorage.setItem('swa_edit_page', page.id)
+            }}
             style={{
               padding: '9px 22px', borderRadius: '50px',
               border: activePage === page.id ? '2px solid var(--dark)' : '1.5px solid rgba(204,199,185,0.35)',
@@ -1843,9 +2382,6 @@ export default function EditTab() {
             <SectionAccordion title="Our Programs">
               <ExpertiseManager />
             </SectionAccordion>
-            <SectionAccordion title="Healing Techniques">
-              <TechniquesManager category="healing" label="Technique" />
-            </SectionAccordion>
             <SectionAccordion title="Testimonials">
               <TestimonialsManager />
             </SectionAccordion>
@@ -1862,6 +2398,75 @@ export default function EditTab() {
               <FaqManager />
             </SectionAccordion>
           </>
+        ) : activePage === 'about' ? (
+          <>
+            {mergedGroups.filter(g => g.section !== 'about_philosophy').map(group => (
+              <div key={group.group} style={{ marginBottom: '32px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                  <div style={{ width: '4px', height: '18px', background: 'var(--secondary)', borderRadius: '2px', flexShrink: 0 }} />
+                  <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', fontWeight: 700, color: 'var(--dark)', margin: 0 }}>
+                    {group.group}
+                  </h3>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {group.fields.map(field => (
+                    <ContentField key={`${group.group}-${field.key}`} field={field} section={group.section} />
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                <div style={{ width: '4px', height: '18px', background: 'var(--secondary)', borderRadius: '2px', flexShrink: 0 }} />
+                <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', fontWeight: 700, color: 'var(--dark)', margin: 0 }}>
+                  Founder Profile
+                </h3>
+              </div>
+              <div style={{ background: 'var(--white)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(204,199,185,0.3)', boxShadow: '0 4px 14px rgba(0,0,0,0.02)' }}>
+                <FounderManager />
+              </div>
+            </div>
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+                <div style={{ width: '4px', height: '18px', background: 'var(--secondary)', borderRadius: '2px', flexShrink: 0 }} />
+                <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', fontWeight: 700, color: 'var(--dark)', margin: 0 }}>
+                  Team Members &amp; Global Experts
+                </h3>
+              </div>
+              <div style={{ background: 'var(--white)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(204,199,185,0.3)', boxShadow: '0 4px 14px rgba(0,0,0,0.02)' }}>
+                <TeamManager />
+              </div>
+            </div>
+            <div style={{ marginBottom: '32px' }}>
+              <SectionAccordion title="Core Philosophy">
+                <p style={{ fontSize: '12px', color: 'var(--secondary)', marginBottom: '14px', lineHeight: 1.6 }}>
+                  Edit the section title, subtitle, and all 4 philosophy pillar statements shown on the About page.
+                </p>
+                {(() => {
+                  const phGroup = mergedGroups.find(g => g.section === 'about_philosophy')
+                  return phGroup ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {phGroup.fields.map(field => (
+                        <ContentField key={field.key} field={field} section="about_philosophy" />
+                      ))}
+                    </div>
+                  ) : null
+                })()}
+              </SectionAccordion>
+            </div>
+          </>
+        ) : activePage === 'blogs' ? (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ width: '4px', height: '18px', background: 'var(--secondary)', borderRadius: '2px', flexShrink: 0 }} />
+              <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', fontWeight: 700, color: 'var(--dark)', margin: 0 }}>
+                Manage Blog Content
+              </h3>
+            </div>
+            <div style={{ background: 'var(--white)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(204,199,185,0.3)', boxShadow: '0 4px 14px rgba(0,0,0,0.02)' }}>
+              <TechniquesManager category="healing" label="Blog Post" />
+            </div>
+          </div>
         ) : (
           mergedGroups.map(group => (
             <div key={group.section} style={{ marginBottom: '32px' }}>

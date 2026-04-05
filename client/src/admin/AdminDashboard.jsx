@@ -25,7 +25,9 @@ const TABS = [
 const SIDEBAR_WIDTH = 260
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState('overview')
+  const [activeTab, setActiveTab] = useState(
+    () => localStorage.getItem('swa_admin_tab') || 'overview'
+  )
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const { logout, user } = useAuth()
   const navigate = useNavigate()
@@ -110,7 +112,10 @@ export default function AdminDashboard() {
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  setActiveTab(tab.id)
+                  localStorage.setItem('swa_admin_tab', tab.id)
+                }}
                 style={{
                   display: 'flex', alignItems: 'center',
                   gap: '12px',

@@ -1,28 +1,15 @@
-import { useRef } from 'react'
-import { motion, useScroll, useTransform, useInView } from 'framer-motion'
-import { FiLayers, FiTarget, FiHeart, FiShield } from 'react-icons/fi'
+import { useRef, useState, useEffect } from 'react'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { FiAnchor, FiTarget, FiActivity, FiEye } from 'react-icons/fi'
+import axios from 'axios'
 
-const PILLARS = [
-  {
-    title: "Rooted in Real Connection",
-    desc: "We go beyond basic wellness. Our interactive programs build genuine human connections, helping emotional intelligence grow naturally in your teams.",
-    icon: FiLayers
-  },
-  {
-    title: "Science Meets Wisdom",
-    desc: "We combine modern psychology with timeless eastern philosophies. The result is simple, practical tools you can use immediately to improve your daily life.",
-    icon: FiTarget
-  },
-  {
-    title: "Made for Your Culture",
-    desc: "Every workplace is unique. We take the time to understand your specific environment and create programs that perfectly fit your people's needs.",
-    icon: FiHeart
-  },
-  {
-    title: "Lasting Change",
-    desc: "We don't believe in quick fixes. Our methods are designed to build long-term wellbeing, prevent burnout, and genuinely improve how people feel every day.",
-    icon: FiShield
-  }
+const API = import.meta.env.VITE_API_URL
+
+const DEFAULT_PILLARS = [
+  { key: 'pillar1', title: "Performance is driven by inner stability, not external pressure.", icon: FiAnchor },
+  { key: 'pillar2', title: "Wellbeing is a skill that can be developed.", icon: FiTarget },
+  { key: 'pillar3', title: "Transformation happens through consistent experiential learning.", icon: FiActivity },
+  { key: 'pillar4', title: "Emotional awareness leads to better decisions and outcomes.", icon: FiEye },
 ]
 
 /* Each row gets its own scroll-linked parallax so it reacts to scrolling */
@@ -54,7 +41,7 @@ function PillarRow({ pillar, index }) {
 
       {/* REFINED 2-COLUMN LAYOUT (Left: Icon+Title, Right: Desc) */}
       <div className="pillar-content">
-        
+
         <div className="pillar-left-group">
           {/* Icon */}
           <div className="pillar-icon">
@@ -63,10 +50,11 @@ function PillarRow({ pillar, index }) {
 
           {/* Title */}
           <h3 className="pillar-title">{pillar.title}</h3>
+
         </div>
 
         {/* Description */}
-        <p className="pillar-desc">{pillar.desc}</p>
+        {pillar.desc && <p className="pillar-desc">{pillar.desc}</p>}
       </div>
     </motion.div>
   )
@@ -75,7 +63,29 @@ function PillarRow({ pillar, index }) {
 export default function WhyUsSection() {
   const sectionRef = useRef(null)
 
-  // Subtler, gracefully paced parallax animation 
+  const [phData, setPhData] = useState({
+    philosophyTitle: 'Core Philosophy',
+    philosophySubtitle: 'We move past quick fixes to provide structured, practical wellbeing programs that create real, lasting changes in your environment.',
+    pillar1: DEFAULT_PILLARS[0].title,
+    pillar2: DEFAULT_PILLARS[1].title,
+    pillar3: DEFAULT_PILLARS[2].title,
+    pillar4: DEFAULT_PILLARS[3].title,
+  })
+
+  useEffect(() => {
+    axios.get(`${API}/api/content/about_philosophy`).then(res => {
+      const items = res.data.items || res.data || []
+      if (Array.isArray(items) && items.length > 0) {
+        const map = {}
+        items.forEach(i => { map[i.key] = i.value })
+        setPhData(prev => ({ ...prev, ...map }))
+      }
+    }).catch(() => {})
+  }, [])
+
+  const pillars = DEFAULT_PILLARS.map(p => ({ ...p, title: phData[p.key] || p.title }))
+
+  // Subtler, gracefully paced parallax animation
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start end", "end start"]
@@ -91,98 +101,73 @@ export default function WhyUsSection() {
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden' }}>
-    <section
-      ref={sectionRef}
-      className="why-us-section"
-      style={{
-        background: 'transparent',
-        position: 'relative',
-        overflow: 'hidden',
-        margin: 0
-      }}
-    >
-      <div style={{
-        maxWidth: '1200px',
-        margin: '0 auto'
-      }}>
-        
-        {/* HEADING — Scroll-Driven Scale Reveal, Kinetic Typography, ALL viewports */}
-        <motion.div
-           style={{
-             textAlign: 'center',
-             maxWidth: '1000px',
-             margin: '0 auto 40px',
-             display: 'flex',
-             flexDirection: 'column',
-             alignItems: 'center',
-             y: headerY,
-             opacity: headerOpacity,
-             scale: headerScale
-           }}
-        >
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '12px',
-            marginBottom: '32px'
-          }}>
-            <div style={{ width: '8px', height: '8px', background: 'var(--accent)', borderRadius: '50%' }} />
-            <span style={{
-              fontSize: '13px', color: 'var(--dark)', letterSpacing: '3px',
-              textTransform: 'uppercase', fontWeight: 700
-            }}>
-              Our Core Philosophy
-            </span>
-          </div>
-          
-          <h2 style={{
-            fontFamily: 'Cormorant Garamond, serif',
-            fontSize: 'clamp(40px, 6vw, 76px)',
-            fontWeight: 700,
-            color: 'var(--dark)',
-            lineHeight: 1.1,
-            letterSpacing: '-0.5px',
-            marginBottom: '0',
-            whiteSpace: 'nowrap'
-          }}>
-            True wellbeing is a <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>continuous journey.</span>
-          </h2>
-        </motion.div>
+      <section
+        ref={sectionRef}
+        className="why-us-section"
+        style={{
+          background: 'transparent',
+          position: 'relative',
+          overflow: 'hidden',
+          margin: 0
+        }}
+      >
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
 
-        {/* SUBTEXT — Delayed Scale Reveal, slightly slower */}
-        <motion.div
-          style={{
+          {/* HEADING — centered, title on one line */}
+          <motion.div style={{
             textAlign: 'center',
-            maxWidth: '700px',
-            margin: '0 auto 80px',
-            y: subY,
-            opacity: subOpacity,
-            scale: subScale
-          }}
-        >
-          <p style={{
-            fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7, fontWeight: 400, margin: 0
+            y: headerY, opacity: headerOpacity, scale: headerScale,
+            marginBottom: '16px'
           }}>
-            We move past quick fixes to provide structured, practical wellbeing programs that create real, lasting changes in your environment.
-          </p>
-        </motion.div>
+            <h2 style={{
+              fontFamily: 'Cormorant Garamond, serif',
+              fontSize: 'clamp(36px, 4.5vw, 56px)',
+              fontWeight: 700,
+              color: 'var(--dark)',
+              lineHeight: 1.1,
+              letterSpacing: '-0.5px',
+              margin: 0,
+            }}>
+              {(() => {
+                const parts = phData.philosophyTitle.split(' ')
+                const last = parts.pop()
+                return <>{parts.join(' ')} <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>{last}</span></>
+              })()}
+            </h2>
+          </motion.div>
 
+          {/* SUBTITLE — centered, below title */}
+          <motion.div style={{
+            textAlign: 'center',
+            maxWidth: '680px',
+            margin: '0 auto 52px',
+            y: subY, opacity: subOpacity, scale: subScale
+          }}>
+            <p style={{ fontSize: '17px', color: 'var(--dark)', lineHeight: 1.8, fontWeight: 500, margin: 0 }}>
+              {phData.philosophySubtitle}
+            </p>
+          </motion.div>
 
-        {/* EDITORIAL ROWS */}
-        <div className="editorial-pillars">
-          {PILLARS.map((pillar, index) => (
-            <PillarRow key={index} pillar={pillar} index={index} />
-          ))}
-          {/* Final bottom border */}
-          <div style={{ width: '100%', height: '1px', background: 'rgba(204,199,185,0.4)' }} />
+          {/* PILLAR CARDS — 2×2 grid on desktop */}
+          <div className="editorial-pillars">
+            {pillars.map((pillar, index) => (
+              <PillarRow key={index} pillar={pillar} index={index} />
+            ))}
+          </div>
         </div>
-      </div>
 
-      <style>{`
+        <style>{`
+        /* ── CARDS: 2×2 grid on desktop ── */
         .editorial-pillars {
-          display: flex;
-          flex-direction: column;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
           width: 100%;
+          max-width: 1100px;
+          margin: 0 auto;
         }
 
         .pillar-row {
@@ -193,63 +178,57 @@ export default function WhyUsSection() {
           border-radius: 20px;
           overflow: hidden;
           transition: background 0.4s ease, transform 0.4s ease;
+          display: flex;
+          flex-direction: column;
         }
 
         .pillar-row:hover {
-          background: var(--white);
           transform: translateY(-4px);
-          box-shadow: 0 8px 32px rgba(101,50,57,0.08);
-          border-color: rgba(175,122,109,0.3);
+          box-shadow: 0 12px 40px rgba(101,50,57,0.09);
+          border-color: rgba(175,122,109,0.35);
         }
 
-        /* Divider track (warm bone on light) */
+        /* Animated accent line at top of card */
         .pillar-divider-track {
           width: 100%;
-          height: 1px;
-          background: rgba(204,199,185,0.4);
+          height: 2px;
+          background: rgba(204,199,185,0.3);
           position: relative;
           overflow: hidden;
         }
-
-        /* Animated fill that scales in on scroll */
         .pillar-divider-fill {
           position: absolute;
           top: 0; left: 0;
-          width: 100%;
-          height: 100%;
-          background: rgba(175,122,109,0.3);
+          width: 100%; height: 100%;
+          background: rgba(175,122,109,0.25);
         }
-
         .pillar-row:hover .pillar-divider-fill {
           background: var(--accent) !important;
         }
 
-        /* NEW 2-COLUMN BALANCED LAYOUT */
+        /* Card body */
         .pillar-content {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          align-items: center;
-          gap: 60px;
-          padding: 40px 32px;
-          text-align: center;
-          transition: padding 0.4s ease;
+          display: flex;
+          align-items: flex-start;
+          padding: 28px 28px;
+          gap: 18px;
+          flex: 1;
+          transition: padding 0.3s ease;
         }
+        .pillar-row:hover .pillar-content { padding: 32px 28px 28px; }
 
-        .pillar-row:hover .pillar-content {
-          padding: 48px 32px;
-        }
-
-        /* Left side container holding Icon + Title */
+        /* Left group: just holds icon */
         .pillar-left-group {
           display: flex;
-          align-items: center;
-          gap: 32px;
+          align-items: flex-start;
+          gap: 18px;
+          width: 100%;
         }
 
         /* Icon circle */
         .pillar-icon {
-          width: 48px;
-          height: 48px;
+          width: 42px;
+          height: 42px;
           border-radius: 50%;
           background: rgba(175,122,109,0.08);
           display: flex;
@@ -257,81 +236,66 @@ export default function WhyUsSection() {
           justify-content: center;
           color: var(--secondary);
           flex-shrink: 0;
+          margin-top: 2px;
           transition: background 0.4s ease, transform 0.4s ease;
         }
-
         .pillar-row:hover .pillar-icon {
-          background: rgba(175,122,109,0.18);
+          background: rgba(175,122,109,0.16);
           transform: scale(1.1) rotate(-5deg);
         }
 
         /* Title */
         .pillar-title {
           font-family: 'Cormorant Garamond', serif;
-          font-size: clamp(28px, 3vw, 40px);
+          font-size: clamp(17px, 1.6vw, 21px);
           font-weight: 600;
           color: var(--dark);
-          line-height: 1.1;
+          line-height: 1.4;
           position: relative;
           display: inline-block;
           margin: 0;
         }
-
         .pillar-title::after {
           content: '';
           position: absolute;
-          bottom: -4px;
-          left: 0;
-          width: 0;
-          height: 2px;
+          bottom: -4px; left: 0;
+          width: 0; height: 2px;
           background: var(--accent);
-          transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: width 0.5s cubic-bezier(0.16,1,0.3,1);
         }
+        .pillar-row:hover .pillar-title::after { width: 100%; }
 
-        .pillar-row:hover .pillar-title::after {
-          width: 100%;
-        }
-
-        /* Description — clearly visible by default, enhanced on hover */
         .pillar-desc {
-          font-size: 16px;
+          font-size: 15px;
           color: var(--secondary);
           line-height: 1.7;
-          font-weight: 400;
           margin: 0;
           opacity: 0.85;
-          transform: translateX(0);
-          transition: opacity 0.4s ease, transform 0.4s ease, color 0.4s ease;
+          transition: opacity 0.4s ease, color 0.4s ease;
         }
-
-        .pillar-row:hover .pillar-desc {
-          opacity: 1;
-          transform: translateX(6px);
-          color: var(--dark);
-        }
+        .pillar-row:hover .pillar-desc { opacity: 1; color: var(--dark); }
 
         /* === RESPONSIVE === */
         .why-us-section { padding: 80px 40px; }
-        @media (max-width: 1024px) {
-          .pillar-content { gap: 32px; }
-          .pillar-left-group { gap: 20px; }
+
+        @media (max-width: 900px) {
+          .philosophy-header {
+            grid-template-columns: 1fr;
+            gap: 20px;
+            text-align: center;
+            margin-bottom: 36px;
+          }
+          .philosophy-header .philosophy-title-col > div { margin: 16px auto 0; }
+          .editorial-pillars { grid-template-columns: 1fr; gap: 12px; }
         }
         @media (max-width: 768px) {
           .why-us-section { padding: 60px 20px !important; }
-          .pillar-content {
-            grid-template-columns: 1fr;
-            gap: 16px;
-            padding: 32px 20px !important;
-          }
-          .pillar-row:hover .pillar-content {
-            padding: 32px 20px !important;
-          }
-          .pillar-desc { opacity: 0.9; }
-          .pillar-icon { width: 40px; height: 40px; }
-          h2 { white-space: normal !important; }
+          .pillar-content { padding: 20px 18px !important; }
+          .pillar-row:hover .pillar-content { padding: 20px 18px !important; }
+          .pillar-icon { width: 34px; height: 34px; }
         }
       `}</style>
-    </section>
+      </section>
     </div>
   )
 }

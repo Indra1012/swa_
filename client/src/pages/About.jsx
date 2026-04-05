@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion'
 import { FiArrowRight, FiChevronDown } from 'react-icons/fi'
 import WhyUsSection from '../sections/WhyUsSection'
+import axios from 'axios'
+
+const API = import.meta.env.VITE_API_URL
 
 // Pure Scroll-Driven Kinetic Typography Wrapper
 const KineticWrap = ({ children, yStart = 80, yEnd = -40, scaleStart = 0.90, style }) => {
@@ -75,16 +78,67 @@ const ExpandableCard = ({ title, delay, children }) => {
   )
 }
 
-const TEAM_IMAGES = [
-  { img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=800&q=80', name: 'Alina R.', role: 'Senior Therapist' },
-  { img: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=800&q=80', name: 'Marcus T.', role: 'Performance Coach' },
-  { img: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&q=80', name: 'Sarah M.', role: 'Somatic Healer' },
-  { img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=800&q=80', name: 'David L.', role: 'Organizational Expert' }
-]
 
 export default function About() {
   const navigate = useNavigate()
   const pageRef = useRef(null)
+  const [teamList, setTeamList] = useState([])
+  const [expertsList, setExpertsList] = useState([])
+
+  const [pageData, setPageData] = useState({
+    heroTitle: 'The SWA Story',
+    heroLine1: 'Master your emotions.',
+    heroLine2: 'Lead with clarity.',
+    storyTitle: 'Our Story',
+    storySubtitle: 'Where It All Began',
+    storyQuote: '"SWA was born from one simple, undeniable truth — people are not machines."',
+    storyP1: 'In a world obsessed with productivity and performance metrics, something deeply human was being lost. The stress was visible. The burnout was real. And yet, the systems meant to support people kept treating symptoms — never roots.',
+    storyP2: 'Every program. Every session. Every technique at SWA carries the same intention: to help people think clearly, feel strongly, and perform consistently — from the inside out.',
+    visionTitle: 'OUR VISION',
+    visionQuote: '"To build a world where emotional wellbeing and resilience are the foundation of human performance."',
+    visionBullets: 'Workplaces that are not just productive, but mentally strong\nInstitutions that nurture intellect and emotional balance\nIndividuals who don\'t just survive — but truly thrive',
+    missionTitle: 'OUR MISSION',
+    missionQuote: '"To move people beyond awareness — into real, lasting transformation."',
+    missionBullets: 'Manage stress before it manages them\nBuild emotional strength that holds under pressure\nSustain high performance without burning out\nCultivate deep self-awareness to lead with unwavering clarity',
+    founderName: 'Dhruvi Shah',
+    founderTitle: 'Founder & Head Coach',
+    founderBio1: 'Dhruvi Shah is the Founder and Head Wellbeing Coach at SWA Wellbeing. With a deeply rooted background in psychology, a diploma in expressive art therapy, and rich experience as an international sound healer, she brings a uniquely holistic and integrative approach to modern mental well-being.',
+    founderBio2: 'Her expertise extensively spans mental health wellbeing, Indian psychology, and leadership development—masterfully blending traditional ancient wisdom with structured contemporary practices.',
+    founderBioQuote: 'Dhruvi is driven by a clear mission: to help individuals understand and master their emotions before those emotions begin to shape their decisions—enabling more balanced, self-aware, and effective leadership.',
+    founderImage: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1200&q=80'
+  })
+
+  useEffect(() => {
+    Promise.all([
+      axios.get(`${API}/api/content/about`),
+      axios.get(`${API}/api/media/founder`),
+      axios.get(`${API}/api/team`)
+    ])
+      .then(([contentRes, mediaRes, teamRes]) => {
+        const items = contentRes.data.items || contentRes.data || []
+        const mapped = {}
+        items.forEach(i => mapped[i.key] = i.value)
+
+        const media = mediaRes.data.media || []
+        if (media.length > 0) {
+          mapped.founderImage = media[media.length - 1].url
+        }
+
+        setPageData(prev => ({ ...prev, ...mapped }))
+
+        const allMembers = teamRes.data.items || []
+        setTeamList(allMembers.filter(m => m.category === 'team').sort((a, b) => a.order - b.order))
+        setExpertsList(allMembers.filter(m => m.category === 'expert').sort((a, b) => a.order - b.order))
+      }).catch(err => console.error(err))
+  }, [])
+
+  const formatItalicLastWord = (text) => {
+    if (!text) return null
+    const words = text.split(' ')
+    if (words.length <= 1) return text
+    const last = words.pop()
+    return <>{words.join(' ')} <span style={{ fontStyle: 'italic', fontWeight: 500, opacity: 0.9 }}>{last}</span></>
+  }
 
   // Scroll bindings specifically for the top Hero parallax where viewport is initially 0
   const { scrollY } = useScroll()
@@ -143,21 +197,21 @@ export default function About() {
                       letterSpacing: '4px', textTransform: 'uppercase', marginBottom: '24px',
                       textShadow: '0 2px 10px rgba(0,0,0,0.8)', opacity: 0.9
                     }}>
-                      The SWA Story
+                      {pageData.heroTitle}
                     </span>
                     <h1 style={{
                       fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(32px, 5vw, 64px)',
                       fontWeight: 700, color: 'var(--white)', lineHeight: 1.2, letterSpacing: '0.5px', marginBottom: '10px',
                       textShadow: '0 10px 40px rgba(0,0,0,0.6)'
                     }}>
-                      Master your <span style={{ fontStyle: 'italic', fontWeight: 500, opacity: 0.9 }}>emotions.</span>
+                      {formatItalicLastWord(pageData.heroLine1)}
                     </h1>
                     <h1 style={{
                       fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(32px, 5vw, 64px)',
                       fontWeight: 700, color: 'var(--white)', lineHeight: 1.2, letterSpacing: '0.5px',
                       textShadow: '0 10px 40px rgba(0,0,0,0.6)'
                     }}>
-                      Lead with <span style={{ fontStyle: 'italic', fontWeight: 500, opacity: 0.9 }}>clarity.</span>
+                      {formatItalicLastWord(pageData.heroLine2)}
                     </h1>
                   </div>
                 </motion.div>
@@ -191,11 +245,11 @@ export default function About() {
                 transition={{ duration: 0.8 }}
                 style={{ textAlign: 'center', marginBottom: '60px' }}
               >
-                <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 6vw, 56px)', color: 'var(--dark)', fontWeight: 400, margin: '0 auto 16px', letterSpacing: '0px' }}>
-                  Our Story
+                <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 5vw, 56px)', color: 'var(--dark)', margin: '0 auto 16px', fontWeight: 700, letterSpacing: '-0.5px' }}>
+                  {pageData.storyTitle}
                 </h2>
                 <span style={{ fontSize: '11px', color: 'var(--secondary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '4px', marginBottom: '24px', display: 'block' }}>
-                  Where It All Began
+                  {pageData.storySubtitle}
                 </span>
               </motion.div>
 
@@ -205,11 +259,11 @@ export default function About() {
                 padding: 'clamp(40px, 6vw, 60px)', borderRadius: '24px', marginBottom: '40px',
                 boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid rgba(204,199,185,0.25)'
               }}>
-                <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(26px, 4vw, 36px)', color: 'var(--dark)', fontStyle: 'italic', marginBottom: '20px', fontWeight: 600, lineHeight: 1.2 }}>
-                  "SWA was born from one simple, undeniable truth — people are not machines."
+                <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(20px, 3vw, 24px)', color: 'var(--dark)', fontStyle: 'italic', marginBottom: '20px', fontWeight: 600, lineHeight: 1.5 }}>
+                  {pageData.storyQuote}
                 </h3>
                 <p style={{ fontSize: 'clamp(16px, 3vw, 18px)', color: 'var(--dark)', lineHeight: 1.8, fontWeight: 500, margin: 0 }}>
-                  In a world obsessed with productivity and performance metrics, something deeply human was being lost. The stress was visible. The burnout was real. And yet, the systems meant to support people kept treating symptoms — never roots.
+                  {pageData.storyP1}
                 </p>
               </KineticWrap>
 
@@ -228,35 +282,35 @@ export default function About() {
                 }}
               >
                 <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(20px, 3vw, 24px)', color: 'var(--dark)', fontStyle: 'italic', lineHeight: 1.5, margin: 0, fontWeight: 600 }}>
-                  Every program. Every session. Every technique at SWA carries the same intention: to help people think clearly, feel strongly, and perform consistently — from the inside out.
+                  {pageData.storyP2}
                 </p>
               </motion.div>
 
               {/* Vision / Mission Light Frosted Cards */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '40px', marginBottom: '60px', alignItems: 'start' }}>
-                <ExpandableCard title="OUR VISION" delay={0}>
+                <ExpandableCard title={pageData.visionTitle} delay={0}>
                   <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '24px', color: 'var(--dark)', fontStyle: 'italic', lineHeight: 1.4, marginBottom: '24px', marginTop: 0 }}>
-                    "To build a world where emotional wellbeing and resilience are the foundation of human performance."
+                    {pageData.visionQuote}
                   </p>
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    {['Workplaces that are not just productive, but mentally strong', 'Institutions that nurture intellect and emotional balance', 'Individuals who don\'t just survive — but truly thrive'].map((txt, i) => (
+                    {(pageData.visionBullets || '').split('\n').filter(Boolean).map((txt, i) => (
                       <li key={i} style={{ position: 'relative', paddingLeft: '24px', marginBottom: '16px', fontSize: '15px', color: 'var(--dark)', fontWeight: 500, lineHeight: 1.6 }}>
                         <div style={{ position: 'absolute', left: 0, top: '8px', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)' }} />
-                        {txt}
+                        {txt.trim()}
                       </li>
                     ))}
                   </ul>
                 </ExpandableCard>
 
-                <ExpandableCard title="OUR MISSION" delay={0.1}>
+                <ExpandableCard title={pageData.missionTitle} delay={0.1}>
                   <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '24px', color: 'var(--dark)', fontStyle: 'italic', lineHeight: 1.4, marginBottom: '24px', marginTop: 0 }}>
-                    "To move people beyond awareness — into real, lasting transformation."
+                    {pageData.missionQuote}
                   </p>
                   <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                    {['Manage stress before it manages them', 'Build emotional strength that holds under pressure', 'Sustain high performance without burning out', 'Cultivate deep self-awareness to lead with unwavering clarity'].map((txt, i) => (
+                    {(pageData.missionBullets || '').split('\n').filter(Boolean).map((txt, i) => (
                       <li key={i} style={{ position: 'relative', paddingLeft: '24px', marginBottom: '16px', fontSize: '15px', color: 'var(--dark)', fontWeight: 500, lineHeight: 1.6 }}>
                         <div style={{ position: 'absolute', left: 0, top: '8px', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)' }} />
-                        {txt}
+                        {txt.trim()}
                       </li>
                     ))}
                   </ul>
@@ -302,8 +356,8 @@ export default function About() {
                     boxShadow: '0 40px 80px rgba(0,0,0,0.15)', position: 'relative', zIndex: 1
                   }}>
                     <img
-                      src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=1200&q=80"
-                      alt="Dhruvi Shah"
+                      src={pageData.founderImage}
+                      alt={pageData.founderName}
                       style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 20%' }}
                     />
                   </div>
@@ -319,10 +373,10 @@ export default function About() {
                     }}
                   >
                     <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(22px, 4vw, 26px)', color: 'var(--dark)', marginBottom: '4px' }}>
-                      Dhruvi Shah
+                      {pageData.founderName}
                     </h3>
                     <p style={{ fontSize: '12px', color: 'var(--dark)', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', margin: 0 }}>
-                      Founder & Head Coach
+                      {pageData.founderTitle}
                     </p>
                   </motion.div>
                 </KineticWrap>
@@ -336,12 +390,12 @@ export default function About() {
                     boxShadow: '0 10px 30px rgba(0,0,0,0.03)', border: '1px solid rgba(204,199,185,0.25)',
                     marginBottom: '24px'
                   }}>
-                    <p style={{ fontSize: 'clamp(15px, 2.5vw, 16px)', color: 'var(--dark)', lineHeight: 1.8, marginBottom: '20px', marginTop: 0, fontWeight: 500 }}>
-                      Dhruvi Shah is the Founder and Head Wellbeing Coach at SWA Wellbeing. With a deeply rooted background in psychology, a diploma in expressive art therapy, and rich experience as an international sound healer, she brings a uniquely holistic and integrative approach to modern mental well-being.
+                    <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(18px, 3vw, 20px)', color: 'var(--dark)', fontStyle: 'italic', lineHeight: 1.5, marginBottom: '20px', marginTop: 0, fontWeight: 600 }}>
+                      {pageData.founderBio1}
                     </p>
 
-                    <p style={{ fontSize: 'clamp(15px, 2.5vw, 16px)', color: 'var(--dark)', lineHeight: 1.8, margin: 0, fontWeight: 500 }}>
-                      Her expertise extensively spans mental health wellbeing, Indian psychology, and leadership development—masterfully blending traditional ancient wisdom with structured contemporary practices.
+                    <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(18px, 3vw, 20px)', color: 'var(--dark)', fontStyle: 'italic', lineHeight: 1.5, margin: 0, fontWeight: 600 }}>
+                      {pageData.founderBio2}
                     </p>
                   </div>
 
@@ -355,9 +409,9 @@ export default function About() {
                   >
                     <span style={{ position: 'absolute', top: -10, left: 30, fontSize: '80px', color: 'var(--accent)', opacity: 0.15, fontFamily: 'serif', lineHeight: 1 }}>"</span>
                     <p style={{
-                      fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(18px, 3vw, 20px)', color: 'var(--dark)', fontStyle: 'italic', lineHeight: 1.5, margin: 0, position: 'relative', zIndex: 1
+                      fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(18px, 3vw, 20px)', color: 'var(--dark)', fontStyle: 'italic', lineHeight: 1.5, margin: 0, position: 'relative', zIndex: 1, fontWeight: 600
                     }}>
-                      Dhruvi is driven by a clear mission: to help individuals understand and master their emotions before those emotions begin to shape their decisions—enabling more balanced, self-aware, and effective leadership.
+                      {pageData.founderBioQuote}
                     </p>
                   </motion.div>
                 </KineticWrap>
@@ -385,7 +439,68 @@ export default function About() {
                   hidden: { opacity: 0, x: 30 },
                   visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
                 }}
-                style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '56px', color: 'var(--dark)', margin: '16px 0 24px', fontWeight: 700, letterSpacing: '-0.5px' }}
+                style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 5vw, 56px)', color: 'var(--dark)', margin: '16px 0 24px', fontWeight: 700, letterSpacing: '-0.5px' }}
+              >
+                Our <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>Team</span>
+              </motion.h2>
+              <motion.p
+                variants={{
+                  hidden: { opacity: 0, x: -30 },
+                  visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
+                }}
+                style={{ fontSize: '18px', color: 'var(--secondary)', maxWidth: '600px', margin: '0 auto' }}
+              >
+                The dedicated professionals driving organizational transformation and emotional resilience from within.
+              </motion.p>
+            </motion.div>
+
+            <div className="team-grid" style={{
+              display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '32px', maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(20px, 4vw, 40px)'
+            }}>
+              {teamList.map((member, i) => (
+                <motion.div
+                  key={member._id || i}
+                  initial={{ opacity: 0, y: 60 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.8, delay: i * 0.15 }}
+                  animate={{ y: [0, (i % 2 === 0 ? -15 : 15), 0] }}
+                  style={{
+                    borderRadius: '24px', overflow: 'hidden', position: 'relative', height: i % 2 === 0 ? '320px' : '420px',
+                    marginTop: i % 2 !== 0 ? '80px' : '0', boxShadow: '0 30px 60px rgba(0,0,0,0.08)'
+                  }}
+                >
+                  <img src={member.url} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{
+                    position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)'
+                  }} />
+                  <div style={{ position: 'absolute', bottom: '30px', left: '30px', color: 'var(--white)' }}>
+                    <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '28px', marginBottom: '4px' }}>{member.name}</h4>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600, margin: 0 }}>{member.role}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          {/* 5. THE EXTERNAL EXPERTS GALLERY WITH CONSTANT FLOATING ANIMATIONS */}
+          <section style={{ background: 'transparent', padding: '20px 0 20px 0', margin: 0 }}>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.15 }}
+              variants={{
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.25 } }
+              }}
+              style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px', textAlign: 'center', marginBottom: '80px' }}
+            >
+              <motion.h2
+                variants={{
+                  hidden: { opacity: 0, x: 30 },
+                  visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
+                }}
+                style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 5vw, 56px)', color: 'var(--dark)', margin: '16px 0 24px', fontWeight: 700, letterSpacing: '-0.5px' }}
               >
                 Our Global <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>Experts</span>
               </motion.h2>
@@ -396,30 +511,28 @@ export default function About() {
                 }}
                 style={{ fontSize: '18px', color: 'var(--secondary)', maxWidth: '600px', margin: '0 auto' }}
               >
-                A meticulously curated network of psychological professionals, coaches, and healers dedicated to holistic integration.
+                A meticulously curated network of external psychological professionals, senior advisors, and distinguished healers offering specialized guidance.
               </motion.p>
             </motion.div>
 
             <div className="team-grid" style={{
               display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '32px', maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(20px, 4vw, 40px)'
             }}>
-              {TEAM_IMAGES.map((member, i) => (
+              {expertsList.map((member, i) => (
                 <motion.div
-                  key={i}
+                  key={member._id || i}
                   initial={{ opacity: 0, y: 60 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: '-50px' }}
                   transition={{ duration: 0.8, delay: i * 0.15 }}
-                  animate={{ y: [0, (i % 2 === 0 ? -15 : 15), 0] }} // Asymmetric continuous float
+                  animate={{ y: [0, (i % 2 === 0 ? -15 : 15), 0] }}
                   style={{
                     borderRadius: '24px', overflow: 'hidden', position: 'relative', height: i % 2 === 0 ? '320px' : '420px',
                     marginTop: i % 2 !== 0 ? '80px' : '0', boxShadow: '0 30px 60px rgba(0,0,0,0.08)'
                   }}
                 >
-                  <img src={member.img} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  <div style={{
-                    position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)'
-                  }} />
+                  <img src={member.url} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)' }} />
                   <div style={{ position: 'absolute', bottom: '30px', left: '30px', color: 'var(--white)' }}>
                     <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '28px', marginBottom: '4px' }}>{member.name}</h4>
                     <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600, margin: 0 }}>{member.role}</p>
@@ -443,7 +556,7 @@ export default function About() {
               transition={{ duration: 0.6 }}
             >
               <span style={{ fontSize: '11px', color: 'var(--dark)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '3px', marginBottom: '16px', display: 'block' }}>Let's Collaborate</span>
-              <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(36px, 4vw, 56px)', color: 'var(--dark)', fontWeight: 700, letterSpacing: '-0.5px' }}>Transform your <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>environment</span> today.</h2>
+              <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 5vw, 56px)', color: 'var(--dark)', fontWeight: 700, letterSpacing: '-0.5px' }}>Transform your <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>environment</span> today.</h2>
 
               <button
                 onClick={() => navigate('/book-demo')}

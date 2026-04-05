@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, useInView, useScroll, useTransform } from 'framer-motion'
+import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { FiArrowUpRight, FiChevronDown } from 'react-icons/fi'
 import { TECHNIQUES as FALLBACK_TECHNIQUES } from '../constants/techniques'
 import axios from 'axios'
@@ -50,8 +50,9 @@ export default function HealingTechniques() {
             title: t.title,
             subtitle: t.subtitle,
             image: t.image,
+            mediaMode: t.mediaMode || 'image',
             readMoreText: t.readMoreText || '',
-            images: [t.image]
+            images: t.images && t.images.length > 0 ? t.images.map(img => img.url) : [t.image].filter(Boolean)
           })))
         } else {
           setTechniques(FALLBACK_TECHNIQUES.map(t => ({ ...t, readMoreText: t.purpose || t.readMoreText || '' })))
@@ -161,7 +162,7 @@ export default function HealingTechniques() {
               <SimpleCard
                 key={technique.id}
                 technique={technique}
-                onOpen={(t) => navigate('/healing-techniques#' + t.id)}
+                onOpen={(t) => navigate('/blogs#' + t.id)}
               />
             ))}
           </motion.div>
@@ -189,10 +190,18 @@ export default function HealingTechniques() {
 function SimpleCard({ technique, onOpen }) {
   const [hovered, setHovered] = useState(false)
   const [expanded, setExpanded] = useState(false)
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const validImages = technique.images && technique.images.length > 0
     ? technique.images
     : [technique.image].filter(Boolean)
-  const currentImageSrc = validImages[0] || ''
+
+  useEffect(() => {
+    if (validImages.length <= 1) return;
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % validImages.length)
+    }, 1500)
+    return () => clearInterval(interval)
+  }, [validImages.length])
 
   return (
     <div
@@ -215,16 +224,36 @@ function SimpleCard({ technique, onOpen }) {
         onMouseLeave={() => setHovered(false)}
         style={{ height: '460px', position: 'relative' }}
       >
-        {currentImageSrc && (
-          <img
-            src={currentImageSrc}
-            alt={technique.title}
+        {technique.mediaMode === 'video' ? (
+          <video
+            src={technique.image}
+            autoPlay loop muted playsInline
             style={{
               width: '100%', height: '100%', objectFit: 'cover',
               transform: hovered ? 'scale(1.05)' : 'scale(1)',
               transition: 'transform 0.8s ease'
             }}
           />
+        ) : (
+          <AnimatePresence mode="popLayout">
+            {validImages.length > 0 && (
+              <motion.img
+                key={currentImageIndex}
+                src={validImages[currentImageIndex]}
+                alt={technique.title}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.8 }}
+                style={{
+                  position: 'absolute', inset: 0,
+                  width: '100%', height: '100%', objectFit: 'cover',
+                  transform: hovered ? 'scale(1.05)' : 'scale(1)',
+                  transition: 'transform 0.8s ease'
+                }}
+              />
+            )}
+          </AnimatePresence>
         )}
 
         <div style={{

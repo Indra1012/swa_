@@ -30,7 +30,7 @@ const DEFAULT_SERVICES = [
   },
   {
     type: 'government',
-    title: 'Government',
+    title: 'Government Wellness',
     image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&q=80',
     headline: 'Empowering Public Servants',
     description: 'Equipping government teams with the mental resilience needed to serve effectively.',

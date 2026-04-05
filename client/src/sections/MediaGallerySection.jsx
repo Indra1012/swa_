@@ -402,10 +402,10 @@ export default function MediaGallerySection() {
       >
         <h2 style={{
           fontFamily: 'Cormorant Garamond, serif',
-          fontSize: 'clamp(40px, 6vw, 76px)',
+          fontSize: 'clamp(32px, 6vw, 76px)',
           fontWeight: 700, color: 'var(--dark)',
           lineHeight: 1.1, letterSpacing: '-0.5px',
-          marginBottom: '0', whiteSpace: 'nowrap'
+          marginBottom: '0', whiteSpace: 'normal'
         }}>
           {headings.title.split(' ').length > 1 ? (
             <>
@@ -469,7 +469,7 @@ export default function MediaGallerySection() {
         .gallery-desc-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
         .gallery-desc-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 4px; }
         @media (max-width: 768px) {
-          :root { --gallery-scale: 1; }
+          :root { --gallery-scale: 0.8; }
           .media-gallery-section { padding: 20px 0 60px 0; }
           .gallery-nav-btn { display: none !important; }
         }

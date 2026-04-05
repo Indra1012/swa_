@@ -11,7 +11,7 @@ import Home from './pages/Home'
 const About          = lazy(() => import('./pages/About'))
 const BookDemo       = lazy(() => import('./pages/BookDemo'))
 const ServicesPage   = lazy(() => import('./pages/ServicesPage'))
-const HealingTechniquesPage = lazy(() => import('./pages/HealingTechniquesPage'))
+const BlogsPage              = lazy(() => import('./pages/BlogsPage'))
 const AdminLogin     = lazy(() => import('./admin/AdminLogin'))
 const AdminDashboard = lazy(() => import('./admin/AdminDashboard'))
 
@@ -117,7 +117,7 @@ function Layout() {
           <Route path="/book-demo"               element={<BookDemo />} />
           <Route path="/services"                element={<ServicesPage />} />
           <Route path="/services/:serviceId"     element={<ServicesPage />} />
-          <Route path="/healing-techniques"      element={<HealingTechniquesPage />} />
+          <Route path="/blogs"                   element={<BlogsPage />} />
           <Route path="/admin/login"             element={<AdminLogin />} />
           <Route
             path="/admin/dashboard"

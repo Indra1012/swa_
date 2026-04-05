@@ -10,7 +10,7 @@ const FOOTER_SECTIONS = [
       { label: 'Corporate Wellbeing', path: '/services/corporate' },
       { label: 'Education Programs', path: '/services/education' },
       { label: 'Community Wellbeing', path: '/services/community' },
-      { label: 'Government', path: '/services/government' }
+      { label: 'Government Wellness', path: '/services/government' }
     ]
   },
   {

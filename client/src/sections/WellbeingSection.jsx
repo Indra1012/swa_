@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, useInView, useScroll, useTransform } from 'framer-motion'
 import { FiChevronDown } from 'react-icons/fi'
 import axios from 'axios'
+import { cloudinaryImg } from '../utils/imageUrl'
 
 const API = import.meta.env.VITE_API_URL
 
@@ -221,8 +222,10 @@ function WellbeingCard({ item }) {
       >
         {currentImageSrc && (
           <img
-            src={currentImageSrc}
+            src={cloudinaryImg(currentImageSrc, 600)}
             alt={item.title}
+            loading="lazy"
+            decoding="async"
             style={{
               width: '100%', height: '100%', objectFit: 'cover',
               transform: hovered ? 'scale(1.05)' : 'scale(1)',

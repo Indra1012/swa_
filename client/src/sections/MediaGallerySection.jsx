@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { FiX, FiPlay, FiEye, FiEyeOff, FiChevronDown, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import axios from 'axios'
+import { cloudinaryImg } from '../utils/imageUrl'
 
 const API = import.meta.env.VITE_API_URL
 
@@ -82,8 +83,10 @@ function GalleryCard({ item, onClick, stagger }) {
       ) : (
         <>
           <img
-            src={item.url}
+            src={cloudinaryImg(item.url, 700)}
             alt=""
+            loading="lazy"
+            decoding="async"
             style={{
               width: '100%', height: '100%', objectFit: 'cover',
               transform: hovered ? 'scale(1.06)' : 'scale(1)',

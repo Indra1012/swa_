@@ -1,3 +1,5 @@
+
+// server/routes/auth.routes.js
 const express  = require('express')
 const passport = require('passport')
 const { login, googleCallback, logout, forgotPassword, resetPassword } = require('../controllers/auth.controller')

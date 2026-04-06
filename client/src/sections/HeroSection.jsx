@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
+import { cloudinaryImg } from '../utils/imageUrl'
 
 const API = import.meta.env.VITE_API_URL
 
@@ -142,9 +143,11 @@ export default function HeroSection() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 1.4, ease: [0.25, 0.1, 0.25, 1] }}
-              src={mediaUrls[currentSlide] || fallbackImg}
+              src={cloudinaryImg(mediaUrls[currentSlide] || fallbackImg, 1600)}
               alt="SWA Wellbeing"
               loading="eager"
+              fetchpriority={currentSlide === 0 ? 'high' : 'auto'}
+              decoding="async"
               style={{
                 position: 'absolute', inset: 0,
                 width: '100%', height: '100%',

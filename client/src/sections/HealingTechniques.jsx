@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { FiArrowUpRight, FiChevronDown } from 'react-icons/fi'
 import { TECHNIQUES as FALLBACK_TECHNIQUES } from '../constants/techniques'
+import { cloudinaryImg } from '../utils/imageUrl'
 import axios from 'axios'
 
 const API = import.meta.env.VITE_API_URL
@@ -239,8 +240,10 @@ function SimpleCard({ technique, onOpen }) {
             {validImages.length > 0 && (
               <motion.img
                 key={currentImageIndex}
-                src={validImages[currentImageIndex]}
+                src={cloudinaryImg(validImages[currentImageIndex], 600)}
                 alt={technique.title}
+                loading="lazy"
+                decoding="async"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}

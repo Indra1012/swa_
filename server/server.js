@@ -1,3 +1,5 @@
+// server/server.js
+
 const express = require('express') // Nodemon restart trigger
 const dotenv = require('dotenv')
 const cors = require('cors')
@@ -28,9 +30,31 @@ if (missingEnvVars.length > 0) {
 const app = express()
 
 // ── LOAD BALANCER / PROXY TRUST ──
-// Extremely critical for online deployment (Vercel Frontend -> Render/AWS/Heroku Backend)
-// Ensures Rate Limiter reads the *actual* user IP, not the Proxy IP over and over causing instant mass-blocks.
+// Must be first — ensures rate limiter + secure cookies work correctly behind Render/Vercel proxies.
 app.set('trust proxy', 1)
+
+// ── CORS CONFIG ──
+// Multi-origin: supports local dev, Vercel preview, and production domain.
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'https://swa-dun.vercel.app',
+  'https://www.swaspaces.com',
+  'https://swaspaces.com',
+]
+const corsOptions = {
+  origin: (origin, callback) => {
+    // Allow server-to-server (no origin) and known origins
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) return callback(null, true)
+    callback(new Error(`CORS blocked: ${origin}`))
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}
+
+// OPTIONS preflight — must come before rate limiter so preflight requests are never rate-limited
+app.options('*', cors(corsOptions))
+app.use(cors(corsOptions))
 
 // ── RATE LIMITING ──
 const limiter = rateLimit({
@@ -44,12 +68,6 @@ app.use('/api/', limiter)
 
 // ── CORE MIDDLEWARE ──
 app.use(helmet())
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}))
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
@@ -89,7 +107,10 @@ app.use(session({
   cookie: {
     secure: process.env.NODE_ENV === 'production',
     httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000  // 24 hours
+    // 'none' required for cross-origin sessions (Vercel frontend → Render backend)
+    // 'lax' works for same-origin local dev and is safer default
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    maxAge: 7 * 24 * 60 * 60 * 1000  // 7 days
   }
 }))
 

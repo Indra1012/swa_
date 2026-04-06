@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
@@ -29,8 +29,17 @@ export default function AdminDashboard() {
     () => localStorage.getItem('swa_admin_tab') || 'overview'
   )
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const { logout, user } = useAuth()
+  const { logout, user, login } = useAuth()
   const navigate = useNavigate()
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('token')
+    if (token) {
+      login(token)
+      window.history.replaceState({}, '', '/admin/dashboard')
+    }
+  }, [login])
 
   const currentTab = TABS.find(t => t.id === activeTab)
 

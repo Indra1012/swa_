@@ -21,6 +21,8 @@ export default function TaglineSection() {
   const [intervalMs, setIntervalMs] = useState(2500)
   const [activeIndex, setActiveIndex] = useState(0)
   const [clientLogos, setClientLogos] = useState(STATIC_LOGOS)
+  const [logoTagline, setLogoTagline] = useState('Loved by leading organizations worldwide')
+  const [logoVisible, setLogoVisible] = useState(true)
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -57,6 +59,13 @@ export default function TaglineSection() {
         if (res.data.items && res.data.items.length > 0) {
           setClientLogos(res.data.items)
         }
+        const tRes = await axios.get(`${API}/api/content/client-logos`)
+        const tItems = tRes.data.items || []
+        const tLine = tItems.find(i => i.key === 'tagline')
+        if (tLine?.value) setLogoTagline(tLine.value)
+        const visItem = tItems.find(i => i.key === 'visible')
+        if (visItem && visItem.value === 'false') setLogoVisible(false)
+        else setLogoVisible(true)
       } catch { /* use defaults */ }
     }
     loadContent()
@@ -160,15 +169,17 @@ export default function TaglineSection() {
           </p>
 
           {/* Client Logos Marquee */}
+          {logoVisible && (
           <div style={{ marginTop: '60px', width: '100%', overflow: 'hidden' }}>
             <p style={{
               fontSize: '14px',
               color: 'var(--dark)',
               fontWeight: 600,
+              fontStyle: 'italic',
               marginBottom: '32px',
               fontFamily: 'DM Sans, sans-serif'
             }}>
-              Loved by leading organizations worldwide
+              {logoTagline}
             </p>
 
             <div className="logo-marquee-container" style={{
@@ -209,6 +220,7 @@ export default function TaglineSection() {
               </div>
             </div>
           </div>
+          )}
         </motion.div>
         <style>{`
         .tagline-section { padding: 40px 0 80px; }

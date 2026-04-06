@@ -248,7 +248,7 @@ function HeroManager() {
       {/* ── BACKGROUND MEDIA ── */}
       <div style={{ marginBottom: '24px' }}>
         <p style={{ fontSize: '12px', color: 'var(--secondary)', marginBottom: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Background Media
+          Background Media <span style={{ textTransform: 'none', fontSize: '11px', letterSpacing: 'normal', fontStyle: 'italic', marginLeft: '6px' }}>(try to add rectangle / 16:9 ratio images only)</span>
         </p>
 
         {/* Mode selector tabs */}
@@ -411,11 +411,11 @@ function TechniquesManager({ category, label }) {
 
   const create = async () => {
     if (!newItem.title) return setErr('Title is required.')
-    
+
     setUploading('new')
     try {
       const res = await axios.post(`${API}/api/sections/techniques`, { ...newItem, category }, { headers: authH() })
-      
+
       if (newItem.pendingFiles && newItem.pendingFiles.length > 0) {
         const id = res.data.item._id;
         const fd = new FormData()
@@ -424,7 +424,7 @@ function TechniquesManager({ category, label }) {
           headers: { ...authH(), 'Content-Type': 'multipart/form-data' }
         }).catch(() => console.error("Initial media upload failed"))
       }
-      
+
       setNewItem({ title: '', subtitle: '', focus: '', readMoreText: '', purpose: '', order: 0, pendingFiles: null, pendingMediaMode: 'image' })
       setAdding(false); load()
     } catch { setErr('Create failed.') }
@@ -509,6 +509,11 @@ function TechniquesManager({ category, label }) {
               {/* Media Manager */}
               <div style={{ marginTop: '16px', background: 'rgba(255,255,255,0.5)', padding: '16px', borderRadius: '10px', border: '1px dashed rgba(204,199,185,0.8)' }}>
                 <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Card Media</p>
+                {category === 'healing' && (
+                  <p style={{ fontSize: '11px', color: 'var(--secondary)', marginBottom: '12px', marginTop: '-4px', fontStyle: 'italic' }}>
+                    Tip: For best layout, use a 9:16 vertical rectangle image (portrait format).
+                  </p>
+                )}
                 <div style={{ display: 'inline-flex', gap: '4px', background: 'var(--bg)', borderRadius: '8px', padding: '4px', marginBottom: '12px' }}>
                   <button style={modeBtnStyle(mediaMode === 'image')} onClick={() => setMediaMode('image')}>📷 {category === 'healing' ? 'Image' : 'Images (Max 3)'}</button>
                   <button style={modeBtnStyle(mediaMode === 'video')} onClick={() => setMediaMode('video')}>🎬 Video</button>
@@ -606,14 +611,20 @@ function TechniquesManager({ category, label }) {
 
           <div style={{ marginTop: '16px', marginBottom: '16px', background: 'rgba(255,255,255,0.5)', padding: '16px', borderRadius: '10px', border: '1px dashed rgba(204,199,185,0.8)' }}>
             <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Card Media</p>
+            {category === 'healing' && (
+              <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.6)', marginBottom: '12px', marginTop: '-4px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ background: 'rgba(175,122,109,0.12)', border: '1px solid rgba(175,122,109,0.3)', borderRadius: '4px', padding: '2px 7px', fontWeight: 700, fontSize: '11px', color: 'var(--secondary)', letterSpacing: '0.5px' }}>9:16</span>
+                Use a <strong>portrait / vertical</strong> image — taller than wide (e.g. 900 × 1600 px). Landscape images will be cropped.
+              </p>
+            )}
             <div style={{ display: 'inline-flex', gap: '4px', background: 'var(--bg)', borderRadius: '8px', padding: '4px', marginBottom: '12px' }}>
-              <button style={modeBtnStyle(newItem.pendingMediaMode === 'image')} onClick={() => setNewItem(n => ({...n, pendingMediaMode: 'image', pendingFiles: null}))}>📷 {category === 'healing' ? 'Image' : 'Images (Max 3)'}</button>
-              <button style={modeBtnStyle(newItem.pendingMediaMode === 'video')} onClick={() => setNewItem(n => ({...n, pendingMediaMode: 'video', pendingFiles: null}))}>🎬 Video</button>
+              <button style={modeBtnStyle(newItem.pendingMediaMode === 'image')} onClick={() => setNewItem(n => ({ ...n, pendingMediaMode: 'image', pendingFiles: null }))}>📷 {category === 'healing' ? 'Image' : 'Images (Max 3)'}</button>
+              <button style={modeBtnStyle(newItem.pendingMediaMode === 'video')} onClick={() => setNewItem(n => ({ ...n, pendingMediaMode: 'video', pendingFiles: null }))}>🎬 Video</button>
             </div>
-            
+
             <div>
-               <input ref={fileRefNew} type="file" accept={newItem.pendingMediaMode === 'image' ? "image/*" : "video/*"} multiple={category !== 'healing' && newItem.pendingMediaMode === 'image'} onChange={e => setNewItem(n => ({...n, pendingFiles: e.target.files}))} style={{ display: 'none' }} />
-               <SBtn onClick={() => fileRefNew.current?.click()} disabled={uploading === 'new'} variant="ghost"><FiUpload size={12} /> {uploading === 'new' ? 'Saving...' : 'Select File'}</SBtn>
+              <input ref={fileRefNew} type="file" accept={newItem.pendingMediaMode === 'image' ? "image/*" : "video/*"} multiple={category !== 'healing' && newItem.pendingMediaMode === 'image'} onChange={e => setNewItem(n => ({ ...n, pendingFiles: e.target.files }))} style={{ display: 'none' }} />
+              <SBtn onClick={() => fileRefNew.current?.click()} disabled={uploading === 'new'} variant="ghost"><FiUpload size={12} /> {uploading === 'new' ? 'Saving...' : 'Select File'}</SBtn>
             </div>
 
             {newItem.pendingFiles && newItem.pendingFiles.length > 0 && (
@@ -621,11 +632,11 @@ function TechniquesManager({ category, label }) {
                 {Array.from(newItem.pendingFiles).map((file, idx) => (
                   <div key={idx} style={{ position: 'relative' }}>
                     {newItem.pendingMediaMode === 'video' ? (
-                       <video src={URL.createObjectURL(file)} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                      <video src={URL.createObjectURL(file)} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
                     ) : (
-                       <img src={URL.createObjectURL(file)} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
+                      <img src={URL.createObjectURL(file)} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd' }} />
                     )}
-                    <button onClick={() => setNewItem(n => ({...n, pendingFiles: null}))} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex' }}><FiX size={12} /></button>
+                    <button onClick={() => setNewItem(n => ({ ...n, pendingFiles: null }))} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex' }}><FiX size={12} /></button>
                   </div>
                 ))}
               </div>
@@ -915,6 +926,8 @@ function ExpertiseManager() {
     </div>
   )
 }
+
+
 
 // ─── 4. TESTIMONIALS MANAGER ─────────────────────────────────────────────────
 function TestimonialsManager() {
@@ -1391,6 +1404,229 @@ function FaqManager() {
   )
 }
 
+// ─── X. CTA MANAGER ──────────────────────────────────────────────────────────
+function CtaManager() {
+  const [slides, setSlides] = useState([
+    "It's time to bring the SWA Magic to your place and people",
+    'Transform your organization with the power of wellbeing',
+    'Join forward-thinking organizations on the journey to lasting wellbeing'
+  ])
+  const [mediaMode, setMediaMode] = useState('image') // 'image' | 'video'
+  const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [err, setErr] = useState('')
+
+  const [uploadedImgs, setUploadedImgs] = useState([])
+  const [uploadedVid, setUploadedVid] = useState(null)
+
+  const imgRef = useRef(null)
+  const vidRef = useRef(null)
+
+  const loadData = async () => {
+    try {
+      const now = Date.now()
+      const [contentRes, mediaRes] = await Promise.all([
+        axios.get(`${API}/api/content/cta?t=${now}`),
+        axios.get(`${API}/api/media/cta?t=${now}`)
+      ])
+
+      const items = contentRes.data.items || contentRes.data || []
+      if (Array.isArray(items)) {
+        let s = [null, null, null]
+        items.forEach(i => {
+          if (i.key === 'slide0') s[0] = i.value
+          if (i.key === 'slide1') s[1] = i.value
+          if (i.key === 'slide2') s[2] = i.value
+          if (i.key === 'mediaType') setMediaMode(i.value)
+        })
+        setSlides(prev => [
+          s[0] ?? prev[0],
+          s[1] ?? prev[1],
+          s[2] ?? prev[2]
+        ])
+      }
+
+      const media = mediaRes.data.media || []
+      const imgItems = media.filter(m => m.type !== 'video')
+      const vidItem = media.find(m => m.type === 'video')
+
+      setUploadedImgs(imgItems)
+      if (vidItem) setUploadedVid(vidItem)
+    } catch { }
+  }
+
+  useEffect(() => { loadData() }, [])
+
+  const saveAll = async () => {
+    setSaving(true); setErr(''); setMsg('')
+    try {
+      const updates = [
+        axios.put(`${API}/api/content`, { section: 'cta', key: 'slide0', value: slides[0] }, { headers: authH() }),
+        axios.put(`${API}/api/content`, { section: 'cta', key: 'slide1', value: slides[1] }, { headers: authH() }),
+        axios.put(`${API}/api/content`, { section: 'cta', key: 'slide2', value: slides[2] }, { headers: authH() }),
+        axios.put(`${API}/api/content`, { section: 'cta', key: 'mediaType', value: mediaMode }, { headers: authH() }),
+      ]
+
+      await Promise.all(updates)
+      setMsg('Saved successfully!')
+      setTimeout(() => setMsg(''), 2500)
+    } catch (error) {
+      const errorText = error.response?.data?.error || error.response?.data?.message || 'Unknown error'
+      setErr(`Failed to save: ${errorText}`)
+    }
+    finally { setSaving(false) }
+  }
+
+  const uploadFile = async (e, type) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true); setErr(''); setMsg('')
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('section', 'cta')
+
+      const res = await axios.post(`${API}/api/media/upload`, fd, { headers: { ...authH(), 'Content-Type': 'multipart/form-data' } })
+
+      if (res.data?.media) {
+        if (type === 'image') setUploadedImgs(prev => [...prev, res.data.media])
+        if (type === 'video') setUploadedVid(res.data.media)
+      }
+
+      await axios.put(`${API}/api/content`, { section: 'cta', key: 'mediaType', value: type }, { headers: authH() })
+
+      setMsg(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully!`)
+      setTimeout(() => setMsg(''), 3000)
+    } catch (error) {
+      setErr('Upload failed.')
+    }
+    finally {
+      setUploading(false)
+      e.target.value = null
+    }
+  }
+
+  const deleteUploadedImage = async (id, isVideo = false) => {
+    if (!window.confirm('Delete this media?')) return
+    try {
+      await axios.delete(`${API}/api/media/${id}`, { headers: authH() })
+      if (isVideo) {
+        setUploadedVid(null)
+      } else {
+        setUploadedImgs(prev => prev.filter(m => m._id !== id))
+      }
+    } catch { setErr('Failed to delete media') }
+  }
+
+  const modeBtnStyle = (active) => ({
+    padding: '8px 18px', borderRadius: '8px', border: 'none',
+    fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 600,
+    cursor: 'pointer', transition: 'all 0.2s ease',
+    background: active ? 'var(--dark)' : 'transparent',
+    color: active ? 'var(--white)' : 'var(--secondary)',
+  })
+
+  return (
+    <>
+      <div style={{ marginBottom: '24px' }}>
+        <p style={{ fontSize: '12px', color: 'var(--secondary)', marginBottom: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
+          Background Media <span style={{ textTransform: 'none', fontSize: '11px', letterSpacing: 'normal', fontStyle: 'italic', marginLeft: '6px' }}>(Upload 16:9 ratio images or video only here)</span>
+        </p>
+
+        <div style={{
+          display: 'inline-flex', gap: '4px', background: 'var(--bg)',
+          borderRadius: '10px', padding: '4px',
+          border: '1px solid rgba(204,199,185,0.35)', marginBottom: '16px'
+        }}>
+          <button style={modeBtnStyle(mediaMode === 'image')} onClick={() => setMediaMode('image')}>📷 Upload Image</button>
+          <button style={modeBtnStyle(mediaMode === 'video')} onClick={() => setMediaMode('video')}>🎬 Upload Video</button>
+        </div>
+
+        {mediaMode === 'image' && (
+          <div>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              {[0, 1, 2].map(idx => {
+                const upImg = uploadedImgs[idx]
+                const fallbackImg = [
+                  'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80',
+                  'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&q=80',
+                  'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=400&q=80'
+                ][idx]
+                
+                return (
+                  <div key={idx} style={{ position: 'relative', width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(204,199,185,0.4)', background: 'var(--bg)' }}>
+                    {upImg ? (
+                      <>
+                        <img src={upImg.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button onClick={() => deleteUploadedImage(upImg._id)} style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }} title="Delete Image"><FiX size={12} /></button>
+                      </>
+                    ) : (
+                      <>
+                        <img src={fallbackImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3 }} />
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(250,248,245,0.5)' }}>
+                           <button onClick={() => imgRef.current?.click()} style={{ background: 'var(--white)', border: '1px solid var(--secondary)', borderRadius: '4px', padding: '4px 8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', color: 'var(--dark)' }}>
+                             Replace
+                           </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
+              <input ref={imgRef} type="file" accept="image/*" onChange={e => uploadFile(e, 'image')} style={{ display: 'none' }} />
+            </div>
+            <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.5)', marginTop: '8px' }}>
+              Accepts JPG, PNG, WebP. Upload up to 3 images which will automatically crossfade like a slideshow.
+            </p>
+          </div>
+        )}
+
+        {mediaMode === 'video' && (
+          <div>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              {uploadedVid && (
+                <div style={{ width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(204,199,185,0.4)', position: 'relative' }}>
+                  <video src={uploadedVid.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <button onClick={() => deleteUploadedImage(uploadedVid._id, true)} style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }} title="Delete Video"><FiX size={12} /></button>
+                </div>
+              )}
+              <input ref={vidRef} type="file" accept="video/*" onChange={e => uploadFile(e, 'video')} style={{ display: 'none' }} />
+              <SBtn onClick={() => vidRef.current?.click()} disabled={uploading} variant="ghost" style={{ marginTop: '20px' }}>
+                <FiUpload size={13} /> {uploading ? 'Uploading...' : 'Upload Video'}
+              </SBtn>
+            </div>
+            <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.5)', marginTop: '8px' }}>
+              Accepts MP4, WebM. Video will autoplay silently while texts slide over it.
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div style={{ marginBottom: '24px' }}>
+        <p style={{ fontSize: '12px', color: 'var(--secondary)', marginBottom: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
+          Sliding Text Headlines
+        </p>
+        {[0, 1, 2].map(idx => (
+          <div key={idx} style={{ marginBottom: '10px' }}>
+            <Field
+              label={`Headline ${idx + 1}`}
+              value={slides[idx]}
+              onChange={v => { const n = [...slides]; n[idx] = v; setSlides(n) }}
+              placeholder={`Text for slide ${idx + 1}`}
+              multiline
+            />
+          </div>
+        ))}
+      </div>
+
+      <ErrMsg msg={err} />
+      {msg && <p style={{ fontSize: '12px', color: 'green', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}><FiCheck size={13} /> {msg}</p>}
+      <SBtn onClick={saveAll} disabled={saving}><FiCheck size={12} /> {saving ? 'Saving...' : 'Save All Changes'}</SBtn>
+    </>
+  )
+}
+
 // ─── 8. GALLERY MANAGER ──────────────────────────────────────────────────────
 const SIZE_VARIANTS = ['medium', 'large']
 
@@ -1769,14 +2005,37 @@ function ClientLogosManager() {
   const fileRefs = useRef({})
   const newFileRef = useRef(null)
 
+  const [tagline, setTagline] = useState('Loved by leading organizations worldwide')
+  const [taglineSaving, setTaglineSaving] = useState(false)
+  const [taglineMsg, setTaglineMsg] = useState('')
+  const [sectionVisible, setSectionVisible] = useState(true)
+
   const load = useCallback(async () => {
     try {
-      const res = await axios.get(`${API}/api/client-logos?t=${Date.now()}`)
-      setItems(res.data.items || [])
+      const [logosRes, contentRes] = await Promise.all([
+        axios.get(`${API}/api/client-logos?t=${Date.now()}`),
+        axios.get(`${API}/api/content/client-logos?t=${Date.now()}`)
+      ])
+      setItems(logosRes.data.items || [])
+      const items = contentRes.data.items || []
+      const tLine = items.find(i => i.key === 'tagline')
+      if (tLine?.value) setTagline(tLine.value)
+      const visItem = items.find(i => i.key === 'visible')
+      if (visItem && visItem.value === 'false') setSectionVisible(false)
     } catch { setErr('Failed to load logos.') }
   }, [])
 
   useEffect(() => { load() }, [load])
+
+  const saveTagline = async () => {
+    setTaglineSaving(true); setTaglineMsg('')
+    try {
+      await axios.put(`${API}/api/content`, { section: 'client-logos', key: 'tagline', value: tagline }, { headers: authH() })
+      setTaglineMsg('Saved!')
+      setTimeout(() => setTaglineMsg(''), 2500)
+    } catch { setTaglineMsg('Save failed.') }
+    finally { setTaglineSaving(false) }
+  }
 
   const save = async (id) => {
     try {
@@ -1832,6 +2091,57 @@ function ClientLogosManager() {
 
   return (
     <>
+      <div style={{
+        marginBottom: '28px', padding: '18px 20px',
+        background: sectionVisible ? 'rgba(80,160,80,0.06)' : 'rgba(200,60,60,0.06)',
+        border: `1.5px solid ${sectionVisible ? 'rgba(80,160,80,0.25)' : 'rgba(200,60,60,0.25)'}`,
+        borderRadius: '12px',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px'
+      }}>
+        <div>
+          <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: 'var(--dark)' }}>
+            {sectionVisible ? '✅ Client Logos Marquee is Visible' : '🙈 Client Logos Marquee is Hidden'}
+          </p>
+          <p style={{ margin: '4px 0 0', fontSize: '12px', color: 'var(--secondary)' }}>
+            {sectionVisible ? 'The client logo scrolling banner is shown on the website.' : 'The client logo scrolling banner is completely hidden from the website.'}
+          </p>
+        </div>
+        <button
+          onClick={async () => {
+            const next = !sectionVisible
+            setSectionVisible(next)
+            try {
+              await axios.put(`${API}/api/content`, { section: 'client-logos', key: 'visible', value: String(next) }, { headers: authH() })
+            } catch { setSectionVisible(!next); setErr('Could not update visibility.') }
+          }}
+          style={{
+            flexShrink: 0,
+            padding: '9px 22px', borderRadius: '20px', border: 'none',
+            background: sectionVisible ? 'rgba(200,60,60,0.12)' : 'rgba(80,160,80,0.15)',
+            color: sectionVisible ? '#c83c3c' : '#3a9a3a',
+            fontWeight: 700, fontSize: '12px', letterSpacing: '1px',
+            textTransform: 'uppercase', cursor: 'pointer',
+            transition: 'all 0.25s ease'
+          }}
+        >
+          {sectionVisible ? 'Hide Section' : 'Show Section'}
+        </button>
+      </div>
+
+      <div style={{ marginBottom: '20px', paddingBottom: '20px', borderBottom: '1px solid rgba(204,199,185,0.25)' }}>
+        <Field
+          label="Section Tagline"
+          value={tagline}
+          onChange={setTagline}
+          placeholder="Loved by leading organizations worldwide"
+        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <SBtn onClick={saveTagline} disabled={taglineSaving}>
+            <FiCheck size={12} /> {taglineSaving ? 'Saving...' : 'Save Tagline'}
+          </SBtn>
+          {taglineMsg && <span style={{ fontSize: '12px', color: taglineMsg === 'Saved!' ? 'green' : '#c83232' }}>{taglineMsg}</span>}
+        </div>
+      </div>
       <ErrMsg msg={err} />
       {items.map(item => (
         <div key={item._id} style={{ background: 'var(--bg)', borderRadius: '10px', padding: '14px 16px', marginBottom: '10px', border: '1px solid rgba(204,199,185,0.25)' }}>
@@ -1999,7 +2309,11 @@ function FounderManager() {
     <>
       <div style={{ marginBottom: '24px', background: 'rgba(250, 248, 245, 0.95)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(204,199,185,0.3)' }}>
         <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--secondary)', textTransform: 'uppercase', marginBottom: '8px' }}>Founder Photo</p>
-        <p style={{ fontSize: '12px', color: 'var(--secondary)', marginBottom: '12px' }}>This image appears beside the Founder biography block.</p>
+        <p style={{ fontSize: '12px', color: 'var(--secondary)', marginBottom: '4px' }}>This image appears beside the Founder biography block.</p>
+        <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.6)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ background: 'rgba(175,122,109,0.12)', border: '1px solid rgba(175,122,109,0.3)', borderRadius: '4px', padding: '2px 8px', fontWeight: 700, fontSize: '11px', color: 'var(--secondary)', letterSpacing: '0.5px' }}>9:16</span>
+          Use a <strong>portrait / vertical rectangle</strong> image for the best fit — taller than wide (e.g. 900 × 1600 px).
+        </p>
         {uploadedImg ? (
           <div style={{ position: 'relative', width: 'fit-content' }}>
             <img src={uploadedImg.url} style={{ width: '120px', height: '160px', objectFit: 'cover', borderRadius: '12px' }} alt="" />
@@ -2277,6 +2591,10 @@ function TeamManager() {
                 <FiUpload size={12} /> Upload Photo
               </SBtn>
             }
+            <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.6)', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ background: 'rgba(175,122,109,0.12)', border: '1px solid rgba(175,122,109,0.3)', borderRadius: '4px', padding: '2px 7px', fontWeight: 700, fontSize: '11px', color: 'var(--secondary)', letterSpacing: '0.5px' }}>3:4</span>
+              Use a <strong>portrait headshot</strong> — taller than wide (e.g. 600 × 800 px). Avoid wide/landscape images.
+            </p>
           </div>
 
           <Field label="Name" value={draft.name} onChange={v => setDraft(d => ({ ...d, name: v }))} placeholder="e.g. Dhruvi Shah" />
@@ -2301,6 +2619,181 @@ function TeamManager() {
           <FiPlus size={13} /> Add Member
         </SBtn>
       )}
+    </>
+  )
+}
+
+// ─── ABOUT HERO MEDIA MANAGER ────────────────────────────────────────────────
+function AboutHeroMediaManager() {
+  const [mediaMode, setMediaMode] = useState('image') // 'image' | 'video'
+  const [uploading, setUploading] = useState(false)
+  const [msg, setMsg] = useState('')
+  const [err, setErr] = useState('')
+  const [uploadedImgs, setUploadedImgs] = useState([])
+  const [uploadedVid, setUploadedVid] = useState(null)
+  
+  const imgRef = useRef(null)
+  const vidRef = useRef(null)
+
+  const loadData = async () => {
+    try {
+      const now = Date.now()
+      const [contentRes, mediaRes] = await Promise.all([
+        axios.get(`${API}/api/content/aboutHero?t=${now}`),
+        axios.get(`${API}/api/media/aboutHero?t=${now}`)
+      ])
+
+      const items = contentRes.data.items || contentRes.data || []
+      if (Array.isArray(items)) {
+        items.forEach(i => {
+          if (i.key === 'mediaType') setMediaMode(i.value)
+        })
+      }
+
+      const media = mediaRes.data.media || []
+      const imgItems = media.filter(m => m.type !== 'video')
+      const vidItem = media.find(m => m.type === 'video')
+
+      setUploadedImgs(imgItems)
+      if (vidItem) setUploadedVid(vidItem)
+    } catch { }
+  }
+
+  useEffect(() => { loadData() }, [])
+
+  const uploadFile = async (e, type) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploading(true); setErr(''); setMsg('')
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      fd.append('section', 'aboutHero')
+
+      const res = await axios.post(`${API}/api/media/upload`, fd, { headers: { ...authH(), 'Content-Type': 'multipart/form-data' } })
+
+      if (res.data?.media) {
+        if (type === 'image') setUploadedImgs(prev => [...prev, res.data.media])
+        if (type === 'video') setUploadedVid(res.data.media)
+      }
+
+      await axios.put(`${API}/api/content`, { section: 'aboutHero', key: 'mediaType', value: type }, { headers: authH() })
+
+      setMsg(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully!`)
+      setTimeout(() => setMsg(''), 3000)
+    } catch (error) {
+      setErr('Upload failed.')
+    }
+    finally {
+      setUploading(false)
+      e.target.value = null
+    }
+  }
+
+  const deleteUploadedMedia = async (id, isVideo = false) => {
+    if (!window.confirm('Delete this media?')) return
+    try {
+      await axios.delete(`${API}/api/media/${id}`, { headers: authH() })
+      if (isVideo) {
+        setUploadedVid(null)
+      } else {
+        setUploadedImgs(prev => prev.filter(m => m._id !== id))
+      }
+    } catch { setErr('Failed to delete media') }
+  }
+
+  const modeBtnStyle = (active) => ({
+    padding: '8px 18px', borderRadius: '8px', border: 'none',
+    fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 600,
+    cursor: 'pointer', transition: 'all 0.2s ease',
+    background: active ? 'var(--dark)' : 'transparent',
+    color: active ? 'var(--white)' : 'var(--secondary)',
+  })
+
+  return (
+    <>
+      <div style={{ marginBottom: '24px' }}>
+        <p style={{ fontSize: '12px', color: 'var(--secondary)', marginBottom: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>
+          Background Media <span style={{ textTransform: 'none', fontSize: '11px', letterSpacing: 'normal', fontStyle: 'italic', marginLeft: '6px' }}>(Upload 16:9 ratio images or video)</span>
+        </p>
+
+        <div style={{
+          display: 'inline-flex', gap: '4px', background: 'var(--bg)',
+          borderRadius: '10px', padding: '4px',
+          border: '1px solid rgba(204,199,185,0.35)', marginBottom: '16px'
+        }}>
+          <button style={modeBtnStyle(mediaMode === 'image')} onClick={() => {
+            setMediaMode('image')
+            axios.put(`${API}/api/content`, { section: 'aboutHero', key: 'mediaType', value: 'image' }, { headers: authH() })
+          }}>📷 Upload Image</button>
+          <button style={modeBtnStyle(mediaMode === 'video')} onClick={() => {
+            setMediaMode('video')
+            axios.put(`${API}/api/content`, { section: 'aboutHero', key: 'mediaType', value: 'video' }, { headers: authH() })
+          }}>🎬 Upload Video</button>
+        </div>
+
+        {mediaMode === 'image' && (
+          <div>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap' }}>
+              {[0, 1, 2].map(idx => {
+                const upImg = uploadedImgs[idx]
+                const fallbackImg = [
+                  'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=400',
+                  'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=400',
+                  'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=400'
+                ][idx]
+                
+                return (
+                  <div key={idx} style={{ position: 'relative', width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(204,199,185,0.4)', background: 'var(--bg)' }}>
+                    {upImg ? (
+                      <>
+                        <img src={upImg.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button onClick={() => deleteUploadedMedia(upImg._id)} style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }} title="Delete Image"><FiX size={12} /></button>
+                      </>
+                    ) : (
+                      <>
+                        <img src={fallbackImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3 }} />
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(250,248,245,0.5)' }}>
+                           <button onClick={() => imgRef.current?.click()} style={{ background: 'var(--white)', border: '1px solid var(--secondary)', borderRadius: '4px', padding: '4px 8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', color: 'var(--dark)' }}>
+                             Replace
+                           </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )
+              })}
+              <input ref={imgRef} type="file" accept="image/*" onChange={e => uploadFile(e, 'image')} style={{ display: 'none' }} />
+            </div>
+            <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.5)', marginTop: '8px' }}>
+              Accepts JPG, PNG, WebP.
+            </p>
+          </div>
+        )}
+
+        {mediaMode === 'video' && (
+          <div>
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+              {uploadedVid && (
+                <div style={{ width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(204,199,185,0.4)', position: 'relative' }}>
+                  <video src={uploadedVid.url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <button onClick={() => deleteUploadedMedia(uploadedVid._id, true)} style={{ position: 'absolute', top: '4px', right: '4px', background: 'rgba(200,50,50,0.8)', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }} title="Delete Video"><FiX size={12} /></button>
+                </div>
+              )}
+              <input ref={vidRef} type="file" accept="video/*" onChange={e => uploadFile(e, 'video')} style={{ display: 'none' }} />
+              <SBtn onClick={() => vidRef.current?.click()} disabled={uploading} variant="ghost" style={{ marginTop: '20px' }}>
+                <FiUpload size={13} /> {uploading ? 'Uploading...' : 'Upload Video'}
+              </SBtn>
+            </div>
+            <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.5)', marginTop: '8px' }}>
+              Accepts MP4, WebM. Video will autoplay silently.
+            </p>
+          </div>
+        )}
+      </div>
+
+      <ErrMsg msg={err} />
+      {msg && <p style={{ fontSize: '12px', color: 'green', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}><FiCheck size={13} /> {msg}</p>}
     </>
   )
 }
@@ -2382,6 +2875,9 @@ export default function EditTab() {
             <SectionAccordion title="Our Programs">
               <ExpertiseManager />
             </SectionAccordion>
+            <SectionAccordion title="Healing Techniques">
+              <TechniquesManager category="healing" label="Healing Technique" />
+            </SectionAccordion>
             <SectionAccordion title="Testimonials">
               <TestimonialsManager />
             </SectionAccordion>
@@ -2394,12 +2890,18 @@ export default function EditTab() {
             <SectionAccordion title="Media Gallery">
               <GalleryManager />
             </SectionAccordion>
+            <SectionAccordion title="Bottom CTA Banner">
+              <CtaManager />
+            </SectionAccordion>
             <SectionAccordion title="FAQ">
               <FaqManager />
             </SectionAccordion>
           </>
         ) : activePage === 'about' ? (
           <>
+            <SectionAccordion title="Hero Banner Background Media">
+              <AboutHeroMediaManager />
+            </SectionAccordion>
             {mergedGroups.filter(g => g.section !== 'about_philosophy').map(group => (
               <div key={group.group} style={{ marginBottom: '32px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
@@ -2427,16 +2929,21 @@ export default function EditTab() {
               </div>
             </div>
             <div style={{ marginBottom: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                 <div style={{ width: '4px', height: '18px', background: 'var(--secondary)', borderRadius: '2px', flexShrink: 0 }} />
                 <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', fontWeight: 700, color: 'var(--dark)', margin: 0 }}>
                   Team Members &amp; Global Experts
                 </h3>
               </div>
+              <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.6)', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px', paddingLeft: '14px' }}>
+                <span style={{ background: 'rgba(175,122,109,0.12)', border: '1px solid rgba(175,122,109,0.3)', borderRadius: '4px', padding: '2px 7px', fontWeight: 700, fontSize: '11px', color: 'var(--secondary)', letterSpacing: '0.5px' }}>3:4</span>
+                Use a <strong>portrait headshot</strong> — taller than wide (e.g. 600 × 800 px). Avoid wide/landscape images.
+              </p>
               <div style={{ background: 'var(--white)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(204,199,185,0.3)', boxShadow: '0 4px 14px rgba(0,0,0,0.02)' }}>
                 <TeamManager />
               </div>
             </div>
+
             <div style={{ marginBottom: '32px' }}>
               <SectionAccordion title="Core Philosophy">
                 <p style={{ fontSize: '12px', color: 'var(--secondary)', marginBottom: '14px', lineHeight: 1.6 }}>

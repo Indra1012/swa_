@@ -1,0 +1,155 @@
+Client:
+
+📄 .env
+📄 .gitignore
+📄 components.json
+📄 eslint.config.js
+📄 index.html
+📄 jsconfig.json
+📄 package-lock.json
+📄 package.json
+📁 public
+  📄 favicon.svg
+  📄 icons.svg
+  📄 swa-logo.png
+  📄 video.mp4
+  📄 video1.mp4
+📄 README.md
+📁 src
+  📁 admin
+    📄 AdminDashboard.jsx
+    📄 AdminLogin.jsx
+    📁 tabs
+      📄 BookingsTab.jsx
+      📄 ContentEditorTab.jsx
+      📄 EditTab.jsx
+      📄 MediaManagerTab.jsx
+      📄 NotificationSettingsTab.jsx
+      📄 OverviewTab.jsx
+      📄 SlotSettingsTab.jsx
+  📄 App.css
+  📄 App.jsx
+  📁 assets
+    📄 hero.png
+    📄 react.svg
+    📄 vite.svg
+  📁 components
+    📄 BlogModal.jsx
+    📄 Footer.jsx
+    📄 Modal.jsx
+    📄 Navbar.jsx
+    📄 ProtectedRoute.jsx
+    📁 ui
+      📄 button.jsx
+    📄 VideoModal.jsx
+  📁 constants
+    📄 faqs.js
+    📄 programs.js
+    📄 techniques.js
+    📄 testimonials.js
+  📁 context
+    📄 AuthContext.jsx
+  📁 hooks
+    📄 useCountUp.js
+    📄 useScrollFade.js
+  📄 index.css
+  📄 index.css.backup
+  📁 lib
+    📄 utils.js
+  📄 main.jsx
+  📁 pages
+    📄 About.jsx
+    📄 BlogsPage.jsx
+    📄 BookDemo.jsx
+    📄 Home.jsx
+    📄 ServicesPage.jsx
+    📄 ServicesPage_v1.jsx
+  📁 sections
+    📄 BlogsSection.jsx
+    📄 CTABanner.jsx
+    📄 FAQSection.jsx
+    📄 HealingTechniques.jsx
+    📄 HeroSection.jsx
+    📄 MarqueeSection.jsx
+    📄 MediaGallerySection.jsx
+    📄 ProgramsSection.jsx
+    📄 ServicesSection.jsx
+    📄 StatsSection.jsx
+    📄 SwaDifferenceSection.jsx
+    📄 TaglineSection.jsx
+    📄 TestimonialsSection.jsx
+    📄 WellbeingSection.jsx
+    📄 WhySwaExistsSection.jsx
+    📄 WhyUsSection.jsx
+  📁 utils
+    📄 imageUrl.js
+📄 vercel.json
+📄 vite.config.js
+
+Server:
+
+📄 .env
+📄 .env.example
+📄 .gitignore
+📁 config
+  📄 cloudinary.js
+  📄 db.js
+  📄 passport.js
+📁 controllers
+  📄 admin.controller.js
+  📄 auth.controller.js
+  📄 booking.controller.js
+  📄 clientLogos.controller.js
+  📄 content.controller.js
+  📄 media.controller.js
+  📄 sections.controller.js
+  📄 slot.controller.js
+  📄 teamMember.controller.js
+  📄 ecosystem.config.js
+📄 force_title.js
+📄 healing.json
+📄 inject_hero_links.js
+📁 middleware
+  📄 adminOnly.js
+  📄 protect.js
+  📄 upload.js
+📁 models
+  📄 Booking.js
+  📄 ClientLogo.js
+  📄 Content.js
+  📄 FAQ.js
+  📄 GalleryItem.js
+  📄 HealingTechnique.js
+  📄 MediaItem.js
+  📄 ServiceCard.js
+  📄 Settings.js
+  📄 Slot.js
+  📄 Stat.js
+  📄 TeamMember.js
+  📄 Testimonial.js
+  📄 User.js
+📄 package-lock.json
+📄 package.json
+📁 routes
+  📄 admin.routes.js
+  📄 auth.routes.js
+  📄 booking.routes.js
+  📄 clientLogos.routes.js
+  📄 content.routes.js
+  📄 media.routes.js
+  📄 sections.routes.js
+  📄 slot.routes.js
+  📄 teamMember.routes.js
+📁 scripts
+  📄 createAdmins.js
+  📄 getCalendarToken.js
+  📄 replace-wellness.js
+  📄 seed-sections.js
+📁 seeders
+  📄 seed.js
+  📄 seedAdmin.js
+📄 server.js
+📁 utils
+  📄 createMeetEvent.js
+  📄 generateToken.js
+  📄 sendEmail.js

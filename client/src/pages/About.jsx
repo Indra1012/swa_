@@ -84,6 +84,12 @@ export default function About() {
   const pageRef = useRef(null)
   const [teamList, setTeamList] = useState([])
   const [expertsList, setExpertsList] = useState([])
+  const [heroSlides, setHeroSlides] = useState([
+    'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=2000'
+  ])
+  const [heroMediaMode, setHeroMediaMode] = useState('image')
+  const [heroVideoUrl, setHeroVideoUrl] = useState('')
+  const [currentSlide, setCurrentSlide] = useState(0)
 
   const [pageData, setPageData] = useState({
     heroTitle: 'The SWA Story',
@@ -111,10 +117,12 @@ export default function About() {
   useEffect(() => {
     Promise.all([
       axios.get(`${API}/api/content/about`),
+      axios.get(`${API}/api/content/aboutHero`),
       axios.get(`${API}/api/media/founder`),
+      axios.get(`${API}/api/media/aboutHero`),
       axios.get(`${API}/api/team`)
     ])
-      .then(([contentRes, mediaRes, teamRes]) => {
+      .then(([contentRes, heroContentRes, mediaRes, heroMediaRes, teamRes]) => {
         const items = contentRes.data.items || contentRes.data || []
         const mapped = {}
         items.forEach(i => mapped[i.key] = i.value)
@@ -129,8 +137,26 @@ export default function About() {
         const allMembers = teamRes.data.items || []
         setTeamList(allMembers.filter(m => m.category === 'team').sort((a, b) => a.order - b.order))
         setExpertsList(allMembers.filter(m => m.category === 'expert').sort((a, b) => a.order - b.order))
+
+        const heroItems = heroContentRes.data.items || heroContentRes.data || []
+        let mMode = 'image'
+        heroItems.forEach(i => { if (i.key === 'mediaType') mMode = i.value })
+        setHeroMediaMode(mMode)
+
+        const heroMedias = heroMediaRes.data.media || []
+        const imgs = heroMedias.filter(m => m.type !== 'video').map(m => m.url)
+        const vid = heroMedias.find(m => m.type === 'video')
+        if (imgs.length > 0) setHeroSlides(imgs)
+        if (vid) setHeroVideoUrl(vid.url)
       }).catch(err => console.error(err))
   }, [])
+
+  useEffect(() => {
+    if (heroSlides.length > 1 && heroMediaMode === 'image') {
+      const timer = setInterval(() => setCurrentSlide(p => (p + 1) % heroSlides.length), 5000)
+      return () => clearInterval(timer)
+    }
+  }, [heroSlides.length, heroMediaMode])
 
   const formatItalicLastWord = (text) => {
     if (!text) return null
@@ -160,11 +186,26 @@ export default function About() {
             overflow: 'hidden', background: '#4A2530', margin: 0
           }}>
             <motion.div style={{ position: 'absolute', inset: -150, zIndex: 0, y: heroY }}>
-              <img
-                src="https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=2000"
-                alt="SWA Wellbeing Team"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', filter: 'brightness(1.05)' }}
-              />
+              {heroMediaMode === 'video' && heroVideoUrl ? (
+                <video
+                  src={heroVideoUrl}
+                  autoPlay loop muted playsInline
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', filter: 'brightness(1.05)' }}
+                />
+              ) : (
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={currentSlide}
+                    src={heroSlides[currentSlide]}
+                    alt="SWA Wellbeing Team"
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.2, ease: [0.25, 0.1, 0.25, 1] }}
+                    style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', filter: 'brightness(1.05)' }}
+                  />
+                </AnimatePresence>
+              )}
               {/* Full-coverage Brand Color Overlay (like the screenshot) */}
               <div style={{
                 position: 'absolute', inset: 0,

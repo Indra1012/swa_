@@ -1,4 +1,5 @@
-import { useRef } from 'react'
+import { useRef, useState, useEffect } from 'react'
+import axios from 'axios'
 
 const BRANDS = [
   'Licious', 'AngelOne', 'Blue Star', 'Narayana Health', 'Yes Bank',
@@ -9,8 +10,27 @@ const BRANDS = [
 // Duplicate for seamless loop
 const DOUBLED = [...BRANDS, ...BRANDS]
 
+const API = import.meta.env.VITE_API_URL
+
 export default function MarqueeSection() {
   const trackRef = useRef(null)
+  const [tagline, setTagline] = useState('Loved by leading organizations worldwide')
+  const [sectionVisible, setSectionVisible] = useState(true)
+
+  useEffect(() => {
+    axios.get(`${API}/api/content/client-logos`)
+      .then(res => {
+        const items = res.data.items || []
+        const tLine = items.find(i => i.key === 'tagline')
+        if (tLine?.value) setTagline(tLine.value)
+        const vLine = items.find(i => i.key === 'visible')
+        if (vLine && vLine.value === 'false') setSectionVisible(false)
+        else setSectionVisible(true)
+      })
+      .catch(() => {})
+  }, [])
+
+  if (!sectionVisible) return null
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden' }}>
@@ -23,8 +43,22 @@ export default function MarqueeSection() {
       overflow: 'hidden',
       margin: 0
     }}>
+      {/* Tagline */}
+      <p style={{
+        textAlign: 'center',
+        fontFamily: 'Cormorant Garamond, serif',
+        fontSize: '18px',
+        fontWeight: 600,
+        color: 'rgba(101,50,57,0.55)',
+        letterSpacing: '0.5px',
+        marginBottom: '32px',
+        fontStyle: 'italic'
+      }}>
+        {tagline}
+      </p>
+
       {/* Marquee track with Gradient Mask for fading edges */}
-      <div style={{ 
+      <div style={{
         overflow: 'hidden',
         WebkitMaskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)',
         maskImage: 'linear-gradient(to right, transparent, black 15%, black 85%, transparent)'

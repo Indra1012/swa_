@@ -2,8 +2,11 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import useScrollFade from '../hooks/useScrollFade'
+import axios from 'axios'
 
-const SLIDES = [
+const API = import.meta.env.VITE_API_URL
+
+const FALLBACK_SLIDES = [
   {
     image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1400&q=80',
     title: "It's time to bring the SWA Magic to your place and people"
@@ -22,13 +25,62 @@ export default function CTABanner() {
   const [current, setCurrent] = useState(0)
   const [hovered, setHovered] = useState(false)
   const navigate = useNavigate()
+  
+  const [slides, setSlides] = useState([
+    { title: '', image: '' },
+    { title: '', image: '' },
+    { title: '', image: '' }
+  ])
+  const [mediaMode, setMediaMode] = useState('image')
+  const [videoUrl, setVideoUrl] = useState('')
+  const [hasData, setHasData] = useState(false)
 
   const sectionRef = useRef(null)
   useScrollFade(sectionRef)
 
   useEffect(() => {
+    const load = async () => {
+      try {
+        const [contentRes, mediaRes] = await Promise.all([
+          axios.get(`${API}/api/content/cta`),
+          axios.get(`${API}/api/media/cta`)
+        ])
+        
+        const items = contentRes.data.items || contentRes.data || []
+        let texts = [null, null, null]
+        let type = 'image'
+        items.forEach(i => {
+           if (i.key === 'slide0') texts[0] = i.value
+           if (i.key === 'slide1') texts[1] = i.value
+           if (i.key === 'slide2') texts[2] = i.value
+           if (i.key === 'mediaType') type = i.value
+        })
+        setMediaMode(type)
+        
+        const media = mediaRes.data.media || []
+        const imgs = media.filter(m => m.type !== 'video').map(m => m.url)
+        const vid = media.find(m => m.type === 'video')
+
+        if (vid) setVideoUrl(vid.url)
+
+        const finalSlides = [
+          { title: texts[0] ?? FALLBACK_SLIDES[0].title, image: imgs[0] || FALLBACK_SLIDES[0].image },
+          { title: texts[1] ?? FALLBACK_SLIDES[1].title, image: imgs[1] || FALLBACK_SLIDES[1].image },
+          { title: texts[2] ?? FALLBACK_SLIDES[2].title, image: imgs[2] || FALLBACK_SLIDES[2].image }
+        ]
+        setSlides(finalSlides)
+        setHasData(true)
+      } catch {
+        setSlides(FALLBACK_SLIDES)
+        setHasData(true)
+      }
+    }
+    load()
+  }, [])
+
+  useEffect(() => {
     const timer = setInterval(() => {
-      setCurrent(prev => (prev + 1) % SLIDES.length)
+      setCurrent(prev => (prev + 1) % 3)
     }, 5000)
     return () => clearInterval(timer)
   }, [])
@@ -49,23 +101,34 @@ export default function CTABanner() {
         margin: 0
       }}
     >
-      {/* Slides */}
-      <AnimatePresence mode="wait">
-        <motion.img
-          key={current}
-          src={SLIDES[current].image}
-          alt=""
-          initial={{ opacity: 0, scale: 1.04 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
-          style={{
-            position: 'absolute', inset: 0,
-            width: '100%', height: '100%',
-            objectFit: 'cover'
-          }}
+      {mediaMode === 'video' && videoUrl ? (
+        <video
+           src={videoUrl}
+           autoPlay loop muted playsInline
+           style={{
+             position: 'absolute', inset: 0,
+             width: '100%', height: '100%',
+             objectFit: 'cover', zIndex: 0
+           }}
         />
-      </AnimatePresence>
+      ) : (
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={current}
+            src={slides[current].image}
+            alt=""
+            initial={{ opacity: 0, scale: 1.04 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
+            style={{
+              position: 'absolute', inset: 0,
+              width: '100%', height: '100%',
+              objectFit: 'cover'
+            }}
+          />
+        </AnimatePresence>
+      )}
 
       {/* Overlay */}
       <div style={{
@@ -97,7 +160,7 @@ export default function CTABanner() {
               textShadow: '0 2px 20px rgba(0,0,0,0.2)'
             }}
           >
-            {SLIDES[current].title}
+            {slides[current].title}
           </motion.h2>
         </AnimatePresence>
 
@@ -125,14 +188,13 @@ export default function CTABanner() {
           Connect for happiness &nbsp;→
         </button>
 
-        {/* Dot navigation */}
         <div style={{
           display: 'flex',
           justifyContent: 'center',
           gap: '8px',
           marginTop: '24px'
         }}>
-          {SLIDES.map((_, i) => (
+          {slides.map((_, i) => (
             <button
               key={i}
               onClick={() => goToSlide(i)}

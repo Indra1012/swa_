@@ -53,7 +53,8 @@ const corsOptions = {
 }
 
 // OPTIONS preflight — must come before rate limiter so preflight requests are never rate-limited
-app.options('*', cors(corsOptions))
+app.options('/{*path}', cors(corsOptions))
+
 app.use(cors(corsOptions))
 
 // ── RATE LIMITING ──

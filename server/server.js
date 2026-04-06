@@ -54,7 +54,13 @@ app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 
 // ── SECURITY GUARDS ──
-app.use(mongoSanitize()) // Blocks NoSQL injection attacks (e.g. { "$gt": "" }) natively across req.body/params/query
+// express-mongo-sanitize tries to reassign req.query which is getter-only in newer Node.js.
+// Use sanitize() directly — it mutates objects in-place (delete/re-add keys) without reassignment.
+app.use((req, res, next) => {
+  ['body', 'params', 'headers'].forEach(key => { if (req[key]) mongoSanitize.sanitize(req[key]) })
+  if (req.query) mongoSanitize.sanitize(req.query) // in-place, no reassignment
+  next()
+})
 app.use(hpp())           // Blocks HTTP Parameter Pollution exploits
 app.use(compression())
 

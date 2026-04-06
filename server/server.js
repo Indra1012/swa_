@@ -9,7 +9,7 @@ const rateLimit = require('express-rate-limit')
 const passport = require('passport')
 const mongoSanitize = require('express-mongo-sanitize')
 const hpp = require('hpp')
-const MongoStore = require('connect-mongo')
+const MongoStore = require('connect-mongo').default
 
 dotenv.config()
 

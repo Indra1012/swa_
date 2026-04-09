@@ -396,6 +396,36 @@ export default function BookDemo() {
                     }}>
                       Thank you! Your demo has been securely scheduled. We have sent a comprehensive confirmation to your email and will be in touch shortly.
                     </p>
+                    {bookingDetails?.booking?.meetLink && (
+                      <div style={{
+                        background: '#EDF3FE', borderRadius: '20px',
+                        padding: '24px', maxWidth: '400px', margin: '0 auto 24px',
+                        textAlign: 'center', border: '1px solid #C5D8FA',
+                        boxShadow: '0 8px 24px rgba(26,115,232,0.08)'
+                      }}>
+                        <p style={{ margin: '0 0 16px', fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#1a73e8' }}>
+                          Your Google Meet Link
+                        </p>
+                        <a href={bookingDetails.booking.meetLink} target="_blank" rel="noreferrer" style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '10px',
+                          background: '#1a73e8', color: '#fff', textDecoration: 'none',
+                          padding: '14px 28px', borderRadius: '50px', fontSize: '15px', fontWeight: 600,
+                          boxShadow: '0 4px 16px rgba(26,115,232,0.3)', fontFamily: 'DM Sans, sans-serif',
+                          transition: 'transform 0.2s, box-shadow 0.2s'
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(26,115,232,0.4)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(26,115,232,0.3)'; }}
+                        >
+                          <svg width="20" height="20" viewBox="0 0 48 48" style={{ flexShrink: 0 }}>
+                            <path d="M35 14l9-7v34l-9-7V14z" fill="#ffffff" opacity="0.9"/>
+                            <rect x="4" y="10" width="31" height="28" rx="4" fill="#ffffff" opacity="0.9"/>
+                            <path d="M35 14l9-7v34l-9-7V14z" fill="none" stroke="#ffffff" strokeWidth="1"/>
+                          </svg>
+                          Join Meeting Now
+                        </a>
+                      </div>
+                    )}
+
                     <div style={{
                       background: 'var(--white)', borderRadius: '20px',
                       padding: '24px', maxWidth: '400px', margin: '0 auto',

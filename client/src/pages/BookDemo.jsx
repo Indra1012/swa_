@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { motion } from 'framer-motion'
 import axios from 'axios'
 import {
   FiUser, FiMail, FiPhone, FiBriefcase,
   FiUsers, FiMessageSquare, FiCalendar,
-  FiClock, FiCheckCircle, FiAlertCircle
+  FiClock, FiCheckCircle, FiAlertCircle,
+  FiChevronLeft, FiChevronRight
 } from 'react-icons/fi'
 
 const API = import.meta.env.VITE_API_URL
@@ -66,6 +67,85 @@ function InputField({ icon, label, type = 'text', value, onChange, placeholder, 
   )
 }
 
+function CustomCalendar({ onSelect, onClose, minDate }) {
+  const [currentMonth, setCurrentMonth] = useState(new Date())
+
+  const year = currentMonth.getFullYear()
+  const month = currentMonth.getMonth()
+  
+  const firstDay = new Date(year, month, 1).getDay()
+  const daysInMonth = new Date(year, month + 1, 0).getDate()
+  
+  const days = []
+  for (let i = 0; i < firstDay; i++) days.push(null)
+  for (let i = 1; i <= daysInMonth; i++) days.push(i)
+
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+
+  const nextMonth = () => setCurrentMonth(new Date(year, month + 1, 1))
+  const prevMonth = () => setCurrentMonth(new Date(year, month - 1, 1))
+
+  const isPast = (day) => {
+    if(!day) return true
+    const dateToCheck = new Date(year, month, day)
+    const minD = new Date(minDate)
+    minD.setHours(0,0,0,0)
+    return dateToCheck < minD
+  }
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{
+        position: 'absolute', top: 'calc(100% + 10px)', left: 0,
+        background: 'var(--white)', padding: '20px', borderRadius: '16px',
+        boxShadow: '0 20px 40px rgba(0,0,0,0.1)', border: '1px solid rgba(204,199,185,0.3)',
+        width: '280px', zIndex: 100
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+        <button onClick={prevMonth} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--dark)', display:'flex', padding:'4px' }}><FiChevronLeft size={18}/></button>
+        <span style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 600, fontSize:'14px', color:'var(--dark)' }}>{monthNames[month]} {year}</span>
+        <button onClick={nextMonth} style={{ background:'none', border:'none', cursor:'pointer', color:'var(--dark)', display:'flex', padding:'4px' }}><FiChevronRight size={18}/></button>
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center', marginBottom: '8px' }}>
+        {['Su','Mo','Tu','We','Th','Fr','Sa'].map(d => <div key={d} style={{ fontFamily: 'DM Sans, sans-serif', fontSize:'12px', color:'var(--secondary)', fontWeight: 500 }}>{d}</div>)}
+      </div>
+      
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px', textAlign: 'center' }}>
+        {days.map((day, i) => {
+          const past = isPast(day)
+          return (
+          <button
+            key={i}
+            disabled={past || !day}
+            onClick={() => {
+              if(day && !past) {
+                const selected = [year, String(month + 1).padStart(2, '0'), String(day).padStart(2, '0')].join('-')
+                onSelect(selected)
+                onClose()
+              }
+            }}
+            style={{
+              padding: '8px 0', border: 'none', background: 'transparent',
+              borderRadius: '8px', cursor: (past || !day) ? 'default' : 'pointer',
+              color: past ? 'rgba(204,199,185,0.4)' : 'var(--dark)',
+              fontSize: '13px', fontWeight: 500, fontFamily: 'DM Sans, sans-serif',
+              transition: 'all 0.2s', position: 'relative'
+            }}
+            onMouseEnter={e => { if(day && !past) e.currentTarget.style.background = 'rgba(204,199,185,0.15)' }}
+            onMouseLeave={e => { if(day && !past) e.currentTarget.style.background = 'transparent' }}
+          >
+            {day || ''}
+          </button>
+        )})}
+      </div>
+    </motion.div>
+  )
+}
+
 export default function BookDemo() {
   const [slots, setSlots] = useState([])
   const [availableDates, setAvailableDates] = useState([])
@@ -76,6 +156,7 @@ export default function BookDemo() {
   const [error, setError] = useState('')
   const [bookingDetails, setBookingDetails] = useState(null)
   const [isVideoExpanded, setIsVideoExpanded] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
 
   const [form, setForm] = useState({
     name: '',
@@ -93,8 +174,13 @@ export default function BookDemo() {
         const data = res.data.slots || res.data || []
         setSlots(Array.isArray(data) ? data : [])
         const slotsArr = Array.isArray(data) ? data : []
-        const dates = [...new Set(slotsArr.map(s => s.date))].sort()
-        setAvailableDates(dates)
+        
+        // Filter out dates that have NO available slots natively
+        const validDates = [...new Set(slotsArr.filter(s => s.isAvailable && !s.isBooked).map(s => s.date))].sort()
+        setAvailableDates(validDates)
+        if (validDates.length > 0 && !selectedDate) {
+          setSelectedDate(validDates[0])
+        }
       } catch {
         setSlots([])
         setAvailableDates([])
@@ -102,6 +188,38 @@ export default function BookDemo() {
     }
     fetchSlots()
   }, [])
+
+  const handleCustomDateChange = async (e) => {
+    const date = e.target.value
+    if (!date) return
+    
+    try {
+      const res = await axios.get(`${API}/api/slots?date=${date}`)
+      const daySlots = res.data.slots || []
+      
+      setSlots(prev => {
+        const filtered = prev.filter(s => s.date !== date)
+        return [...filtered, ...daySlots]
+      })
+      
+      setAvailableDates(prev => {
+         if (!prev.includes(date)) return [...prev, date].sort()
+         return prev
+      })
+
+      setSelectedDate(date)
+      setSelectedTime(null)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  // Determine displayed dates: First 7 available dates, plus the selected date if it's far out
+  let baseDisplayed = availableDates.slice(0, 7)
+  if (selectedDate && !baseDisplayed.includes(selectedDate)) {
+    baseDisplayed.push(selectedDate)
+    baseDisplayed.sort()
+  }
 
   // All slots for the selected date (available + booked), for display
   const allTimesForDate = selectedDate
@@ -141,7 +259,7 @@ export default function BookDemo() {
 
   const formatDate = (dateStr) => {
     const d = new Date(dateStr)
-    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })
+    return d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) // removed year to keep buttons compact
   }
 
   return (
@@ -287,7 +405,7 @@ export default function BookDemo() {
                       {[
                         { label: 'Name', value: form.name },
                         { label: 'Company', value: form.company },
-                        { label: 'Date', value: formatDate(selectedDate) },
+                        { label: 'Date', value: selectedDate },
                         { label: 'Time', value: selectedTime }
                       ].map(({ label, value }) => (
                         <div key={label} style={{
@@ -354,11 +472,11 @@ export default function BookDemo() {
                       </label>
                       {availableDates.length === 0 ? (
                         <div style={{ padding: '20px', background: 'rgba(204,199,185,0.15)', borderRadius: '16px', border: '1px dashed rgba(204,199,185,0.4)', fontSize: '13px', color: 'var(--secondary)', textAlign: 'center' }}>
-                          No available dates currently. Please check back soon or reach out via email.
+                          Fetching schedule...
                         </div>
                       ) : (
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                          {availableDates.map(date => (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+                          {baseDisplayed.map(date => (
                             <button
                               key={date} onClick={() => { setSelectedDate(date); setSelectedTime(null); }}
                               style={{
@@ -372,6 +490,37 @@ export default function BookDemo() {
                               {formatDate(date)}
                             </button>
                           ))}
+                          
+                          <div style={{ position: 'relative' }}>
+                            <button 
+                              onClick={() => setShowCalendar(!showCalendar)}
+                              style={{
+                                padding: '10px 18px', borderRadius: '12px',
+                                border: showCalendar ? '1.5px solid var(--dark)' : '1.5px dashed rgba(204,199,185,0.8)',
+                                background: showCalendar ? 'rgba(204,199,185,0.12)' : 'transparent',
+                                color: 'var(--dark)',
+                                fontSize: '13px', fontWeight: 500, cursor: 'pointer', transition: 'var(--transition)', fontFamily: 'DM Sans, sans-serif',
+                                display: 'flex', alignItems: 'center', gap: '6px'
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--dark)'}
+                              onMouseLeave={e => e.currentTarget.style.borderColor = showCalendar ? 'var(--dark)' : 'rgba(204,199,185,0.8)'}
+                            >
+                              <FiCalendar/> More Dates
+                            </button>
+                            
+                            {showCalendar && (
+                              <>
+                                <div style={{ position: 'fixed', top:0, left:0, right:0, bottom:0, zIndex: 99 }} onClick={() => setShowCalendar(false)} />
+                                <CustomCalendar 
+                                  minDate={new Date().toISOString().split('T')[0]}
+                                  onClose={() => setShowCalendar(false)}
+                                  onSelect={(dateStr) => {
+                                    handleCustomDateChange({ target: { value: dateStr } });
+                                  }}
+                                />
+                              </>
+                            )}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -382,20 +531,20 @@ export default function BookDemo() {
                           <FiClock size={15} /> Select a Time <span style={{ color: 'var(--secondary)' }}>*</span>
                         </label>
                         {allTimesForDate.length === 0 ? (
-                          <p style={{ fontSize: '13px', color: 'var(--secondary)', padding: '16px', background: 'rgba(204,199,185,0.15)', borderRadius: '16px', border: '1px dashed rgba(204,199,185,0.4)' }}>
-                            No available times for this date.
+                          <p style={{ fontSize: '13px', color: 'var(--secondary)', padding: '16px', background: 'rgba(204,199,185,0.15)', borderRadius: '16px', border: '1px dashed rgba(204,199,185,0.4)', textAlign: 'center' }}>
+                            No slots available for this date. It may be a holiday or fully booked.
                           </p>
                         ) : (
                           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-                            {allTimesForDate.map(slot => {
+                            {allTimesForDate.map((slot, i) => {
                               const isBooked    = slot.isBooked || !slot.isAvailable
                               const isSelected  = selectedTime === slot.time && !isBooked
                               return (
-                                <div key={slot._id} style={{ position: 'relative' }}>
+                                <div key={slot._id || i} style={{ position: 'relative' }}>
                                   <button
                                     disabled={isBooked}
                                     onClick={() => !isBooked && setSelectedTime(slot.time)}
-                                    title={isBooked ? 'Slot already booked' : ''}
+                                    title={isBooked ? 'Slot unavailable' : ''}
                                     style={{
                                       padding: '10px 20px', borderRadius: '50px',
                                       border: isBooked
@@ -418,6 +567,7 @@ export default function BookDemo() {
                                       transition: 'var(--transition)',
                                       fontFamily: 'DM Sans, sans-serif',
                                       position: 'relative',
+                                      opacity: isBooked ? 0.6 : 1
                                     }}
                                   >
                                     {slot.time}

@@ -1100,57 +1100,6 @@ function TestimonialsManager() {
   )
 }
 
-// ─── 5. WELLBEING VISIBILITY TOGGLE (wraps TechniquesManager) ────────────────
-function WellbeingManager() {
-  const [visible, setVisible] = useState(true)
-  const [toggling, setToggling] = useState(false)
-
-  useEffect(() => {
-    axios.get(`${API}/api/sections/settings/wellbeing-visible`).then(res => {
-      setVisible(res.data.visible !== false)
-    }).catch(() => { })
-  }, [])
-
-  const toggle = async () => {
-    setToggling(true)
-    try {
-      const res = await axios.put(
-        `${API}/api/sections/settings/wellbeing-visible`,
-        { visible: !visible },
-        { headers: authH() }
-      )
-      setVisible(res.data.visible)
-    } catch { /* keep state */ }
-    finally { setToggling(false) }
-  }
-
-  return (
-    <>
-      {/* Visibility Toggle */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        padding: '14px 16px', background: 'var(--bg)', borderRadius: '10px',
-        marginBottom: '20px', border: '1px solid rgba(204,199,185,0.25)'
-      }}>
-        <div>
-          <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--dark)', margin: 0 }}>Show Section on Homepage</p>
-          <p style={{ fontSize: '12px', color: 'var(--secondary)', margin: '2px 0 0' }}>Toggle visibility of the 12 Wellbeing Processes section</p>
-        </div>
-        <button
-          onClick={toggle} disabled={toggling}
-          style={{ background: 'none', border: 'none', cursor: toggling ? 'not-allowed' : 'pointer', padding: '4px', opacity: toggling ? 0.6 : 1 }}
-        >
-          {visible
-            ? <FiToggleRight size={36} color="var(--secondary)" />
-            : <FiToggleLeft size={36} color="rgba(204,199,185,0.6)" />
-          }
-        </button>
-      </div>
-      {/* Cards CRUD */}
-      <TechniquesManager category="wellbeing" label="Wellbeing Process" />
-    </>
-  )
-}
 
 // ─── 6. STATS MANAGER ────────────────────────────────────────────────────────
 function StatsManager() {
@@ -2881,9 +2830,7 @@ export default function EditTab() {
             <SectionAccordion title="Testimonials">
               <TestimonialsManager />
             </SectionAccordion>
-            <SectionAccordion title="12 Wellbeing Processes">
-              <WellbeingManager />
-            </SectionAccordion>
+
             <SectionAccordion title="Global Impact (Stats)">
               <StatsManager />
             </SectionAccordion>

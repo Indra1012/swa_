@@ -1,9 +1,9 @@
-﻿import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import axios from 'axios'
 import {
-  FiClock, FiSave, FiRefreshCw,
-  FiCheck, FiAlertCircle
+  FiClock, FiSave, FiAlertCircle, FiCheck,
+  FiTrash2, FiPlus
 } from 'react-icons/fi'
 
 const API = import.meta.env.VITE_API_URL
@@ -15,7 +15,7 @@ const TIME_SLOTS = [
   '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'
 ]
 
-// Generate next 4 weeks of dates (Mon-Sat only)
+// Generate next 4 weeks of dates (Mon-Sat only, no Sundays)
 function generateDates() {
   const dates = []
   const today = new Date()
@@ -27,11 +27,16 @@ function generateDates() {
     const day = d.getDay()
     if (day !== 0) { // Skip Sunday
       dates.push({
-        date: d.toISOString().split('T')[0],
-        dayName: DAYS[day === 0 ? 6 : day - 1],
+        date: [
+           d.getFullYear(),
+           String(d.getMonth() + 1).padStart(2, '0'),
+           String(d.getDate()).padStart(2, '0')
+        ].join('-'),
+        dayName: DAYS[day - 1],
         display: d.toLocaleDateString('en-IN', {
           day: 'numeric', month: 'short'
-        })
+        }),
+        isPast: d < today
       })
     }
   }
@@ -42,6 +47,11 @@ export default function SlotSettingsTab() {
   const [dates] = useState(generateDates)
   const [selectedWeekStart, setSelectedWeekStart] = useState(0)
   const [enabledSlots, setEnabledSlots] = useState({})
+  
+  const [holidays, setHolidays] = useState([])
+  const [holidayDate, setHolidayDate] = useState('')
+  const [holidayName, setHolidayName] = useState('')
+  
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
@@ -50,27 +60,32 @@ export default function SlotSettingsTab() {
   // Show 6 days at a time (Mon-Sat)
   const weekDates = dates.slice(selectedWeekStart, selectedWeekStart + 6)
 
-  const fetchExistingSlots = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await axios.get(`${API}/api/slots`)
-      const slotsArr = res.data.slots || res.data || []
+      const [slotsRes, holRes] = await Promise.all([
+         axios.get(`${API}/api/slots`),
+         axios.get(`${API}/api/holidays`)
+      ])
+      
+      const slotsArr = slotsRes.data.slots || []
       const existing = {}
-      if (Array.isArray(slotsArr)) {
-        slotsArr.forEach(slot => {
-          const key = `${slot.date}_${slot.time}`
-          existing[key] = slot.isAvailable && !slot.isBooked
-        })
-      }
+      
+      slotsArr.forEach(slot => {
+        const key = `${slot.date}_${slot.time}`
+        existing[key] = slot.isAvailable && !slot.isBooked
+      })
       setEnabledSlots(existing)
+      setHolidays(holRes.data || [])
     } catch {
       setEnabledSlots({})
+      setHolidays([])
     } finally {
       setLoading(false)
     }
   }, [])
 
-  useEffect(() => { fetchExistingSlots() }, [fetchExistingSlots])
+  useEffect(() => { fetchData() }, [fetchData])
 
   const toggleSlot = useCallback((date, time) => {
     const key = `${date}_${time}`
@@ -80,371 +95,183 @@ export default function SlotSettingsTab() {
     }))
   }, [])
 
-  const enableAll = useCallback(() => {
-    const updated = { ...enabledSlots }
-    weekDates.forEach(({ date }) => {
-      TIME_SLOTS.forEach(time => {
-        updated[`${date}_${time}`] = true
-      })
-    })
-    setEnabledSlots(updated)
-  }, [weekDates, enabledSlots])
-
-  const disableAll = useCallback(() => {
-    const updated = { ...enabledSlots }
-    weekDates.forEach(({ date }) => {
-      TIME_SLOTS.forEach(time => {
-        updated[`${date}_${time}`] = false
-      })
-    })
-    setEnabledSlots(updated)
-  }, [weekDates, enabledSlots])
-
-  const handleSave = async () => {
+  const handleSaveSlots = async () => {
     setSaving(true)
     setSaved(false)
     setError('')
 
     try {
       const token = localStorage.getItem('swa_token')
-      const slotsToCreate = []
-
+      const overridesToUpdate = []
+      
       Object.entries(enabledSlots).forEach(([key, enabled]) => {
-        if (enabled) {
-          const [date, ...timeParts] = key.split('_')
-          const time = timeParts.join('_')
-          slotsToCreate.push({ date, time })
-        }
+        const [date, ...timeParts] = key.split('_')
+        const time = timeParts.join('_')
+        overridesToUpdate.push({ date, time, isAvailable: enabled })
       })
 
       await axios.post(
-        `${API}/api/slots`,
-        { slots: slotsToCreate },
+        `${API}/api/slots/bulk-update`,
+        { overrides: overridesToUpdate },
         { headers: { Authorization: `Bearer ${token}` } }
       )
 
       setSaved(true)
       setTimeout(() => setSaved(false), 3000)
     } catch {
-      setError('Failed to save slots. Please try again.')
+      setError('Failed to save slot settings. Please try again.')
     } finally {
       setSaving(false)
     }
   }
 
-  const isEnabled = (date, time) => {
-    return !!enabledSlots[`${date}_${time}`]
+  const addHoliday = async (e) => {
+     e.preventDefault()
+     if(!holidayDate) return
+     try {
+       const token = localStorage.getItem('swa_token')
+       await axios.post(`${API}/api/holidays`, { date: holidayDate, name: holidayName }, { headers: { Authorization: `Bearer ${token}` } })
+       setHolidayDate('')
+       setHolidayName('')
+       fetchData()
+     } catch (err) {
+       setError(err.response?.data?.error || 'Failed to add holiday')
+     }
   }
 
-  const countEnabled = weekDates.reduce((acc, { date }) => {
-    return acc + TIME_SLOTS.filter(t => isEnabled(date, t)).length
-  }, 0)
+  const deleteHoliday = async (id) => {
+     try {
+       const token = localStorage.getItem('swa_token')
+       await axios.delete(`${API}/api/holidays/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+       fetchData()
+     } catch (err) {
+       setError('Failed to delete holiday')
+     }
+  }
+
+  const quickToggleHoliday = async (date) => {
+    const existing = holidays.find(h => h.date === date)
+    if (existing) {
+      await deleteHoliday(existing._id)
+    } else {
+      const token = localStorage.getItem('swa_token')
+      try {
+        await axios.post(`${API}/api/holidays`, { date, name: 'Unavailable' }, { headers: { Authorization: `Bearer ${token}` } })
+        fetchData()
+      } catch (err) {
+        setError('Failed to add holiday')
+      }
+    }
+  }
+
+  const isEnabled = (date, time) => !!enabledSlots[`${date}_${time}`]
+  
+  const isHoliday = (date) => !!holidays.find(h => h.date === date)
 
   return (
     <div>
       {/* Header */}
-      <div style={{
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '24px', flexWrap: 'wrap', gap: '16px'
-      }}>
-        <div>
-          <h2 style={{
-            fontFamily: 'Cormorant Garamond, serif',
-            fontSize: '28px', fontWeight: 700,
-            color: 'var(--dark)', marginBottom: '4px'
-          }}>
-            Slot Settings
-          </h2>
-          <p style={{ fontSize: '13px', color: 'var(--secondary)' }}>
-            Toggle available booking slots. Lunch break (1:00 PM) is excluded.
-          </p>
-        </div>
-
-        {/* Save button */}
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            background: saving ? 'rgba(101,50,57,0.4)' : 'var(--dark)',
-            color: 'var(--white)',
-            border: 'none', borderRadius: '10px',
-            padding: '12px 20px', fontSize: '14px',
-            fontWeight: 600,
-            cursor: saving ? 'not-allowed' : 'pointer',
-            transition: 'var(--transition)',
-            fontFamily: 'DM Sans, sans-serif'
-          }}
-          onMouseEnter={e => {
-            if (!saving) e.currentTarget.style.background = 'var(--dark2)'
-          }}
-          onMouseLeave={e => {
-            if (!saving) e.currentTarget.style.background = 'var(--dark)'
-          }}
-        >
-          <FiSave size={15} />
-          {saving ? 'Saving...' : 'Save Slots'}
-        </button>
+      <div style={{ marginBottom: '24px' }}>
+        <h2 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '28px', fontWeight: 700, color: 'var(--dark)' }}>
+          Availability & Holidays
+        </h2>
+        <p style={{ fontSize: '13px', color: 'var(--secondary)' }}>
+          Standard working hours (9 AM - 5 PM) are available by default. Exclude specific days by adding Holidays.
+        </p>
       </div>
 
-      {/* Success / Error messages */}
-      {saved && (
-        <motion.div
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            padding: '14px 18px',
-            background: 'rgba(175,122,109,0.08)',
-            border: '1px solid rgba(175,122,109,0.3)',
-            borderRadius: '12px', marginBottom: '20px',
-            fontSize: '14px', color: 'var(--secondary)'
-          }}
-        >
-          <FiCheck size={16} />
-          Slots saved successfully!
-        </motion.div>
-      )}
+      {saved && <div style={{ padding: '14px', background: 'rgba(175,122,109,0.08)', borderRadius: '12px', marginBottom: '20px', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}><FiCheck/> Settings saved!</div>}
+      {error && <div style={{ padding: '14px', background: 'rgba(175,122,109,0.08)', borderRadius: '12px', marginBottom: '20px', color: 'var(--secondary)', display: 'flex', alignItems: 'center', gap: '8px' }}><FiAlertCircle/> {error}</div>}
 
-      {error && (
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: '10px',
-          padding: '14px 18px',
-          background: 'rgba(175,122,109,0.08)',
-          border: '1px solid rgba(175,122,109,0.3)',
-          borderRadius: '12px', marginBottom: '20px',
-          fontSize: '14px', color: 'var(--secondary)'
-        }}>
-          <FiAlertCircle size={16} />
-          {error}
-        </div>
-      )}
+      {/* HOLIDAYS SECTION */}
+      <div style={{ background: 'var(--white)', padding: '24px', borderRadius: '16px', border: '1px solid rgba(204,199,185,0.2)', marginBottom: '32px' }}>
+         <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--dark)', marginBottom: '16px' }}>Manage Holidays</h3>
+         
+         <form onSubmit={addHoliday} style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '20px' }}>
+            <input type="date" value={holidayDate} onChange={e=>setHolidayDate(e.target.value)} required style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(204,199,185,0.4)', fontSize: '13px', outline: 'none' }} />
+            <input type="text" placeholder="Reason (e.g. Christmas)" value={holidayName} onChange={e=>setHolidayName(e.target.value)} style={{ padding: '10px 14px', borderRadius: '8px', border: '1px solid rgba(204,199,185,0.4)', fontSize: '13px', outline: 'none', flex: 1 }} />
+            <button type="submit" style={{ padding: '10px 20px', background: 'var(--dark)', color: 'white', borderRadius: '8px', border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><FiPlus/> Add Holiday</button>
+         </form>
 
-      {/* Week navigation + bulk actions */}
-      <div style={{
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: '20px', flexWrap: 'wrap', gap: '12px'
-      }}>
-        {/* Week navigation */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            onClick={() => setSelectedWeekStart(Math.max(0, selectedWeekStart - 6))}
-            disabled={selectedWeekStart === 0}
-            style={{
-              padding: '8px 14px',
-              border: '1.5px solid rgba(204,199,185,0.4)',
-              borderRadius: '8px', background: 'var(--white)',
-              color: selectedWeekStart === 0
-                ? 'rgba(101,50,57,0.25)' : 'var(--dark)',
-              fontSize: '13px', cursor: selectedWeekStart === 0
-                ? 'not-allowed' : 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
-              transition: 'var(--transition)'
-            }}
-          >
-            ← Prev week
-          </button>
-
-          <span style={{
-            fontSize: '13px', color: 'var(--secondary)',
-            fontWeight: 500, padding: '0 4px'
-          }}>
-            {weekDates[0]?.display} – {weekDates[weekDates.length - 1]?.display}
-          </span>
-
-          <button
-            onClick={() => setSelectedWeekStart(
-              Math.min(dates.length - 6, selectedWeekStart + 6)
-            )}
-            disabled={selectedWeekStart >= dates.length - 6}
-            style={{
-              padding: '8px 14px',
-              border: '1.5px solid rgba(204,199,185,0.4)',
-              borderRadius: '8px', background: 'var(--white)',
-              color: selectedWeekStart >= dates.length - 6
-                ? 'rgba(101,50,57,0.25)' : 'var(--dark)',
-              fontSize: '13px',
-              cursor: selectedWeekStart >= dates.length - 6
-                ? 'not-allowed' : 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
-              transition: 'var(--transition)'
-            }}
-          >
-            Next week →
-          </button>
-        </div>
-
-        {/* Bulk actions + count */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <span style={{
-            fontSize: '12px', color: 'var(--secondary)',
-            background: 'rgba(204,199,185,0.15)',
-            padding: '4px 12px', borderRadius: '50px'
-          }}>
-            {countEnabled} slots enabled
-          </span>
-
-          <button
-            onClick={enableAll}
-            style={{
-              padding: '8px 14px',
-              border: '1.5px solid rgba(175,122,109,0.4)',
-              borderRadius: '8px',
-              background: 'rgba(175,122,109,0.1)',
-              color: 'var(--secondary)',
-              fontSize: '12px', fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
-              transition: 'var(--transition)'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(175,122,109,0.15)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(175,122,109,0.1)'}
-          >
-            Enable all
-          </button>
-
-          <button
-            onClick={disableAll}
-            style={{
-              padding: '8px 14px',
-              border: '1.5px solid rgba(204,199,185,0.4)',
-              borderRadius: '8px',
-              background: 'var(--white)',
-              color: 'var(--secondary)',
-              fontSize: '12px', fontWeight: 600,
-              cursor: 'pointer',
-              fontFamily: 'DM Sans, sans-serif',
-              transition: 'var(--transition)'
-            }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(204,199,185,0.08)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'var(--white)'}
-          >
-            Disable all
-          </button>
-        </div>
+         {holidays.length > 0 ? (
+           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
+             {holidays.map(h => (
+               <div key={h._id} style={{ display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(204,199,185,0.15)', padding: '8px 14px', borderRadius: '50px', fontSize: '13px' }}>
+                 <strong>{h.date}</strong> <span>{h.name}</span>
+                 <button type="button" onClick={() => deleteHoliday(h._id)} style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', padding: '0 4px' }}><FiTrash2 size={14}/></button>
+               </div>
+             ))}
+           </div>
+         ) : <p style={{ fontSize: '13px', color: 'var(--secondary)' }}>No holidays added yet.</p>}
       </div>
 
-      {/* Slot grid */}
+      {/* SLOT EXCEPTIONS */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+         <h3 style={{ fontSize: '16px', fontWeight: 600, color: 'var(--dark)' }}>Slot Overrides (Exceptions)</h3>
+         <button onClick={handleSaveSlots} disabled={saving} style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--dark)', color: 'white', border: 'none', borderRadius: '8px', padding: '10px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}><FiSave/> {saving ? 'Saving...' : 'Save Overrides'}</button>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', background: 'rgba(204,199,185,0.08)', padding: '12px 16px', borderRadius: '12px', border: '1px solid rgba(204,199,185,0.2)' }}>
+         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+           <button onClick={() => setSelectedWeekStart(Math.max(0, selectedWeekStart - 6))} disabled={selectedWeekStart === 0} style={{ padding: '8px 14px', border: '1px solid rgba(204,199,185,0.4)', borderRadius: '8px', background: 'var(--white)', cursor: selectedWeekStart===0?'not-allowed':'pointer' }}>← Prev Week</button>
+           <button onClick={() => setSelectedWeekStart(Math.min(dates.length - 6, selectedWeekStart + 6))} disabled={selectedWeekStart >= dates.length - 6} style={{ padding: '8px 14px', border: '1px solid rgba(204,199,185,0.4)', borderRadius: '8px', background: 'var(--white)', cursor: 'pointer' }}>Next Week →</button>
+         </div>
+      </div>
+
       {loading ? (
-        <div style={{
-          padding: '48px', textAlign: 'center',
-          fontSize: '14px', color: 'var(--secondary)'
-        }}>
-          Loading existing slots...
-        </div>
+        <div style={{ padding: '48px', textAlign: 'center', fontSize: '14px', color: 'var(--secondary)' }}>Loading...</div>
       ) : (
-        <div style={{
-          background: 'var(--white)',
-          borderRadius: '16px',
-          border: '1px solid rgba(204,199,185,0.2)',
-          overflow: 'hidden',
-          boxShadow: '0 2px 12px rgba(60,47,47,0.04)'
-        }}>
+        <div style={{ background: 'var(--white)', borderRadius: '16px', border: '1px solid rgba(204,199,185,0.2)', overflow: 'hidden' }}>
           <div style={{ overflowX: 'auto' }}>
-            <table style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              minWidth: '600px'
-            }}>
-              {/* Column headers — dates */}
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
               <thead>
                 <tr style={{ background: 'rgba(226,212,186,0.1)' }}>
-                  <th style={{
-                    padding: '14px 16px',
-                    textAlign: 'left',
-                    fontSize: '12px', fontWeight: 600,
-                    color: 'var(--secondary)',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.8px',
-                    borderBottom: '1px solid rgba(204,199,185,0.15)',
-                    width: '100px'
-                  }}>
-                    Time
-                  </th>
-                  {weekDates.map(({ date, dayName, display }) => (
-                    <th key={date} style={{
-                      padding: '14px 12px',
-                      textAlign: 'center',
-                      fontSize: '12px', fontWeight: 600,
-                      color: 'var(--secondary)',
-                      borderBottom: '1px solid rgba(204,199,185,0.15)',
-                      borderLeft: '1px solid rgba(237,224,212,0.1)'
-                    }}>
-                      <div style={{ color: 'var(--dark)', marginBottom: '2px' }}>
-                        {dayName.slice(0, 3)}
-                      </div>
-                      <div style={{ fontWeight: 400, opacity: 0.7 }}>
-                        {display}
-                      </div>
-                    </th>
-                  ))}
+                  <th style={{ padding: '14px 16px', textAlign: 'left', fontSize: '12px', fontWeight: 600, color: 'var(--secondary)', borderBottom: '1px solid rgba(204,199,185,0.15)' }}>Time</th>
+                  {weekDates.map(({ date, dayName, display }) => {
+                    const isHol = isHoliday(date)
+                    return (
+                      <th key={date} style={{ padding: '14px 8px', textAlign: 'center', fontSize: '12px', fontWeight: 600, color: 'var(--secondary)', borderBottom: '1px solid rgba(204,199,185,0.15)', borderLeft: '1px solid rgba(237,224,212,0.1)' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ color: isHol ? 'var(--primary)' : 'var(--dark)' }}>{dayName.slice(0, 3)}</span>
+                          <span style={{ fontWeight: 400 }}>{display}</span>
+                          <button 
+                            onClick={() => quickToggleHoliday(date)}
+                            title={isHol ? "Remove Holiday" : "Mark as Holiday"}
+                            style={{ 
+                              marginTop: '2px', padding: '4px 8px', fontSize: '10px', 
+                              background: isHol ? 'var(--primary)' : 'rgba(204,199,185,0.2)', 
+                              color: isHol ? 'white' : 'var(--dark)', border: 'none', 
+                              borderRadius: '4px', cursor: 'pointer', fontWeight: 600 
+                            }}
+                          >
+                            {isHol ? 'HOLIDAY' : 'Set Holiday'}
+                          </button>
+                        </div>
+                      </th>
+                    )
+                  })}
                 </tr>
               </thead>
-
-              {/* Rows — time slots */}
               <tbody>
-                {TIME_SLOTS.map((time, ti) => (
-                  <tr key={time} style={{
-                    borderBottom: ti < TIME_SLOTS.length - 1
-                      ? '1px solid rgba(204,199,185,0.08)'
-                      : 'none'
-                  }}>
-                    {/* Time label */}
-                    <td style={{
-                      padding: '12px 16px',
-                      fontSize: '13px', fontWeight: 500,
-                      color: 'var(--dark)',
-                      display: 'flex', alignItems: 'center',
-                      gap: '6px',
-                      whiteSpace: 'nowrap'
-                    }}>
-                      <FiClock size={13} style={{ color: 'var(--primary)' }} />
-                      {time}
-                    </td>
-
-                    {/* Slot toggles */}
+                {TIME_SLOTS.map((time) => (
+                  <tr key={time} style={{ borderBottom: '1px solid rgba(204,199,185,0.08)' }}>
+                    <td style={{ padding: '12px 16px', fontSize: '13px', fontWeight: 500, color: 'var(--dark)' }}>{time}</td>
                     {weekDates.map(({ date }) => {
                       const enabled = isEnabled(date, time)
+                      const isHol = isHoliday(date)
                       return (
-                        <td key={date} style={{
-                          padding: '10px 12px',
-                          textAlign: 'center',
-                          borderLeft: '1px solid rgba(204,199,185,0.08)'
-                        }}>
+                        <td key={date} style={{ padding: '10px 12px', textAlign: 'center', borderLeft: '1px solid rgba(204,199,185,0.08)' }}>
                           <button
+                            disabled={isHol}
                             onClick={() => toggleSlot(date, time)}
                             style={{
-                              width: '36px', height: '36px',
-                              borderRadius: '8px',
-                              border: enabled
-                                ? '2px solid rgba(175,122,109,0.4)'
-                                : '1.5px solid rgba(204,199,185,0.3)',
-                              background: enabled
-                                ? 'rgba(175,122,109,0.1)'
-                                : 'var(--bg)',
-                              color: enabled
-                                ? 'var(--secondary)'
-                                : 'rgba(60,47,47,0.2)',
-                              cursor: 'pointer',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              margin: '0 auto',
-                              transition: 'var(--transition)'
-                            }}
-                            onMouseEnter={e => {
-                              if (!enabled) {
-                                e.currentTarget.style.borderColor = 'rgba(175,122,109,0.4)'
-                                e.currentTarget.style.background = 'rgba(175,122,109,0.1)'
-                              }
-                            }}
-                            onMouseLeave={e => {
-                              if (!enabled) {
-                                e.currentTarget.style.borderColor = 'rgba(204,199,185,0.3)'
-                                e.currentTarget.style.background = 'var(--bg)'
-                              }
+                              width: '36px', height: '36px', borderRadius: '8px',
+                              border: enabled ? '2px solid rgba(175,122,109,0.4)' : '1.5px solid rgba(204,199,185,0.3)',
+                              background: isHol ? 'rgba(204,199,185,0.1)' : enabled ? 'rgba(175,122,109,0.1)' : 'var(--bg)',
+                              color: enabled ? 'var(--secondary)' : 'rgba(60,47,47,0.2)',
+                              cursor: isHol ? 'not-allowed' : 'pointer',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto',
+                              opacity: isHol ? 0.3 : 1
                             }}
                           >
                             {enabled && <FiCheck size={16} />}
@@ -456,43 +283,6 @@ export default function SlotSettingsTab() {
                 ))}
               </tbody>
             </table>
-          </div>
-
-          {/* Legend */}
-          <div style={{
-            padding: '16px 20px',
-            borderTop: '1px solid rgba(204,199,185,0.15)',
-            display: 'flex', gap: '20px',
-            fontSize: '12px', color: 'var(--secondary)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{
-                width: '20px', height: '20px',
-                borderRadius: '6px',
-                background: 'rgba(175,122,109,0.1)',
-                border: '2px solid rgba(175,122,109,0.4)',
-                display: 'flex', alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <FiCheck size={11} style={{ color: 'var(--secondary)' }} />
-              </div>
-              Available
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <div style={{
-                width: '20px', height: '20px',
-                borderRadius: '6px',
-                background: 'var(--bg)',
-                border: '1.5px solid rgba(204,199,185,0.3)'
-              }} />
-              Unavailable
-            </div>
-            <div style={{
-              fontSize: '12px', color: 'rgba(101,50,57,0.4)',
-              marginLeft: 'auto', fontStyle: 'italic'
-            }}>
-              Lunch break (1:00 PM) excluded automatically
-            </div>
           </div>
         </div>
       )}

@@ -9,7 +9,7 @@ import { TECHNIQUES } from '../constants/techniques'
 
 // Pure Editorial Minimalist Approach (No Cards)
 function TechniqueEditorial({ tech, index }) {
-  const isReversed = index % 2 !== 0
+  const isReversed = false // Always Image then Card
   const [cardHovered, setCardHovered] = useState(false)
 
   const validImages = tech.images && tech.images.length > 0 ? tech.images : [tech.image].filter(Boolean)
@@ -42,7 +42,7 @@ function TechniqueEditorial({ tech, index }) {
         width: '100%',
         cursor: 'default' // Add a cursor so it feels interactive
       }}
-      className="editorial-row"
+      className={`editorial-row ${index % 2 !== 0 ? 'alt' : ''}`}
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
     >
@@ -55,8 +55,8 @@ function TechniqueEditorial({ tech, index }) {
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: index * 0.4 }}
         style={{
           flexShrink: 0,
-          width: '320px',
-          height: '450px',
+          width: '224px',
+          height: '315px',
           borderRadius: '16px',
           overflow: 'hidden',
           boxShadow: cardHovered ? '0 40px 80px rgba(0,0,0,0.25)' : '0 30px 60px rgba(0,0,0,0.15)',
@@ -92,20 +92,20 @@ function TechniqueEditorial({ tech, index }) {
           boxShadow: '0 40px 80px rgba(101, 50, 57, 0.25)'
         }}
         style={{
-          width: '340px',
+          width: '238px',
           maxWidth: '100%',
-          height: '470px',
+          height: '329px',
           display: 'flex', flexDirection: 'column', justifyContent: 'center',
           background: 'rgba(250, 248, 245, 0.95)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
           borderRadius: '24px',
-          padding: '32px',
-          paddingLeft: isReversed ? '28px' : '82px',
-          paddingRight: isReversed ? '82px' : '28px',
-          marginLeft: isReversed ? '0' : '-60px',
-          marginRight: isReversed ? '-60px' : '0',
-          marginTop: '60px',
+          padding: '22px',
+          paddingLeft: isReversed ? '20px' : '58px',
+          paddingRight: isReversed ? '58px' : '20px',
+          marginLeft: isReversed ? '0' : '-42px',
+          marginRight: isReversed ? '-42px' : '0',
+          marginTop: '42px',
           boxShadow: '0 20px 60px rgba(101, 50, 57, 0.15)',
           border: '1px solid rgba(255, 255, 255, 0.4)',
           position: 'relative',
@@ -118,32 +118,32 @@ function TechniqueEditorial({ tech, index }) {
 
         <h2 style={{
           fontFamily: 'Cormorant Garamond, serif',
-          fontSize: 'clamp(20px, 2.5vw, 30px)',
+          fontSize: 'clamp(14px, 1.8vw, 21px)',
           fontWeight: 500,
           color: 'var(--dark)',
           lineHeight: 1.1,
           letterSpacing: '-1px',
-          marginBottom: '12px'
+          marginBottom: '8px'
         }}>
           {tech.title} {tech.subtitle}
         </h2>
 
         <p style={{
-          fontSize: '14px', color: 'var(--secondary)', fontWeight: 400, lineHeight: 1.5, marginBottom: '16px', marginTop: 0
+          fontSize: '10px', color: 'var(--secondary)', fontWeight: 400, lineHeight: 1.5, marginBottom: '11px', marginTop: 0
         }}>
           {tech.focus}
         </p>
 
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginBottom: '14px' }}>
           <ul style={{
-            listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '6px'
+            listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px'
           }}>
             {tech.techniques.map((t, idx) => (
               <li key={idx} style={{
-                position: 'relative', paddingLeft: '18px', fontSize: '13px', color: 'var(--secondary)', lineHeight: 1.4, fontWeight: 500
+                position: 'relative', paddingLeft: '14px', fontSize: '10px', color: 'var(--secondary)', lineHeight: 1.4, fontWeight: 500
               }}>
                 <div style={{
-                  position: 'absolute', left: 0, top: '8px', width: '12px', height: '1px', background: 'var(--accent)', opacity: 0.6
+                  position: 'absolute', left: 0, top: '6px', width: '8px', height: '1px', background: 'var(--accent)', opacity: 0.6
                 }} />
                 {t}
               </li>
@@ -154,7 +154,7 @@ function TechniqueEditorial({ tech, index }) {
         {/* Minimalist Purpose Block - Italics purely */}
         <div>
           <p style={{
-            margin: 0, fontSize: '18px', color: 'var(--dark)',
+            margin: 0, fontSize: '13px', color: 'var(--dark)',
             lineHeight: 1.3, fontStyle: 'italic', fontFamily: 'Cormorant Garamond, serif'
           }}>
             "{tech.purpose}"
@@ -193,7 +193,7 @@ export default function BlogsPage() {
               image: item.image || '',
               images: item.images ? item.images.map(img => img.url).filter(Boolean) : []
            }))
-           setBlogs(mappedBlogs)
+           setBlogs(mappedBlogs.slice(0, 3)) // Limit to exactly 3 blog items
         }
       })
       .catch(err => console.error("Could not fetch live blogs configuration", err))
@@ -333,8 +333,8 @@ export default function BlogsPage() {
           max-width: 1400px;
           margin: 0 auto;
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 100px 40px;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 70px 20px;
           padding: 0 40px;
         }
 
@@ -345,9 +345,57 @@ export default function BlogsPage() {
             gap: 80px;
           }
         }
+        @media (max-width: 1360px) and (min-width: 901px) {
+          .editorial-image {
+            width: 320px !important;
+            height: 450px !important;
+          }
+          .editorial-content {
+            width: 340px !important;
+            height: 470px !important;
+            padding: 32px !important;
+            margin-top: 60px !important;
+          }
+          .editorial-row:not([style*="row-reverse"]) .editorial-content {
+            margin-left: -60px !important;
+            margin-right: 0 !important;
+            padding-left: 28px !important;
+            padding-right: 82px !important;
+          }
+          .editorial-row[style*="row-reverse"] .editorial-content {
+            margin-right: -60px !important;
+            margin-left: 0 !important;
+            padding-right: 28px !important;
+            padding-left: 82px !important;
+          }
+          
+          .editorial-content > h2 {
+             font-size: clamp(20px, 2.5vw, 30px) !important;
+             margin-bottom: 12px !important;
+          }
+          .editorial-content > p {
+             font-size: 14px !important;
+             margin-bottom: 16px !important;
+          }
+          .editorial-content > div > ul {
+             gap: 6px !important;
+          }
+          .editorial-content > div > ul > li {
+             font-size: 13px !important;
+             padding-left: 18px !important;
+          }
+          .editorial-content > div > ul > li > div {
+             top: 8px !important;
+             width: 12px !important;
+          }
+          .editorial-content > div:last-child > p {
+             font-size: 18px !important;
+          }
+        }
 
         @media (max-width: 900px) {
           .techniques-grid {
+            grid-template-columns: 1fr;
             padding: 0 16px;
             gap: 60px;
           }
@@ -381,13 +429,16 @@ export default function BlogsPage() {
           }
           
           /* Handle horizontal overlap dynamically for both orientations */
-          .editorial-row:not([style*="row-reverse"]) .editorial-content {
+          .editorial-row.alt {
+             flex-direction: row-reverse !important;
+          }
+          .editorial-row:not(.alt) .editorial-content {
              margin-left: -12% !important;
              margin-right: 0 !important;
              padding-left: 18% !important; /* Text clearance over image */
              padding-right: 12px !important;
           }
-          .editorial-row[style*="row-reverse"] .editorial-content {
+          .editorial-row.alt .editorial-content {
              margin-right: -12% !important;
              margin-left: 0 !important;
              padding-right: 18% !important;

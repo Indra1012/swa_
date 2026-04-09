@@ -1,7 +1,7 @@
 const express   = require('express')
 const protect   = require('../middleware/protect')
 const adminOnly = require('../middleware/adminOnly')
-const { getAvailableSlots, createSlots, toggleSlotAvailability, deleteSlot, deletePassedSlots } = require('../controllers/slot.controller')
+const { getAvailableSlots, createSlots, toggleSlotAvailability, deleteSlot, deletePassedSlots, bulkUpdateSlots } = require('../controllers/slot.controller')
 
 const router = express.Router()
 
@@ -13,6 +13,7 @@ router.get('/',            getAvailableSlots)
 // the literal string "cleanup" as the :id param and calls deleteSlot instead
 router.delete('/cleanup',  protect, adminOnly, deletePassedSlots)
 router.post('/',           protect, adminOnly, createSlots)
+router.post('/bulk-update',protect, adminOnly, bulkUpdateSlots)
 router.patch('/:id',       protect, adminOnly, toggleSlotAvailability)
 router.delete('/:id',      protect, adminOnly, deleteSlot)
 

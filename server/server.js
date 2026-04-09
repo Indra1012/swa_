@@ -153,6 +153,11 @@ app.get('/api/health', (req, res) => {
   })
 })
 
+// Prevent 404 on root domain (often pinged by Render health checks or bots)
+app.get('/', (req, res) => {
+  res.status(200).send('SWA API Backend is running. Please access the frontend at https://www.swaspaces.com')
+})
+
 // ── 404 HANDLER ──
 app.use((req, res) => {
   console.warn(`⚠️  404 — ${req.method} ${req.originalUrl}`)

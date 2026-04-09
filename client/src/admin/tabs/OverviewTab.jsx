@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import axios from 'axios'
 import {
   FiCalendar, FiClock, FiTrendingUp,
-  FiImage, FiUsers, FiActivity
+  FiImage, FiUsers, FiActivity, FiDownload
 } from 'react-icons/fi'
 
 const API = import.meta.env.VITE_API_URL
@@ -68,8 +68,11 @@ export default function OverviewTab() {
     thisMonth: '—',
     mediaItems: '—'
   })
+  const [allBookings, setAllBookings] = useState([])
   const [recentBookings, setRecentBookings] = useState([])
   const [loading, setLoading] = useState(true)
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -83,6 +86,7 @@ export default function OverviewTab() {
         ])
 
         setStats(statsRes.data)
+        setAllBookings(bookingsRes.data)
         setRecentBookings(bookingsRes.data.slice(0, 5))
       } catch {
         // Backend not connected yet — show placeholder
@@ -103,6 +107,45 @@ export default function OverviewTab() {
     if (status === 'confirmed') return 'rgba(175,122,109,0.08)'
     if (status === 'cancelled') return 'rgba(175,122,109,0.1)'
     return 'rgba(204,199,185,0.15)'
+  }
+
+  const handleDownloadCSV = () => {
+    let toExport = allBookings
+    if (fromDate) {
+      toExport = toExport.filter(b => new Date(b.createdAt) >= new Date(fromDate))
+    }
+    if (toDate) {
+      const end = new Date(toDate)
+      end.setHours(23, 59, 59, 999)
+      toExport = toExport.filter(b => new Date(b.createdAt) <= end)
+    }
+
+    if (toExport.length === 0) {
+      alert("No users found in this date range.")
+      return
+    }
+
+    const headers = ["Registration Date", "Name", "Email", "Phone Number", "Company", "Team Size"]
+    const rows = toExport.map(b => {
+      const d = b.createdAt ? new Date(b.createdAt).toLocaleDateString('en-IN') : '—'
+      const name = `"${(b.name || '').replace(/"/g, '""')}"`
+      const email = `"${(b.email || '').replace(/"/g, '""')}"`
+      const phone = `"${(b.phone || '').replace(/"/g, '""')}"`
+      const company = `"${(b.company || '').replace(/"/g, '""')}"`
+      const teamSize = `"${(b.teamSize || '').replace(/"/g, '""')}"`
+      return [d, name, email, phone, company, teamSize].join(",")
+    })
+
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows].join("\n")
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.setAttribute("href", url)
+    link.setAttribute("download", `registered_users_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
   }
 
   return (
@@ -143,6 +186,62 @@ export default function OverviewTab() {
           value={stats.mediaItems}
           color="var(--secondary)"
         />
+      </motion.div>
+
+      {/* Export Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        style={{
+          background: 'var(--white)',
+          borderRadius: '16px',
+          padding: '24px 28px',
+          border: '1px solid rgba(204,199,185,0.2)',
+          marginBottom: '32px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '20px',
+          boxShadow: '0 2px 12px rgba(101,50,57,0.04)'
+        }}
+      >
+        <div>
+          <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', fontWeight: 700, color: 'var(--dark)', marginBottom: '4px' }}>
+            Export Registered Users
+          </h3>
+          <p style={{ fontSize: '13px', color: 'var(--secondary)', margin: 0 }}>
+            Download complete user details (Name, Email, Phone, Company) to CSV.
+          </p>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: 500 }}>From:</span>
+            <input
+              type="date"
+              value={fromDate} onChange={e => setFromDate(e.target.value)}
+              style={{ padding: '8px 12px', border: '1px solid rgba(204,199,185,0.4)', borderRadius: '8px', fontSize: '13px', color: 'var(--dark)', fontFamily: 'DM Sans, sans-serif' }}
+            />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '13px', color: 'var(--secondary)', fontWeight: 500 }}>To:</span>
+            <input
+              type="date"
+              value={toDate} onChange={e => setToDate(e.target.value)}
+              style={{ padding: '8px 12px', border: '1px solid rgba(204,199,185,0.4)', borderRadius: '8px', fontSize: '13px', color: 'var(--dark)', fontFamily: 'DM Sans, sans-serif' }}
+            />
+          </div>
+          <button
+            onClick={handleDownloadCSV}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 20px', background: 'var(--dark)', color: 'var(--white)',
+              border: 'none', borderRadius: '10px', fontSize: '13px', fontWeight: 600,
+              cursor: 'pointer', transition: 'var(--transition)', fontFamily: 'DM Sans, sans-serif', textTransform: 'none'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--dark2)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--dark)'}
+          >
+            <FiDownload size={16} /> Download CSV
+          </button>
+        </div>
       </motion.div>
 
       {/* Recent bookings table */}

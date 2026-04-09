@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { TECHNIQUES } from '../constants/techniques'
-import { FiUser, FiChevronDown } from 'react-icons/fi'
+import { FiUser, FiChevronDown, FiLogOut } from 'react-icons/fi'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useAuth } from '../context/AuthContext'
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
@@ -11,10 +12,24 @@ export default function Navbar() {
   const [healingOpen, setHealingOpen] = useState(false)
   const [drawerServicesOpen, setDrawerServicesOpen] = useState(false)
   const [drawerHealingOpen, setDrawerHealingOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const navigate = useNavigate()
   const location = useLocation()
   const servicesTimer = useRef(null)
   const healingTimer = useRef(null)
+  const profileRef = useRef(null)
+  const { user, logout } = useAuth()
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50)
@@ -79,23 +94,23 @@ export default function Navbar() {
 
   return (
     <>
-      <nav 
+      <nav
         className="navbar-container"
         style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
-        height: '76px',
-        display: 'flex', alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 60px',
-        background: 'rgba(250,247,242,0.95)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: scrolled ? '1px solid rgba(204,199,185,0.3)' : '1px solid transparent',
-        boxShadow: scrolled
-          ? '0 8px 24px rgba(101,50,57,0.04)'
-          : 'none',
-        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
-      }}>
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+          height: '76px',
+          display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 60px',
+          background: 'rgba(250,247,242,0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: scrolled ? '1px solid rgba(204,199,185,0.3)' : '1px solid transparent',
+          boxShadow: scrolled
+            ? '0 8px 24px rgba(101,50,57,0.04)'
+            : 'none',
+          transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+        }}>
 
         {/* LEFT — Logo */}
         <div
@@ -109,11 +124,11 @@ export default function Navbar() {
           <img
             src="/swa-logo.png"
             alt="SWA"
-            style={{ 
-              width: '44px', height: '44px', 
-              objectFit: 'cover', 
-              borderRadius: '12px', 
-              boxShadow: '0 4px 12px rgba(0,0,0,0.06)' 
+            style={{
+              width: '44px', height: '44px',
+              objectFit: 'cover',
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.06)'
             }}
           />
           <div style={{
@@ -158,11 +173,11 @@ export default function Navbar() {
             >
               Programs
               <motion.div
-                 animate={{ rotate: servicesOpen ? 180 : 0 }}
-                 transition={{ duration: 0.3 }}
-                 style={{ display: 'flex', alignItems: 'center', marginTop: '2px' }}
+                animate={{ rotate: servicesOpen ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+                style={{ display: 'flex', alignItems: 'center', marginTop: '2px' }}
               >
-                 <FiChevronDown size={14} opacity={0.6} />
+                <FiChevronDown size={14} opacity={0.6} />
               </motion.div>
             </button>
             <AnimatePresence>
@@ -194,7 +209,7 @@ export default function Navbar() {
                   {/* Invisible bridge to safely cross from nav button to dropdown menu */}
                   <div style={{ position: 'absolute', top: '-25px', left: 0, right: 0, height: '25px' }} />
 
-                  
+
                   {[
                     { id: 'corporate', name: 'Corporate Solutions' },
                     { id: 'education', name: 'Educational Environments' },
@@ -220,16 +235,16 @@ export default function Navbar() {
                         transition: 'all 0.3s ease',
                       }}
                       onMouseEnter={(e) => {
-                         e.currentTarget.style.background = 'var(--dark)'
-                         e.currentTarget.style.color = 'var(--white)'
-                         e.currentTarget.style.boxShadow = '0 10px 20px rgba(101,50,57,0.15)'
-                         e.currentTarget.style.transform = 'translateY(-2px)'
+                        e.currentTarget.style.background = 'var(--dark)'
+                        e.currentTarget.style.color = 'var(--white)'
+                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(101,50,57,0.15)'
+                        e.currentTarget.style.transform = 'translateY(-2px)'
                       }}
                       onMouseLeave={(e) => {
-                         e.currentTarget.style.background = 'transparent'
-                         e.currentTarget.style.color = 'var(--dark)'
-                         e.currentTarget.style.boxShadow = 'none'
-                         e.currentTarget.style.transform = 'translateY(0)'
+                        e.currentTarget.style.background = 'transparent'
+                        e.currentTarget.style.color = 'var(--dark)'
+                        e.currentTarget.style.boxShadow = 'none'
+                        e.currentTarget.style.transform = 'translateY(0)'
                       }}
                     >
                       {item.name}
@@ -284,34 +299,121 @@ export default function Navbar() {
             Book a Demo
           </button>
 
-          <button
-            onClick={() => navigate('/admin/login')}
-            className="desktop-nav"
-            title="Admin"
-            style={{
-              background: 'none',
-              border: '1px solid rgba(204,199,185,0.4)',
-              borderRadius: '50%',
-              width: '36px', height: '36px',
-              display: 'flex', alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: 'var(--secondary)',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'var(--dark)'
-              e.currentTarget.style.color = 'var(--white)'
-              e.currentTarget.style.borderColor = 'var(--dark)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'none'
-              e.currentTarget.style.color = 'var(--secondary)'
-              e.currentTarget.style.borderColor = 'rgba(204,199,185,0.4)'
-            }}
-          >
-            <FiUser size={15} />
-          </button>
+          <div ref={profileRef} style={{ position: 'relative' }} className="desktop-nav">
+            <button
+              onClick={() => {
+                if (user) {
+                  setProfileOpen(!profileOpen)
+                } else {
+                  navigate('/admin/login')
+                }
+              }}
+              style={{
+                background: user ? 'rgba(101,50,57,0.08)' : 'none',
+                border: user ? '1.5px solid var(--secondary)' : '1px solid rgba(204,199,185,0.4)',
+                borderRadius: '50%',
+                width: '36px', height: '36px',
+                display: 'flex', alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: user ? 'var(--dark)' : 'var(--secondary)',
+                transition: 'all 0.3s ease'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'var(--dark)'
+                e.currentTarget.style.color = 'var(--white)'
+                e.currentTarget.style.borderColor = 'var(--dark)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = user ? 'rgba(101,50,57,0.08)' : 'none'
+                e.currentTarget.style.color = user ? 'var(--dark)' : 'var(--secondary)'
+                e.currentTarget.style.borderColor = user ? 'var(--secondary)' : 'rgba(204,199,185,0.4)'
+              }}
+            >
+              <FiUser size={15} />
+            </button>
+
+            {/* Profile Dropdown */}
+            <AnimatePresence>
+              {profileOpen && user && (
+                <motion.div
+                  initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                  transition={{ duration: 0.2 }}
+                  style={{
+                    position: 'absolute',
+                    top: '48px',
+                    right: 0,
+                    background: 'rgba(255,255,255,0.95)',
+                    backdropFilter: 'blur(20px)',
+                    WebkitBackdropFilter: 'blur(20px)',
+                    borderRadius: '16px',
+                    padding: '20px 24px',
+                    minWidth: '220px',
+                    boxShadow: '0 12px 40px rgba(0,0,0,0.12)',
+                    border: '1px solid rgba(204,199,185,0.2)',
+                    zIndex: 200
+                  }}
+                >
+                  <p style={{
+                    fontFamily: 'Cormorant Garamond, serif',
+                    fontSize: '14px',
+                    color: 'var(--secondary)',
+                    margin: '0 0 4px 0',
+                    fontWeight: 500
+                  }}>
+                    Welcome
+                  </p>
+                  <p style={{
+                    fontFamily: 'DM Sans, sans-serif',
+                    fontSize: '16px',
+                    fontWeight: 700,
+                    color: 'var(--dark)',
+                    margin: '0 0 16px 0',
+                    lineHeight: 1.3
+                  }}>
+                    {user.name || user.email}
+                  </p>
+                  <div style={{ height: '1px', background: 'rgba(204,199,185,0.25)', marginBottom: '12px' }} />
+                  <button
+                    onClick={() => {
+                      setProfileOpen(false)
+                      logout()
+                      navigate('/')
+                    }}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      width: '100%',
+                      padding: '10px 12px',
+                      background: 'none',
+                      border: '1px solid rgba(204,199,185,0.3)',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: 500,
+                      color: 'var(--secondary)',
+                      cursor: 'pointer',
+                      fontFamily: 'DM Sans, sans-serif',
+                      transition: 'all 0.2s ease'
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.background = 'var(--dark)'
+                      e.currentTarget.style.color = 'var(--white)'
+                      e.currentTarget.style.borderColor = 'var(--dark)'
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.background = 'none'
+                      e.currentTarget.style.color = 'var(--secondary)'
+                      e.currentTarget.style.borderColor = 'rgba(204,199,185,0.3)'
+                    }}
+                  >
+                    <FiLogOut size={14} />
+                    Sign Out
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           {/* Hamburger */}
           <button
@@ -324,7 +426,7 @@ export default function Navbar() {
               gap: '5px'
             }}
           >
-            {[0,1,2].map(i => (
+            {[0, 1, 2].map(i => (
               <span key={i} style={{
                 display: 'block', width: '22px', height: '2px',
                 background: 'var(--dark)', borderRadius: '2px'
@@ -487,23 +589,48 @@ export default function Navbar() {
           Book a Demo
         </button>
 
-        <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <button
-            onClick={() => { navigate('/admin/login'); setDrawerOpen(false) }}
-            title="Admin"
-            style={{
-              background: 'none',
-              border: '1px solid rgba(204,199,185,0.4)',
-              borderRadius: '50%',
-              width: '36px', height: '36px',
-              display: 'inline-flex', alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: 'var(--secondary)'
-            }}
-          >
-            <FiUser size={15} />
-          </button>
+        <div style={{ textAlign: 'center', marginTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+          {user ? (
+            <>
+              <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '14px', color: 'var(--secondary)', margin: 0 }}>Welcome</p>
+              <p style={{ fontFamily: 'DM Sans, sans-serif', fontSize: '15px', fontWeight: 700, color: 'var(--dark)', margin: 0 }}>{user.name || user.email}</p>
+              <button
+                onClick={() => { logout(); navigate('/'); setDrawerOpen(false) }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  marginTop: '8px',
+                  padding: '10px 24px',
+                  background: 'none',
+                  border: '1px solid rgba(204,199,185,0.4)',
+                  borderRadius: '50px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  color: 'var(--secondary)',
+                  cursor: 'pointer',
+                  fontFamily: 'DM Sans, sans-serif'
+                }}
+              >
+                <FiLogOut size={14} />
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => { navigate('/admin/login'); setDrawerOpen(false) }}
+              style={{
+                background: 'none',
+                border: '1px solid rgba(204,199,185,0.4)',
+                borderRadius: '50%',
+                width: '36px', height: '36px',
+                display: 'inline-flex', alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: 'var(--secondary)'
+              }}
+            >
+              <FiUser size={15} />
+            </button>
+          )}
         </div>
       </div>
 

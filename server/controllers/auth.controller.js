@@ -1,7 +1,7 @@
-const jwt                   = require('jsonwebtoken')
-const User                  = require('../models/User')
-const { generateToken }     = require('../utils/generateToken')
-const { sendEmail }         = require('../utils/sendEmail')
+const jwt = require('jsonwebtoken')
+const User = require('../models/User')
+const { generateToken } = require('../utils/generateToken')
+const { sendEmail } = require('../utils/sendEmail')
 
 // ── EMAIL / PASSWORD LOGIN ────────────────────────────────────────
 const login = async (req, res, next) => {
@@ -15,20 +15,60 @@ const login = async (req, res, next) => {
     if (!user) {
       return res.status(401).json({ error: 'Invalid email or password' })
     }
-    if (user.role !== 'admin') {
-      return res.status(403).json({ error: 'Access denied. Admins only.' })
-    }
 
     const isMatch = await user.comparePassword(password)
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid email or password' })
     }
 
-    const token = generateToken(user._id, user.role, user.email)
-    console.log(`✅ Admin login: ${user.email}`)
-    res.status(200).json({ token, user: { email: user.email, role: user.role } })
+    const token = generateToken(user._id, user.role, user.email, user.name)
+    console.log(`✅ Login successful: ${user.email} (${user.role})`)
+    res.status(200).json({ token, user: { name: user.name, email: user.email, role: user.role } })
   } catch (err) {
     console.error('❌ login error:', err.message)
+    next(err)
+  }
+}
+
+// ── NATIVE REGISTRATION ───────────────────────────────────────────
+const registerUser = async (req, res, next) => {
+  try {
+    const { name, email, password } = req.body
+    if (!name || !email || !password) {
+      return res.status(400).json({ error: 'Name, email and password are required' })
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' })
+    }
+
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() })
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already registered' })
+    }
+
+    const user = await User.create({
+      name,
+      email: email.toLowerCase().trim(),
+      password,
+      role: 'user'
+    })
+
+    const token = generateToken(user._id, user.role, user.email, user.name)
+    console.log(`✅ Registration successful: ${user.email}`)
+
+    res.status(201).json({
+      success: true,
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    })
+  } catch (err) {
+    console.error('❌ registerUser error:', err.message)
     next(err)
   }
 }
@@ -42,13 +82,16 @@ const googleCallback = (req, res) => {
       console.error('❌ googleCallback: no user on request')
       return res.redirect(`${process.env.CLIENT_URL}/admin/login?error=auth_failed`)
     }
-    if (req.user.role !== 'admin') {
-      console.warn(`⚠️  Google login rejected — not an admin: ${req.user.email}`)
-      return res.redirect(`${process.env.CLIENT_URL}/admin/login?error=not_admin`)
-    }
-    const token = generateToken(req.user._id, req.user.role, req.user.email)
+
+    const token = generateToken(req.user._id, req.user.role, req.user.email, req.user.name)
     console.log(`✅ Google OAuth complete — redirecting: ${req.user.email} (${req.user.role})`)
-    res.redirect(`${process.env.CLIENT_URL}/admin/dashboard?token=${token}`)
+
+    // Admin goes to dashboard, regular user goes to homepage
+    if (req.user.role === 'admin') {
+      return res.redirect(`${process.env.CLIENT_URL}/admin/dashboard?token=${token}`)
+    } else {
+      return res.redirect(`${process.env.CLIENT_URL}/?token=${token}`)
+    }
   } catch (err) {
     console.error('❌ googleCallback error:', err.message)
     res.redirect(`${process.env.CLIENT_URL}/admin/login?error=server_error`)
@@ -77,10 +120,10 @@ const forgotPassword = async (req, res, next) => {
 
     // Short-lived reset token (15 min)
     const resetToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' })
-    const resetUrl   = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`
+    const resetUrl = `${process.env.CLIENT_URL}/reset-password?token=${resetToken}`
 
     await sendEmail({
-      to:      user.email,
+      to: user.email,
       subject: 'SWA — Password Reset Request',
       html: `
         <div style="font-family:sans-serif;max-width:500px;margin:auto;padding:32px;background:#FAF5EF;border-radius:12px;">
@@ -119,7 +162,7 @@ const resetPassword = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET)
-    const user    = await User.findById(decoded.id)
+    const user = await User.findById(decoded.id)
     if (!user) return res.status(404).json({ error: 'User not found' })
 
     user.password = password   // pre-save hook will hash it
@@ -133,4 +176,4 @@ const resetPassword = async (req, res, next) => {
   }
 }
 
-module.exports = { login, googleCallback, logout, forgotPassword, resetPassword }
+module.exports = { login, registerUser, googleCallback, logout, forgotPassword, resetPassword }

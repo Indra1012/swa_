@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
 import { Suspense, lazy, useEffect, useRef, useState } from 'react'
-import { AuthProvider } from './context/AuthContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -8,11 +8,11 @@ import FAQSection from './sections/FAQSection'
 import Home from './pages/Home'
 
 // Lazy load everything except Home
-const About          = lazy(() => import('./pages/About'))
-const BookDemo       = lazy(() => import('./pages/BookDemo'))
-const ServicesPage   = lazy(() => import('./pages/ServicesPage'))
-const BlogsPage              = lazy(() => import('./pages/BlogsPage'))
-const AdminLogin     = lazy(() => import('./admin/AdminLogin'))
+const About = lazy(() => import('./pages/About'))
+const BookDemo = lazy(() => import('./pages/BookDemo'))
+const ServicesPage = lazy(() => import('./pages/ServicesPage'))
+const BlogsPage = lazy(() => import('./pages/BlogsPage'))
+const AdminLogin = lazy(() => import('./admin/AdminLogin'))
 const AdminDashboard = lazy(() => import('./admin/AdminDashboard'))
 
 // Suspense fallback
@@ -53,6 +53,18 @@ function Layout() {
   const isAdminDashboard = location.pathname === '/admin/dashboard'
   const videoRef = useRef(null)
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768)
+  const { login } = useAuth()
+
+  // Catch ?token= from Google OAuth redirect and log the user in
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const token = params.get('token')
+    if (token) {
+      login(token)
+      // Clean the URL so the token doesn't stay visible
+      window.history.replaceState({}, '', location.pathname)
+    }
+  }, [login, location.pathname])
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768)
@@ -69,7 +81,7 @@ function Layout() {
 
     const forcePlay = () => {
       if (video.paused) {
-        video.play().catch(() => {})
+        video.play().catch(() => { })
       }
     }
 
@@ -78,7 +90,7 @@ function Layout() {
     }
 
     forcePlay()
-    
+
     // Force playback if paused by browser (e.g. power saving)
     video.addEventListener('pause', forcePlay)
     video.addEventListener('suspend', forcePlay)
@@ -112,13 +124,13 @@ function Layout() {
       {!isAdminDashboard && <Navbar />}
       <Suspense fallback={<SWALoader />}>
         <Routes>
-          <Route path="/"                        element={<Home />} />
-          <Route path="/about"                   element={<About />} />
-          <Route path="/book-demo"               element={<BookDemo />} />
-          <Route path="/services"                element={<ServicesPage />} />
-          <Route path="/services/:serviceId"     element={<ServicesPage />} />
-          <Route path="/blogs"                   element={<BlogsPage />} />
-          <Route path="/admin/login"             element={<AdminLogin />} />
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/book-demo" element={<BookDemo />} />
+          <Route path="/services" element={<ServicesPage />} />
+          <Route path="/services/:serviceId" element={<ServicesPage />} />
+          <Route path="/blogs" element={<BlogsPage />} />
+          <Route path="/admin/login" element={<AdminLogin />} />
           <Route
             path="/admin/dashboard"
             element={

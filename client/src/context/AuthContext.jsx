@@ -1,4 +1,4 @@
-﻿//client/src/context/AuthContext.jsx
+//client/src/context/AuthContext.jsx
 
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 
@@ -49,7 +49,6 @@ export function AuthProvider({ children }) {
     setToken(null)
     setUser(null)
     setIsAdmin(false)
-    window.location.href = '/admin/login'
   }, [])
 
   return (

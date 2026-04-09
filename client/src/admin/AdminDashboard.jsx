@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext'
 import {
   FiGrid, FiEdit3, FiCalendar,
   FiClock, FiBell, FiLogOut, FiMenu, FiX,
-  FiExternalLink
+  FiExternalLink, FiShield
 } from 'react-icons/fi'
 
 import OverviewTab from './tabs/OverviewTab'
@@ -13,13 +13,15 @@ import EditTab from './tabs/EditTab'
 import BookingsTab from './tabs/BookingsTab'
 import SlotSettingsTab from './tabs/SlotSettingsTab'
 import NotificationSettingsTab from './tabs/NotificationSettingsTab'
+import AdminManagementTab from './tabs/AdminManagementTab'
 
 const TABS = [
   { id: 'overview', label: 'Overview', icon: <FiGrid size={18} /> },
   { id: 'edit', label: 'Edit', icon: <FiEdit3 size={18} /> },
   { id: 'bookings', label: 'Bookings', icon: <FiCalendar size={18} /> },
   { id: 'slots', label: 'Slot Settings', icon: <FiClock size={18} /> },
-  { id: 'notifications', label: 'Notification Settings', icon: <FiBell size={18} /> }
+  { id: 'notifications', label: 'Notification Settings', icon: <FiBell size={18} /> },
+  { id: 'admin-management', label: 'Admin Management', icon: <FiShield size={18} /> }
 ]
 
 const SIDEBAR_WIDTH = 260
@@ -50,6 +52,7 @@ export default function AdminDashboard() {
       case 'bookings': return <BookingsTab />
       case 'slots': return <SlotSettingsTab />
       case 'notifications': return <NotificationSettingsTab />
+      case 'admin-management': return <AdminManagementTab />
       default: return <OverviewTab />
     }
   }

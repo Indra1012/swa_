@@ -97,7 +97,7 @@ app.use(morgan('[:date[clf]] :method :url :status :response-time ms — :body'))
 
 // ── SESSION ──
 app.use(session({
-  store: MongoStore.create({ 
+  store: MongoStore.create({
     mongoUrl: process.env.MONGO_URI,
     collectionName: 'sessions', // Ensures 2k+ scalable concurrent user sessions without wiping Node RAM
     ttl: 24 * 60 * 60
@@ -141,7 +141,7 @@ app.use('/api/holidays', require('./routes/holiday.routes'))
 app.use('/api/admin', require('./routes/admin.routes'))
 app.use('/api/sections', require('./routes/sections.routes'))
 app.use('/api/client-logos', require('./routes/clientLogos.routes'))
-app.use('/api/team',         require('./routes/teamMember.routes'))
+app.use('/api/team', require('./routes/teamMember.routes'))
 
 // ── HEALTH CHECK ──
 app.get('/api/health', (req, res) => {

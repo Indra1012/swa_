@@ -1,6 +1,10 @@
 const nodemailer = require('nodemailer')
+const { Resend } = require('resend')
 
-// ── TRANSPORTER ──────────────────────────────────────────────────
+// ── SETUP RESEND (Primary, bypasses SMTP ports) ──────────────────
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+
+// ── SETUP NODEMAILER (Fallback for Local Dev) ────────────────────
 const transporter = nodemailer.createTransport({
   host:   'smtp.gmail.com',
   port:   587,
@@ -18,15 +22,34 @@ const transporter = nodemailer.createTransport({
 // ── SEND EMAIL ───────────────────────────────────────────────────
 const sendEmail = async ({ to, cc, subject, html }) => {
   try {
-    const info = await transporter.sendMail({
-      from:    `"SWA Wellbeing" <${process.env.NODEMAILER_USER}>`,
-      to,
-      ...(cc && { cc }),
-      subject,
-      html,
-    })
-    console.log(`✅ Email sent to: ${to}`)
-    return info
+    if (resend) {
+      // 1) Use HTTPS via Resend API (Works on Render Free Tier)
+      const fromEmail = process.env.RESEND_FROM || '"SWA Wellbeing" <onboarding@resend.dev>'
+      
+      const { data, error } = await resend.emails.send({
+        from: fromEmail,
+        to: to.split(',').map(e => e.trim()), // Resend supports arrays of emails
+        ...(cc && { cc: cc.split(',').map(e => e.trim()) }),
+        subject,
+        html,
+      })
+      
+      if (error) throw new Error(error.message)
+      console.log(`✅ Email sent via Resend API to: ${to}`)
+      return data
+      
+    } else {
+      // 2) Use SMTP via Nodemailer (Fails on Render Free Tier, works locally)
+      const info = await transporter.sendMail({
+        from:    `"SWA Wellbeing" <${process.env.NODEMAILER_USER}>`,
+        to,
+        ...(cc && { cc }),
+        subject,
+        html,
+      })
+      console.log(`✅ Email sent via Nodemailer to: ${to}`)
+      return info
+    }
   } catch (err) {
     console.error('❌ Email failed:', err.message)
     throw err

@@ -17,12 +17,25 @@ const createBooking = async (req, res, next) => {
     }
 
     // Check slot exists and is available
-    const slot = await Slot.findOne({ date, time: timeSlot })
-    if (!slot) {
-      return res.status(400).json({ error: 'Selected slot does not exist' })
-    }
-    if (!slot.isAvailable || slot.isBooked) {
-      return res.status(400).json({ error: 'Selected slot is no longer available' })
+    let slot = await Slot.findOne({ date, time: timeSlot })
+    
+    if (slot) {
+      if (!slot.isAvailable || slot.isBooked) {
+        return res.status(400).json({ error: 'Selected slot is no longer available' })
+      }
+    } else {
+      // In the available-by-default system, missing slots are available
+      // Let's do a quick validation to ensure they aren't booking a Sunday or Holiday via the API
+      const Holiday = require('../models/Holiday')
+      const isHoliday = await Holiday.findOne({ date })
+      const requestDate = new Date(date)
+      
+      if (requestDate.getDay() === 0 || isHoliday) {
+        return res.status(400).json({ error: 'Selected date is unavailable (Holiday / Sunday)' })
+      }
+      
+      // Instantiate the slot so it can be saved as booked below
+      slot = new Slot({ date, time: timeSlot, isAvailable: true, isBooked: false })
     }
 
     // Create Google Meet event (non-blocking — returns null if not configured)

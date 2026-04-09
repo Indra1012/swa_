@@ -314,7 +314,7 @@ export default function BlogsPage() {
                   show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] } }
                 }}
                 style={{
-                  fontSize: '18px', color: 'var(--dark)', lineHeight: 1.8, fontWeight: 500
+                  fontSize: '18px', color: 'var(--dark3)', lineHeight: 1.8, fontWeight: 600
                 }}
               >
                 {headings.subtitle}

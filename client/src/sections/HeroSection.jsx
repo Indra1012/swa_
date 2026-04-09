@@ -199,7 +199,7 @@ export default function HeroSection() {
                 </span>
               </h2>
 
-              {/* Connect for happiness button — same style as CTABanner */}
+              {/* Connect for wellbeing button — same style as CTABanner */}
               <button
                 onClick={() => window.location.href = '/book-demo'}
                 onMouseEnter={() => setBtnHovered(true)}
@@ -224,7 +224,7 @@ export default function HeroSection() {
                   textShadow: 'none'
                 }}
               >
-                Connect for happiness &nbsp;→
+                Connect for wellbeing &nbsp;→
               </button>
             </div>
           </motion.div>

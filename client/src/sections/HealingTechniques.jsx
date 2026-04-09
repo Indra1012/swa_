@@ -131,8 +131,8 @@ export default function HealingTechniques() {
             {headings.subtitle && (
               <p
                 style={{
-                  fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.7,
-                  maxWidth: '600px', margin: '0 auto', fontWeight: 400
+                  fontSize: '18px', color: 'var(--dark3)', lineHeight: 1.7,
+                  maxWidth: '600px', margin: '0 auto', fontWeight: 600
                 }}
               >
                 {headings.subtitle}

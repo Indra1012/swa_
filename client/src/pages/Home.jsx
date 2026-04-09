@@ -7,6 +7,7 @@ import WhySwaExistsSection from '../sections/WhySwaExistsSection'
 import SwaDifferenceSection from '../sections/SwaDifferenceSection'
 import MediaGallerySection from '../sections/MediaGallerySection'
 import TestimonialsSection from '../sections/TestimonialsSection'
+import TransformationModelSection from '../sections/TransformationModelSection'
 import WellbeingSection from '../sections/WellbeingSection'
 import CTABanner from '../sections/CTABanner'
 
@@ -18,6 +19,7 @@ export default function Home() {
       <ServicesSection />
       <HealingTechniques />
       <TestimonialsSection />
+      <TransformationModelSection />
       <WellbeingSection />
       <StatsSection />
       <WhySwaExistsSection />

@@ -185,7 +185,7 @@ export default function CTABanner() {
             fontFamily: 'DM Sans, sans-serif'
           }}
         >
-          Connect for happiness &nbsp;→
+          Connect for wellbeing &nbsp;→
         </button>
 
         <div style={{

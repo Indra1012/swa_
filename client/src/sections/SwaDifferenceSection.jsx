@@ -23,42 +23,52 @@ const DIFFERENCES = [
 ]
 
 function DiffRow({ diff, index, totalLength, progress }) {
+  const rowRef = useRef(null);
+  
+  const { scrollYProgress: localScroll } = useScroll({
+    target: rowRef,
+    offset: ["start 75%", "start 40%"]
+  });
+
   // Desktop Stacking Cards scrolling effect
   const startAt = index * (1 / totalLength);
   const targetScale = 1 - ((totalLength - index) * 0.05);
   const scale = useTransform(progress, [startAt, 1], [1, targetScale]);
 
   return (
-    <motion.div  
+    <motion.div
+      ref={rowRef}
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay: 0.1 * index }}
-      style={{ 
+      style={{
         scale,
         '--idx': index,
         position: 'sticky',
         top: `calc(15vh + ${index * 20}px)`,
         transformOrigin: "top center"
-      }} 
+      }}
       className="diff-row-motion"
     >
       <div className="diff-row">
         <div>
-          <p className="diff-label" style={{ color: 'var(--secondary)' }}>
+          <p className="diff-label" style={{ color: 'var(--dark3)' }}>
             Others offer
           </p>
           <div style={{ position: 'relative', display: 'inline-block', marginBottom: '4px' }}>
             <h3 className="diff-title" style={{ color: 'var(--dark)' }}>
               {diff.offerTitle}
             </h3>
-            <div style={{
+            <motion.div style={{
               position: 'absolute',
               top: '55%', left: 0, right: 0,
-              height: '1px',
+              height: '3px',
               background: 'var(--dark)',
-              opacity: 0.85,
-              transform: 'translateY(-50%)'
+              opacity: 0.9,
+              y: '-50%',
+              scaleX: localScroll,
+              transformOrigin: 'left'
             }} />
           </div>
           <p className="diff-desc" style={{ color: 'var(--dark)' }}>
@@ -90,60 +100,60 @@ function DiffRow({ diff, index, totalLength, progress }) {
 
 function JourneyStepMobile({ diff, index }) {
   const stepRef = useRef(null)
-  
+
   const { scrollYProgress } = useScroll({
     target: stepRef,
-    offset: ["start 70%", "start 45%"] 
+    offset: ["start 70%", "start 45%"]
   })
 
   const nodeScale = useTransform(scrollYProgress, [0, 1], [0, 1])
   const swaOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
   const swaY = useTransform(scrollYProgress, [0, 1], [20, 0])
-  
+
   // They wanted "Others" to look dark on mobile! So we remove the dramatic opacity fade.
   // Instead of fading to 0.4, we keep it fully solid 1 or slightly 0.85.
   const othersOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.85])
 
   return (
     <div ref={stepRef} className="journey-step">
-      
+
       {/* LEFT: The "Others" branch */}
       <div className="journey-others">
         <motion.div style={{ opacity: othersOpacity }} className="journey-others-content">
-          <p className="diff-label">Others offer</p>
+          <p className="diff-label" style={{ color: 'var(--dark3)' }}>Others offer</p>
           <div style={{ position: 'relative', display: 'inline-block', marginBottom: '6px' }}>
             <h3 className="diff-title" style={{ color: 'var(--dark)', fontWeight: 600, margin: 0 }}>
               {diff.offerTitle}
             </h3>
             {/* Strikethrough animates smoothly */}
-            <motion.div 
-               style={{ scaleX: scrollYProgress, transformOrigin: 'left' }}
-               className="journey-strikethrough"
+            <motion.div
+              style={{ scaleX: scrollYProgress, transformOrigin: 'left' }}
+              className="journey-strikethrough"
             />
           </div>
           <p className="diff-desc" style={{ color: 'var(--dark)', fontWeight: 500 }}>{diff.offerDesc}</p>
         </motion.div>
-        
+
         {/* Dead-end line branch */}
         <div className="journey-branch-line" />
       </div>
 
       {/* CENTER: The Node */}
       <div className="journey-node-wrap">
-         <div className="journey-node-bg" />
-         <motion.div className="journey-node-active" style={{ scale: nodeScale }} />
+        <div className="journey-node-bg" />
+        <motion.div className="journey-node-active" style={{ scale: nodeScale }} />
       </div>
 
       {/* RIGHT: SWA Delivery */}
       <div className="journey-swa">
-         <motion.div 
-           className="journey-swa-card"
-           style={{ opacity: swaOpacity, y: swaY }}
-         >
-           <p className="diff-label" style={{ color: 'var(--accent)' }}>SWA delivers</p>
-           <h3 className="diff-title" style={{ color: 'var(--dark)', fontWeight: 600 }}>{diff.deliverTitle}</h3>
-           <p className="diff-desc" style={{ color: 'var(--dark)', fontWeight: 500 }}>{diff.deliverDesc}</p>
-         </motion.div>
+        <motion.div
+          className="journey-swa-card"
+          style={{ opacity: swaOpacity, y: swaY }}
+        >
+          <p className="diff-label" style={{ color: 'var(--accent)' }}>SWA delivers</p>
+          <h3 className="diff-title" style={{ color: 'var(--dark)', fontWeight: 600 }}>{diff.deliverTitle}</h3>
+          <p className="diff-desc" style={{ color: 'var(--dark)', fontWeight: 500 }}>{diff.deliverDesc}</p>
+        </motion.div>
       </div>
 
     </div>
@@ -160,18 +170,18 @@ export default function SwaDifferenceSection() {
     target: containerRef,
     offset: ["start 65%", "end 60%"]
   })
-  
+
   // Mobile Journey scroll trackers for geometric pathing
   const glowHeight = useTransform(scrollYProgress, [0, 0.8], ["0%", "100%"])
   const cornerOpacity = useTransform(scrollYProgress, [0.75, 0.85], [0, 1])
   const glowWidth = useTransform(scrollYProgress, [0.85, 1], ["0%", "100%"])
 
   return (
-    <section 
+    <section
       ref={sectionRef}
       className="swa-difference-section"
       style={{
-        padding: '60px 20px 100px',
+        padding: '10px 20px 100px',
         background: 'transparent',
         display: 'flex',
         flexDirection: 'column',
@@ -179,60 +189,47 @@ export default function SwaDifferenceSection() {
       }}
     >
       <div style={{ maxWidth: '900px', width: '100%', margin: '0 auto' }}>
-        
+
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '80px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <motion.div
+        <div style={{ textAlign: 'center', marginBottom: '32px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <motion.h2
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}
-          >
-            <div style={{ width: '6px', height: '6px', background: 'var(--accent)', borderRadius: '50%' }} />
-            <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--dark)', letterSpacing: '2.5px', textTransform: 'uppercase' }}>
-              The SWA Path
-            </span>
-          </motion.div>
-          
-          <motion.h2 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.1 }}
             style={{
               fontFamily: 'Cormorant Garamond, serif',
-              fontSize: 'clamp(36px, 4vw, 52px)',
+              fontSize: 'clamp(32px, 4vw, 48px)',
               fontWeight: 700,
               color: 'var(--dark)',
-              letterSpacing: '-0.5px',
+              letterSpacing: '1px',
               lineHeight: 1.1,
-              marginBottom: '16px'
+              marginBottom: '32px'
             }}
           >
-            True wellbeing is a <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>continuous journey.</span>
+            The SWA Difference
           </motion.h2>
         </div>
 
         {/* Container for Desktop (Stacking Cards) and Mobile (Journey SCroller) */}
         <div className="swa-difference-content-wrapper">
-          
+
           {/* DESKTOP LAYOUT: Stacking Cards */}
-          <div 
+          <div
             ref={containerRef}
             className="diff-rows-container desktop-only-layout"
-            style={{ 
-               display: 'flex', 
-               flexDirection: 'column', 
-               gap: '24px', 
-               position: 'relative'
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              position: 'relative'
             }}
           >
             {DIFFERENCES.map((diff, idx) => (
-              <DiffRow 
-                key={idx} 
-                diff={diff} 
-                index={idx} 
+              <DiffRow
+                key={idx}
+                diff={diff}
+                index={idx}
                 totalLength={DIFFERENCES.length}
                 progress={scrollYProgress}
               />
@@ -242,47 +239,47 @@ export default function SwaDifferenceSection() {
           {/* MOBILE LAYOUT: Continuous Journey */}
           <div className="journey-container mobile-only-layout">
             <div className="journey-main-track" />
-            
+
             <div className="journey-glow-vertical-wrap">
-               <motion.div className="journey-glow-line" style={{ height: glowHeight }} />
+              <motion.div className="journey-glow-line" style={{ height: glowHeight }} />
             </div>
 
             <motion.div className="journey-glow-corner" style={{ opacity: cornerOpacity }} />
 
             <div className="journey-glow-horizontal-wrap">
-               <motion.div className="journey-glow-horizontal" style={{ width: glowWidth }} />
+              <motion.div className="journey-glow-horizontal" style={{ width: glowWidth }} />
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', position: 'relative', zIndex: 5 }}>
               {DIFFERENCES.map((diff, idx) => (
-                <JourneyStepMobile 
-                  key={idx} 
-                  diff={diff} 
-                  index={idx} 
+                <JourneyStepMobile
+                  key={idx}
+                  diff={diff}
+                  index={idx}
                 />
               ))}
             </div>
           </div>
-          
+
         </div>
 
         {/* Footer Banner */}
         <motion.div
-           initial={{ opacity: 0, y: 30 }}
-           whileInView={{ opacity: 1, y: 0 }}
-           viewport={{ once: true }}
-           transition={{ duration: 0.6, delay: 0.2 }}
-           className="diff-footer-banner"
-           style={{
-             background: 'var(--dark)',
-             borderRadius: '12px',
-             padding: '32px 30px',
-             textAlign: 'center',
-             color: 'var(--bg)',
-             position: 'relative',
-             zIndex: 10,
-             marginTop: '100px'
-           }}
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="diff-footer-banner"
+          style={{
+            background: 'var(--dark)',
+            borderRadius: '12px',
+            padding: '32px 30px',
+            textAlign: 'center',
+            color: 'var(--bg)',
+            position: 'relative',
+            zIndex: 10,
+            marginTop: '100px'
+          }}
         >
           <h4 className="diff-footer-title" style={{
             fontFamily: 'Cormorant Garamond, serif',

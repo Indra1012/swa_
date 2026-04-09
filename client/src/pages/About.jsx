@@ -276,7 +276,7 @@ export default function About() {
           </section>
 
           {/* 1.5. WHERE IT ALL BEGAN (OUR STORY) */}
-          <section style={{ background: 'transparent', padding: '100px 0 40px', margin: 0 }}>
+          <section style={{ background: 'transparent', padding: '100px 0 0px', margin: 0 }}>
             <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 clamp(20px, 4vw, 40px)' }}>
               {/* Header */}
               <motion.div
@@ -328,7 +328,7 @@ export default function About() {
               </motion.div>
 
               {/* Vision / Mission Light Frosted Cards */}
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '40px', marginBottom: '60px', alignItems: 'start' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: '40px', marginBottom: '0px', alignItems: 'start' }}>
                 <ExpandableCard title={pageData.visionTitle} delay={0}>
                   <p style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '24px', color: 'var(--dark)', fontStyle: 'italic', lineHeight: 1.4, marginBottom: '24px', marginTop: 0 }}>
                     {pageData.visionQuote}
@@ -358,6 +358,15 @@ export default function About() {
                 </ExpandableCard>
               </div>
 
+            </div>
+          </section>
+
+          {/* 4.5. CORE PHILOSOPHY */}
+          <WhyUsSection />
+
+          {/* Moved text */}
+          <section style={{ background: 'transparent', padding: '0 0 80px', margin: 0 }}>
+            <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 clamp(20px, 4vw, 40px)' }}>
               <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}
@@ -369,7 +378,6 @@ export default function About() {
                   Because lasting success begins from within.
                 </p>
               </motion.div>
-
             </div>
           </section>
 
@@ -583,8 +591,7 @@ export default function About() {
             </div>
           </section>
 
-          {/* 4.5. CORE PHILOSOPHY (Moved from Home) */}
-          <WhyUsSection />
+
 
 
 

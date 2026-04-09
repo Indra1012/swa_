@@ -5,11 +5,11 @@ import axios from 'axios'
 const API = import.meta.env.VITE_API_URL
 
 const STATS = [
-  { value: 450, suffix: '+', label: 'Organizations\nTransformed' },
-  { value: 2, suffix: 'L+', label: "People's Lives\nEmpowered" }, // Reverted to 2L+ as it was originally
-  { value: 2, suffix: 'L+', label: 'Sessions\nConducted' },
-  { value: 1000, suffix: '+', label: 'Global Experts\n& Healers' },
-  { value: 102, suffix: '+', label: 'Cities\nImpacted' }
+  { value: 10, suffix: '+', label: 'Organizations\nTransformed' },
+  { value: 1000, suffix: '+', label: "People's Lives\nEmpowered" },
+  { value: 25, suffix: '+', label: 'Sessions\nConducted' },
+  { value: 10, suffix: '+', label: 'Global Experts\n& Healers' },
+  { value: 3, suffix: '+', label: 'Cities\nImpacted' }
 ]
 
 function StatItem({ stat, index, isInView }) {
@@ -21,7 +21,7 @@ function StatItem({ stat, index, isInView }) {
     const end = stat.value
     const duration = 2000
     const increment = end / (duration / 16)
-    
+
     const timer = setInterval(() => {
       start += increment
       if (start >= end) {
@@ -52,34 +52,34 @@ function StatItem({ stat, index, isInView }) {
         padding: '32px 24px'
       }}
     >
-      <h3 
+      <h3
         className="stat-value"
         style={{
-        fontFamily: 'Cormorant Garamond, serif',
-        fontSize: 'clamp(48px, 5vw, 64px)',
-        fontWeight: 600,
-        color: 'var(--white)',
-        lineHeight: 1,
-        marginBottom: '12px',
-        letterSpacing: '-1px'
-      }}>
+          fontFamily: 'Cormorant Garamond, serif',
+          fontSize: 'clamp(48px, 5vw, 64px)',
+          fontWeight: 600,
+          color: 'var(--white)',
+          lineHeight: 1,
+          marginBottom: '12px',
+          letterSpacing: '-1px'
+        }}>
         {currentValue}
         <span style={{ color: 'var(--accent)', fontStyle: 'italic', marginLeft: '2px' }}>
           {stat.suffix}
         </span>
       </h3>
-      <p 
+      <p
         className="stat-label"
         style={{
-        fontSize: '14px',
-        color: 'rgba(255,255,255,0.65)',
-        fontWeight: 600,
-        lineHeight: 1.5,
-        whiteSpace: 'pre-line',
-        letterSpacing: '1.5px',
-        textTransform: 'uppercase',
-        fontFamily: 'DM Sans, sans-serif'
-      }}>
+          fontSize: '14px',
+          color: 'rgba(255,255,255,0.65)',
+          fontWeight: 600,
+          lineHeight: 1.5,
+          whiteSpace: 'pre-line',
+          letterSpacing: '1.5px',
+          textTransform: 'uppercase',
+          fontFamily: 'DM Sans, sans-serif'
+        }}>
         {stat.label}
       </p>
 
@@ -121,7 +121,7 @@ export default function StatsSection() {
         ])
 
         const cmap = {}
-        ;(contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
+          ; (contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
         if (Object.keys(cmap).length > 0) {
           setHeadings(h => ({
             title: cmap.title || h.title
@@ -167,16 +167,16 @@ export default function StatsSection() {
         position: 'relative',
         zIndex: 1
       }}
-      initial={{ opacity: 0, y: 80 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-100px' }}
-      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}>
+        initial={{ opacity: 0, y: 80 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: '-100px' }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}>
         {/* Compact Title */}
-        <motion.div 
+        <motion.div
           ref={headerRef}
-          className="float-subtle" 
-          style={{ 
-            textAlign: 'center', 
+          className="float-subtle"
+          style={{
+            textAlign: 'center',
             marginBottom: '80px',
             y: headerY,
             scale: headerScale,
@@ -205,7 +205,7 @@ export default function StatsSection() {
         </motion.div>
 
         {/* Horizontal flex layout */}
-        <div 
+        <div
           className="stats-row"
           style={{
             display: 'flex',

@@ -6,23 +6,22 @@ import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import axios from 'axios'
 import useScrollFade from '../hooks/useScrollFade'
 import { TECHNIQUES } from '../constants/techniques'
+import BlogModal from '../components/BlogModal'
 
-// Pure Editorial Minimalist Approach (No Cards)
-function TechniqueEditorial({ tech, index }) {
-  const isReversed = false // Always Image then Card
+// Pure Editorial Minimalist Approach (Blank Card Layout)
+function TechniqueEditorial({ tech, index, onReadMore }) {
   const [cardHovered, setCardHovered] = useState(false)
 
   const validImages = tech.images && tech.images.length > 0 ? tech.images : [tech.image].filter(Boolean)
   const blockRef = useRef(null)
 
-  // Parallax Scroll Animation for the Text
   const { scrollYProgress } = useScroll({
     target: blockRef,
     offset: ["start end", "end start"]
   })
 
-  // Text floats up significantly as you scroll down
-  const textY = useTransform(scrollYProgress, [0, 1], [80, -80])
+  // Float animation on scroll
+  const containerY = useTransform(scrollYProgress, [0, 1], [40, -40])
 
   const currentImageSrc = validImages[0] || ''
 
@@ -30,41 +29,41 @@ function TechniqueEditorial({ tech, index }) {
     <motion.div
       id={tech.id}
       ref={blockRef}
-      initial={{ opacity: 0, y: 60 }}
+      initial={{ opacity: 0, y: 50 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-100px' }}
-      transition={{ duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
+      viewport={{ once: true, margin: '-50px' }}
+      transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
       style={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         justifyContent: 'center',
-        flexDirection: isReversed ? 'row-reverse' : 'row',
+        flexDirection: 'row', // Image Left, Card Right
         width: '100%',
-        cursor: 'default' // Add a cursor so it feels interactive
+        cursor: 'pointer',
+        y: containerY
       }}
-      className={`editorial-row ${index % 2 !== 0 ? 'alt' : ''}`}
+      className="editorial-row"
+      onClick={() => onReadMore && onReadMore(tech)}
       onMouseEnter={() => setCardHovered(true)}
       onMouseLeave={() => setCardHovered(false)}
     >
       {/* 
-        Smaller, Portrait Image Block
-        Features Infinite Floating Animation
+        Image Block (Top-Left)
+        Sits in front (z-index: 10), casts shadow on the white card.
       */}
       <motion.div
-        animate={{ y: [0, -18, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: index * 0.4 }}
+        animate={{ y: [0, -15, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: index * 0.3 }}
         style={{
           flexShrink: 0,
-          width: '224px',
-          height: '315px',
-          borderRadius: '16px',
+          width: '220px',
+          height: '330px',
+          borderRadius: '20px',
           overflow: 'hidden',
-          boxShadow: cardHovered ? '0 40px 80px rgba(0,0,0,0.25)' : '0 30px 60px rgba(0,0,0,0.15)',
+          boxShadow: cardHovered ? '20px 20px 60px rgba(0,0,0,0.25)' : '10px 10px 40px rgba(0,0,0,0.15)',
           position: 'relative',
           zIndex: 10,
           transition: 'box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-          // Fixes the sharp corner bleeding on hover zoom in webkit browsers
-          WebkitMaskImage: '-webkit-radial-gradient(white, black)',
           isolation: 'isolate'
         }}
         className="editorial-image"
@@ -77,88 +76,91 @@ function TechniqueEditorial({ tech, index }) {
               position: 'absolute', inset: 0,
               width: '100%', height: '100%',
               objectFit: 'cover',
-              transform: cardHovered ? 'scale(1.06)' : 'scale(1)',
+              transform: cardHovered ? 'scale(1.04)' : 'scale(1)',
               transition: 'transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
             }}
           />
         )}
       </motion.div>
 
+      {/* 
+        White Card Block (Bottom-Right)
+        Sits behind image (z-index: 1), shifted down and left.
+        Completely blank as requested.
+      */}
       <motion.div
-        animate={{ y: [0, -18, 0] }}
-        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: index * 0.4 }}
-        whileHover={{
-          scale: 1.02,
-          boxShadow: '0 40px 80px rgba(101, 50, 57, 0.25)'
-        }}
+        animate={{ y: [0, -15, 0] }}
+        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: index * 0.3 + 0.5 }}
         style={{
-          width: '238px',
-          maxWidth: '100%',
-          height: '329px',
-          display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          background: 'rgba(250, 248, 245, 0.95)',
+          width: '260px',
+          height: '360px',
+          flexShrink: 0,
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'flex-start', alignItems: 'flex-start',
+          background: 'rgba(252, 250, 248, 0.98)',
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
-          borderRadius: '24px',
-          padding: '22px',
-          paddingLeft: isReversed ? '20px' : '58px',
-          paddingRight: isReversed ? '58px' : '20px',
-          marginLeft: isReversed ? '0' : '-42px',
-          marginRight: isReversed ? '-42px' : '0',
-          marginTop: '42px',
-          boxShadow: '0 20px 60px rgba(101, 50, 57, 0.15)',
-          border: '1px solid rgba(255, 255, 255, 0.4)',
+          borderRadius: '20px',
+          marginLeft: '-50px', // Precise horizontal overlap
+          marginTop: '40px', // Push card down relative to image top
+          padding: '30px',
+          paddingLeft: '74px', // Extra padding to clear the 50px overlap
+          boxShadow: cardHovered ? '0 20px 60px rgba(101, 50, 57, 0.12)' : '0 10px 40px rgba(101, 50, 57, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.8)',
           position: 'relative',
           zIndex: 1,
-          transition: 'box-shadow 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
+          transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)'
         }}
         className="editorial-content"
       >
-
-
-        <h2 style={{
-          fontFamily: 'Cormorant Garamond, serif',
-          fontSize: 'clamp(14px, 1.8vw, 21px)',
-          fontWeight: 500,
-          color: 'var(--dark)',
-          lineHeight: 1.1,
-          letterSpacing: '-1px',
-          marginBottom: '8px'
+        <div style={{
+          display: 'flex', flexDirection: 'column',
+          justifyContent: 'center', height: '100%'
         }}>
-          {tech.title} {tech.subtitle}
-        </h2>
-
-        <p style={{
-          fontSize: '10px', color: 'var(--secondary)', fontWeight: 400, lineHeight: 1.5, marginBottom: '11px', marginTop: 0
-        }}>
-          {tech.focus}
-        </p>
-
-        <div style={{ marginBottom: '14px' }}>
-          <ul style={{
-            listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '4px'
+          <h2 style={{
+            fontFamily: 'Cormorant Garamond, serif',
+            fontSize: '22px',
+            color: 'var(--dark)',
+            lineHeight: 1.25,
+            marginTop: 0,
+            marginBottom: '16px',
+            fontWeight: 500,
+            letterSpacing: '0'
           }}>
-            {tech.techniques.map((t, idx) => (
-              <li key={idx} style={{
-                position: 'relative', paddingLeft: '14px', fontSize: '10px', color: 'var(--secondary)', lineHeight: 1.4, fontWeight: 500
-              }}>
-                <div style={{
-                  position: 'absolute', left: 0, top: '6px', width: '8px', height: '1px', background: 'var(--accent)', opacity: 0.6
-                }} />
-                {t}
-              </li>
-            ))}
-          </ul>
-        </div>
+            {tech.title}
+          </h2>
 
-        {/* Minimalist Purpose Block - Italics purely */}
-        <div>
-          <p style={{
-            margin: 0, fontSize: '13px', color: 'var(--dark)',
-            lineHeight: 1.3, fontStyle: 'italic', fontFamily: 'Cormorant Garamond, serif'
-          }}>
-            "{tech.purpose}"
-          </p>
+          {tech.snippet && (
+            <p className="editorial-snippet" style={{
+              fontSize: '11px',
+              color: 'var(--secondary)',
+              lineHeight: 1.5,
+              flex: 1, // Pushes Read More all the way down
+              whiteSpace: 'pre-line',
+              margin: 0
+            }}>
+              {tech.snippet}
+            </p>
+          )}
+
+          <div
+            onClick={() => onReadMore && onReadMore(tech)}
+            style={{
+              marginTop: '16px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              fontSize: '10px',
+              fontWeight: 600,
+              letterSpacing: '1px',
+              textTransform: 'uppercase',
+              color: 'var(--accent)',
+              borderBottom: '1px solid var(--accent)',
+              paddingBottom: '2px',
+              cursor: 'pointer',
+              alignSelf: 'flex-start'
+            }}>
+            Read More
+          </div>
         </div>
       </motion.div>
     </motion.div>
@@ -167,51 +169,53 @@ function TechniqueEditorial({ tech, index }) {
 
 export default function BlogsPage() {
   const { hash } = useLocation()
-  
+
   const [blogs, setBlogs] = useState(TECHNIQUES)
+  const [selectedTech, setSelectedTech] = useState(null)
   const [headings, setHeadings] = useState({
-    title: 'SWA Insights',
-    subtitle: 'Honest insights on stress, resilience, and the inner work behind lasting performance.'
+    title: 'Swa Insights',
+    subtitle: 'Reflections on growth, alignment, and coming home to yourself'
   })
 
   useEffect(() => {
     const API = import.meta.env.VITE_API_URL || ''
     const now = Date.now()
-    
-    // Fetch Cards
-    axios.get(`${API}/api/sections/techniques/healing`)
+
+    // Fetch blogs from API (healing = Swa Insights)
+    axios.get(`${API}/api/sections/techniques/healing?t=${now}`)
       .then(res => {
-        const data = res.data;
-        if (data && data.items && data.items.length > 0) {
-           const mappedBlogs = data.items.map(item => ({
-              id: item._id,
-              title: item.title || '',
-              subtitle: item.subtitle || '',
-              focus: item.focus || '',
-              techniques: item.readMoreText ? item.readMoreText.split('\n').filter(t => t.trim() !== '') : [],
-              purpose: item.purpose || '',
-              image: item.image || '',
-              images: item.images ? item.images.map(img => img.url).filter(Boolean) : []
-           }))
-           setBlogs(mappedBlogs.slice(0, 3)) // Limit to exactly 3 blog items
+        const apiBlogs = res.data.items || []
+        if (apiBlogs.length > 0) {
+          setBlogs(apiBlogs
+            .sort((a, b) => (a.order || 0) - (b.order || 0))
+            .map(b => ({
+              id: b._id,
+              title: b.title,
+              subtitle: b.subtitle || b.focus || '',
+              snippet: b.snippet || b.subtitle || b.focus || '',
+              readMoreText: b.readMoreText || '',
+              images: b.images?.length > 0 ? b.images.map(img => typeof img === 'string' ? img : img.url) : b.image ? [b.image] : [],
+              image: b.image || (b.images?.[0] ? (typeof b.images[0] === 'string' ? b.images[0] : b.images[0].url) : '')
+            })))
         }
+        // else: keep TECHNIQUES static fallback
       })
-      .catch(err => console.error("Could not fetch live blogs configuration", err))
-      
-    // Fetch Global Headings
+      .catch(() => {})
+
+    // Fetch page headings from API
     axios.get(`${API}/api/content/healing?t=${now}`)
       .then(res => {
-         const cmap = {}
-         const arr = res.data.items || res.data || []
-         arr.forEach(i => cmap[i.key] = i.value)
-         if (Object.keys(cmap).length > 0) {
-            setHeadings(prev => ({
-               title: cmap.title || prev.title,
-               subtitle: cmap.subtitle || prev.subtitle
-            }))
-         }
+        const cmap = {}
+        const arr = res.data.items || res.data || []
+        arr.forEach(i => cmap[i.key] = i.value)
+        if (cmap.title || cmap.subtitle) {
+          setHeadings(prev => ({
+            title: cmap.title || prev.title,
+            subtitle: cmap.subtitle || prev.subtitle
+          }))
+        }
       })
-      .catch(err => console.error("Could not fetch global headings", err))
+      .catch(() => {})
   }, [])
 
   // Hash scrolling logic, highly precise with setTimeout
@@ -314,7 +318,7 @@ export default function BlogsPage() {
                   show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: [0.16, 1, 0.3, 1] } }
                 }}
                 style={{
-                  fontSize: '18px', color: 'var(--dark3)', lineHeight: 1.8, fontWeight: 600
+                  fontSize: '18px', color: 'var(--secondary)', lineHeight: 1.8, fontWeight: 500
                 }}
               >
                 {headings.subtitle}
@@ -324,9 +328,24 @@ export default function BlogsPage() {
             {/* Techniques Scrolling Blocks */}
             <div className="techniques-grid">
               {blogs.map((tech, i) => (
-                <TechniqueEditorial key={tech.id} tech={tech} index={i} />
+                <TechniqueEditorial
+                  key={tech.id}
+                  tech={tech}
+                  index={i}
+                  onReadMore={(t) => setSelectedTech(t)}
+                />
               ))}
             </div>
+
+            <AnimatePresence>
+              {selectedTech && (
+                <BlogModal
+                  isOpen={!!selectedTech}
+                  blog={selectedTech}
+                  onClose={() => setSelectedTech(null)}
+                />
+              )}
+            </AnimatePresence>
 
             <style>{`
         .techniques-grid {
@@ -334,154 +353,87 @@ export default function BlogsPage() {
           margin: 0 auto;
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
-          gap: 70px 20px;
+          gap: 100px 30px;
           padding: 0 40px;
         }
 
         @media (max-width: 1360px) {
           .techniques-grid {
             grid-template-columns: 1fr;
-            max-width: 800px;
-            gap: 80px;
+            max-width: 700px;
+            gap: 120px;
           }
         }
-        @media (max-width: 1360px) and (min-width: 901px) {
+
+        /* Tablet Scaling */
+        @media (max-width: 1360px) and (min-width: 769px) {
+          .editorial-row {
+            align-items: flex-start !important;
+          }
           .editorial-image {
-            width: 320px !important;
+            width: 300px !important;
             height: 450px !important;
           }
           .editorial-content {
             width: 340px !important;
-            height: 470px !important;
-            padding: 32px !important;
-            margin-top: 60px !important;
-          }
-          .editorial-row:not([style*="row-reverse"]) .editorial-content {
-            margin-left: -60px !important;
-            margin-right: 0 !important;
-            padding-left: 28px !important;
-            padding-right: 82px !important;
-          }
-          .editorial-row[style*="row-reverse"] .editorial-content {
-            margin-right: -60px !important;
-            margin-left: 0 !important;
-            padding-right: 28px !important;
-            padding-left: 82px !important;
-          }
-          
-          .editorial-content > h2 {
-             font-size: clamp(20px, 2.5vw, 30px) !important;
-             margin-bottom: 12px !important;
-          }
-          .editorial-content > p {
-             font-size: 14px !important;
-             margin-bottom: 16px !important;
-          }
-          .editorial-content > div > ul {
-             gap: 6px !important;
-          }
-          .editorial-content > div > ul > li {
-             font-size: 13px !important;
-             padding-left: 18px !important;
-          }
-          .editorial-content > div > ul > li > div {
-             top: 8px !important;
-             width: 12px !important;
-          }
-          .editorial-content > div:last-child > p {
-             font-size: 18px !important;
+            height: 480px !important;
+            margin-left: -80px !important;
+            margin-top: 50px !important;
           }
         }
 
-        @media (max-width: 900px) {
+        /* Mobile Responsive Scaling */
+        @media (max-width: 768px) {
           .techniques-grid {
             grid-template-columns: 1fr;
             padding: 0 16px;
-            gap: 60px;
+            gap: 100px;
           }
           
           .editorial-row { 
-            /* Let the inline style handle the row vs row-reverse alternating pattern */
             align-items: center !important;
+            width: 100% !important;
             gap: 0 !important;
+            flex-direction: row !important; /* Stack horizontally */
           }
           
           .editorial-image { 
             width: 44% !important; 
+            max-width: none !important;
             height: auto !important; 
-            aspect-ratio: 0.6 !important; /* Force a consistent tall portrait rectangle (width/height ratio) */
+            aspect-ratio: 0.65 !important; /* Distinct vertical rectangle */
             border-radius: 12px !important;
+            margin: 0 !important;
+            z-index: 10 !important;
           }
           
           .editorial-content { 
-            width: 64% !important; 
+            width: 68% !important; 
+            max-width: none !important;
             height: auto !important;
-            min-height: 280px !important; /* Ensure it never shrinks too small vertically */
-            aspect-ratio: 0.6 !important; /* Force the exact same tall portrait rectangle shape */
+            aspect-ratio: auto !important; /* Allow the height to naturally hug the content */
             margin: 0 !important;
-            margin-top: 15px !important; /* Visual offset */
-            padding: 20px 16px !important;
+            margin-left: -12% !important; /* Horizontal overlap inwards */
+            margin-top: 0 !important; 
+            padding: 36px 16px 36px 17% !important; /* Clever padding to clear the 12% overlap with larger top/bottom clearance! */
             border-radius: 16px !important;
-            /* Recenter content vertically inside the forced aspect-ratio box */
+            min-height: 280px !important; /* Keep it as a moderate vertical rectangle but don't artificially blow it up */
+            z-index: 1 !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: center !important;
           }
           
-          /* Handle horizontal overlap dynamically for both orientations */
-          .editorial-row.alt {
-             flex-direction: row-reverse !important;
+          .editorial-snippet {
+            -webkit-line-clamp: 14 !important; /* Allow snippet to vastly expand on phone, organically building the tall vertical card! */
           }
-          .editorial-row:not(.alt) .editorial-content {
-             margin-left: -12% !important;
-             margin-right: 0 !important;
-             padding-left: 18% !important; /* Text clearance over image */
-             padding-right: 12px !important;
-          }
-          .editorial-row.alt .editorial-content {
-             margin-right: -12% !important;
-             margin-left: 0 !important;
-             padding-right: 18% !important;
-             padding-left: 12px !important;
-          }
-
-          /* Downscale Text Intelligently for the small mobile cards */
-          .editorial-content > span:first-of-type {
-             font-size: 8px !important;
-             margin-bottom: 6px !important;
-             letter-spacing: 1.5px !important;
-          }
-          .editorial-content > h2 {
-             font-size: clamp(16px, 4vw, 22px) !important;
-             margin-bottom: 8px !important;
-             line-height: 1.15 !important;
-          }
-          .editorial-content > p {
-             font-size: 11px !important;
-             margin-bottom: 12px !important;
-             line-height: 1.4 !important;
-          }
-          .editorial-content ul {
-             gap: 4px !important;
-          }
-          .editorial-content li {
-             font-size: 10px !important;
-             padding-left: 12px !important;
-             line-height: 1.3 !important;
-          }
-          .editorial-content li div {
-             width: 8px !important;
-             top: 5px !important;
-          }
-          .editorial-content h5 {
-             font-size: 8px !important;
-             margin-bottom: 4px !important;
-             margin-top: 12px !important;
-          }
-          .editorial-content > div:last-child > p {
-             font-size: 13px !important;
-             line-height: 1.25 !important;
-          }
+        }
+        
+        .editorial-snippet {
+          display: -webkit-box;
+          -webkit-line-clamp: 10;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
       `}</style>
           </div>

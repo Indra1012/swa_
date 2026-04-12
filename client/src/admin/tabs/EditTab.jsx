@@ -5,6 +5,7 @@ import {
   FiEdit3, FiCheck, FiX, FiAlertCircle, FiChevronDown,
   FiChevronUp, FiTrash2, FiPlus, FiUpload, FiToggleLeft, FiToggleRight
 } from 'react-icons/fi'
+import RichTextEditor from '../../components/RichTextEditor'
 
 const API = import.meta.env.VITE_API_URL
 
@@ -650,6 +651,237 @@ function TechniquesManager({ category, label }) {
         </div>
       ) : (
         <SBtn onClick={() => setAdding(true)} variant="ghost" style={{ marginTop: '8px' }}><FiPlus size={13} /> Add {label}</SBtn>
+      )}
+    </>
+  )
+}
+
+// ─── 2b. BLOGS MANAGER (Swa Insights) ────────────────────────────────────────
+function BlogsManagerInline() {
+  const [blogs, setBlogs] = useState([])
+  const [headings, setHeadings] = useState({ title: 'Swa Insights', subtitle: 'Reflections on growth, alignment, and coming home to yourself' })
+  const [headingsSaved, setHeadingsSaved] = useState(false)
+  const [editId, setEditId] = useState(null)
+  const [draft, setDraft] = useState({})
+  const [adding, setAdding] = useState(false)
+  const [newBlog, setNewBlog] = useState({ title: '', subtitle: '', snippet: '', readMoreText: '', order: 0, pendingFile: null })
+  const [uploading, setUploading] = useState(null)
+  const [err, setErr] = useState('')
+  const [msg, setMsg] = useState('')
+  const fileRef = useRef(null)
+  const fileRefNew = useRef(null)
+
+  const load = useCallback(async () => {
+    try {
+      const now = Date.now()
+      const [blogsRes, headRes] = await Promise.all([
+        axios.get(`${API}/api/sections/techniques/healing?t=${now}`),
+        axios.get(`${API}/api/content/healing?t=${now}`).catch(() => ({ data: [] }))
+      ])
+      setBlogs((blogsRes.data.items || []).sort((a, b) => (a.order || 0) - (b.order || 0)))
+      const cmap = {}
+      const arr = headRes.data.items || headRes.data || []
+      arr.forEach(i => cmap[i.key] = i.value)
+      if (cmap.title || cmap.subtitle) setHeadings(h => ({ title: cmap.title || h.title, subtitle: cmap.subtitle || h.subtitle }))
+    } catch { setErr('Failed to load.') }
+  }, [])
+
+  useEffect(() => { load() }, [load])
+
+  const saveHeadings = async () => {
+    try {
+      await Promise.all([
+        axios.put(`${API}/api/content`, { section: 'healing', key: 'title', value: headings.title }, { headers: authH() }),
+        axios.put(`${API}/api/content`, { section: 'healing', key: 'subtitle', value: headings.subtitle }, { headers: authH() })
+      ])
+      setHeadingsSaved(true); setTimeout(() => setHeadingsSaved(false), 2500)
+    } catch { setErr('Failed to save headings.') }
+  }
+
+  const saveBlog = async (id) => {
+    try {
+      await axios.put(`${API}/api/sections/techniques/${id}`, draft, { headers: authH() })
+      setEditId(null); setDraft({}); setMsg('Saved!'); setTimeout(() => setMsg(''), 2500); load()
+    } catch { setErr('Save failed.') }
+  }
+
+  const deleteBlog = async (id) => {
+    if (!window.confirm('Delete this blog permanently?')) return
+    try { await axios.delete(`${API}/api/sections/techniques/${id}`, { headers: authH() }); load() }
+    catch { setErr('Delete failed.') }
+  }
+
+  const createBlog = async () => {
+    if (!newBlog.title) return setErr('Title is required.')
+    setUploading('new')
+    try {
+      const res = await axios.post(`${API}/api/sections/techniques`,
+        { title: newBlog.title, subtitle: newBlog.subtitle, snippet: newBlog.snippet, readMoreText: newBlog.readMoreText, order: Number(newBlog.order) || 0, category: 'healing' },
+        { headers: authH() })
+      if (newBlog.pendingFile) {
+        const fd = new FormData(); fd.append('files', newBlog.pendingFile)
+        await axios.post(`${API}/api/sections/techniques/${res.data.item._id}/images`, fd, { headers: { ...authH(), 'Content-Type': 'multipart/form-data' } }).catch(() => {})
+      }
+      setNewBlog({ title: '', subtitle: '', snippet: '', readMoreText: '', order: 0, pendingFile: null })
+      setAdding(false); setMsg('Blog created!'); setTimeout(() => setMsg(''), 2500); load()
+    } catch { setErr('Create failed.') }
+    finally { setUploading(null) }
+  }
+
+  const uploadImage = async (blogId, file) => {
+    setUploading(blogId)
+    try {
+      const fd = new FormData(); fd.append('files', file)
+      await axios.post(`${API}/api/sections/techniques/${blogId}/images`, fd, { headers: { ...authH(), 'Content-Type': 'multipart/form-data' } })
+      load(); setMsg('Image uploaded!'); setTimeout(() => setMsg(''), 2000)
+    } catch { setErr('Upload failed.') }
+    finally { setUploading(null) }
+  }
+
+  const deleteImage = async (blogId, publicId) => {
+    try { await axios.put(`${API}/api/sections/techniques/${blogId}/image/delete`, { publicId }, { headers: authH() }); load() }
+    catch { setErr('Image delete failed.') }
+  }
+
+  const getImg = (b) => b.images?.length > 0 ? (typeof b.images[0] === 'string' ? b.images[0] : b.images[0].url) : (b.image || '')
+  const getPid = (b) => b.images?.length > 0 ? (b.images[0].publicId || '') : (b.publicId || '')
+  const lbl = { fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', fontWeight: 600, marginBottom: '6px', display: 'block' }
+  const inp = { width: '100%', padding: '10px 13px', border: '1.5px solid rgba(204,199,185,0.4)', borderRadius: '8px', fontSize: '14px', fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box', background: 'var(--white)', outline: 'none' }
+
+  return (
+    <>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' }}>
+        <div style={{ width: '4px', height: '22px', background: 'var(--secondary)', borderRadius: '2px' }} />
+        <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '20px', fontWeight: 700, color: 'var(--dark)', margin: 0 }}>Swa Insights — Blog Manager</h3>
+      </div>
+
+      {/* Page Headings */}
+      <div style={{ background: 'var(--bg)', border: '1px solid rgba(204,199,185,0.3)', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px' }}>
+        <p style={{ fontSize: '11px', fontWeight: 700, color: 'var(--secondary)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '12px' }}>Page Headings</p>
+        <div style={{ marginBottom: '10px' }}><span style={lbl}>Main Title</span>
+          <input value={headings.title} onChange={e => setHeadings(h => ({ ...h, title: e.target.value }))} style={inp} placeholder="Swa Insights" />
+        </div>
+        <div style={{ marginBottom: '14px' }}><span style={lbl}>Subtitle / Tagline</span>
+          <input value={headings.subtitle} onChange={e => setHeadings(h => ({ ...h, subtitle: e.target.value }))} style={inp} placeholder="Reflections on growth..." />
+        </div>
+        <button onClick={saveHeadings} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: headingsSaved ? 'green' : 'var(--dark)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
+          <FiCheck size={12} /> {headingsSaved ? 'Saved!' : 'Save Headings'}
+        </button>
+      </div>
+
+      <div style={{ background: 'rgba(175,122,109,0.07)', border: '1px solid rgba(175,122,109,0.2)', borderRadius: '10px', padding: '12px 16px', marginBottom: '20px', fontSize: '13px', color: 'var(--secondary)', lineHeight: 1.6 }}>
+        💡 <strong>Rich Editor:</strong> Use the toolbar for headings, bold, bullets. <strong>Paste from ChatGPT</strong> — all formatting is preserved automatically.
+      </div>
+
+      {err && <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#c83232', padding: '8px 12px', background: 'rgba(200,50,50,0.07)', borderRadius: '8px', marginBottom: '12px' }}><FiAlertCircle size={13} /> {err}</div>}
+      {msg && <div style={{ fontSize: '12px', color: 'green', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}><FiCheck size={13} /> {msg}</div>}
+
+      {blogs.length === 0 && !adding && (
+        <div style={{ textAlign: 'center', padding: '32px 20px', color: 'var(--secondary)', fontSize: '14px', fontStyle: 'italic', border: '1px dashed rgba(204,199,185,0.5)', borderRadius: '12px', marginBottom: '16px' }}>
+          No blogs yet. Click "Add New Blog Post" below to get started.
+        </div>
+      )}
+
+      {blogs.map(blog => (
+        <div key={blog._id} style={{ background: 'rgba(250,248,245,0.95)', borderRadius: '12px', padding: '16px', marginBottom: '14px', border: '1px solid rgba(204,199,185,0.3)', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+          {editId === blog._id ? (
+            <>
+              <div style={{ marginBottom: '12px' }}><span style={lbl}>Title</span>
+                <input value={draft.title ?? blog.title} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} style={inp} />
+              </div>
+              <div style={{ marginBottom: '12px' }}><span style={lbl}>Subtitle (e.g. "Mind" or tag)</span>
+                <input value={draft.subtitle ?? blog.subtitle ?? ''} onChange={e => setDraft(d => ({ ...d, subtitle: e.target.value }))} style={inp} />
+              </div>
+              <div style={{ marginBottom: '12px' }}><span style={lbl}>Card Snippet (short preview paragraph on blog card)</span>
+                <textarea value={draft.snippet ?? blog.snippet ?? ''} onChange={e => setDraft(d => ({ ...d, snippet: e.target.value }))} rows={3} style={{ ...inp, resize: 'vertical' }} />
+              </div>
+              <div style={{ marginBottom: '16px' }}><span style={lbl}>Full Article — paste from ChatGPT, all formatting preserved!</span>
+                <RichTextEditor value={draft.readMoreText ?? blog.readMoreText ?? ''} onChange={v => setDraft(d => ({ ...d, readMoreText: v }))} placeholder="Write or paste full article here..." />
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.7)', border: '1px dashed rgba(204,199,185,0.6)', borderRadius: '10px', padding: '14px', marginBottom: '14px' }}>
+                <span style={lbl}>Cover Image</span>
+                {getImg(blog) && (
+                  <div style={{ display: 'flex', gap: '12px', marginBottom: '10px', alignItems: 'flex-start' }}>
+                    <img src={getImg(blog)} style={{ width: '80px', height: '100px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #ddd', flexShrink: 0 }} alt="" />
+                    <div>
+                      <p style={{ fontSize: '12px', color: 'var(--secondary)', margin: '0 0 8px' }}>Current cover image</p>
+                      {getPid(blog) && <button onClick={() => deleteImage(blog._id, getPid(blog))} style={{ background: 'rgba(200,50,50,0.1)', color: '#c83232', border: '1px solid rgba(200,50,50,0.2)', borderRadius: '6px', padding: '5px 10px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}><FiTrash2 size={11} /> Delete Image</button>}
+                    </div>
+                  </div>
+                )}
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadImage(blog._id, f); e.target.value = null }} />
+                <button onClick={() => fileRef.current?.click()} disabled={uploading === blog._id} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', border: '1px solid rgba(204,199,185,0.5)', borderRadius: '8px', background: 'var(--white)', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: 'var(--dark)' }}>
+                  <FiUpload size={13} /> {uploading === blog._id ? 'Uploading...' : 'Upload / Replace Image'}
+                </button>
+                <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.5)', marginTop: '6px' }}>Portrait format recommended (e.g. 900×1400 px)</p>
+              </div>
+              <div style={{ marginBottom: '14px' }}><span style={lbl}>Display Order</span>
+                <input type="number" value={draft.order ?? blog.order ?? 0} onChange={e => setDraft(d => ({ ...d, order: Number(e.target.value) }))} style={{ width: '80px', padding: '8px 12px', border: '1.5px solid rgba(204,199,185,0.4)', borderRadius: '8px', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }} />
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={() => saveBlog(blog._id)} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'var(--dark)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}><FiCheck size={12} /> Save Blog</button>
+                <button onClick={() => { setEditId(null); setDraft({}) }} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'var(--bg)', color: 'var(--secondary)', border: '1px solid rgba(204,199,185,0.4)', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}><FiX size={12} /> Cancel</button>
+              </div>
+            </>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+              {getImg(blog) ? <img src={getImg(blog)} style={{ width: '44px', height: '56px', objectFit: 'cover', borderRadius: '8px', flexShrink: 0, border: '1px solid rgba(204,199,185,0.4)' }} alt="" />
+                : <div style={{ width: '44px', height: '56px', background: 'rgba(0,0,0,0.05)', borderRadius: '8px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><FiUpload size={16} color="rgba(0,0,0,0.2)" /></div>}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '26px', height: '26px', background: 'rgba(204,199,185,0.2)', borderRadius: '6px', color: 'var(--secondary)', fontSize: '12px', fontWeight: 700, flexShrink: 0 }}>{blog.order || 0}</div>
+              <div style={{ flex: 1, minWidth: '120px' }}>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--dark)', margin: 0 }}>{blog.title}</p>
+                {blog.subtitle && <p style={{ fontSize: '12px', color: 'var(--secondary)', margin: '2px 0 0' }}>{blog.subtitle}</p>}
+                {blog.snippet && <p style={{ fontSize: '12px', color: 'var(--secondary)', margin: '2px 0 0' }}>{blog.snippet.slice(0, 80)}{blog.snippet.length > 80 ? '…' : ''}</p>}
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                <button onClick={() => { setEditId(blog._id); setDraft({}) }} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'var(--bg)', border: '1px solid rgba(204,199,185,0.4)', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', color: 'var(--secondary)' }}><FiEdit3 size={12} /></button>
+                <button onClick={() => deleteBlog(blog._id)} style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(200,50,50,0.08)', border: '1px solid rgba(200,50,50,0.2)', borderRadius: '8px', padding: '6px 10px', cursor: 'pointer', color: '#c83232' }}><FiTrash2 size={12} /></button>
+              </div>
+            </div>
+          )}
+        </div>
+      ))}
+
+      {adding ? (
+        <div style={{ background: 'rgba(175,122,109,0.05)', border: '1px dashed rgba(175,122,109,0.3)', borderRadius: '12px', padding: '20px', marginTop: '12px' }}>
+          <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--secondary)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>New Blog Post</p>
+          <div style={{ marginBottom: '12px' }}><span style={lbl}>Title</span>
+            <input value={newBlog.title} onChange={e => setNewBlog(n => ({ ...n, title: e.target.value }))} placeholder="Blog post title" style={inp} />
+          </div>
+          <div style={{ marginBottom: '12px' }}><span style={lbl}>Subtitle (e.g. "Mind" or tag)</span>
+            <input value={newBlog.subtitle} onChange={e => setNewBlog(n => ({ ...n, subtitle: e.target.value }))} placeholder="Subtitle or tag..." style={inp} />
+          </div>
+          <div style={{ marginBottom: '12px' }}><span style={lbl}>Card Snippet (short preview paragraph on blog card)</span>
+            <textarea value={newBlog.snippet} onChange={e => setNewBlog(n => ({ ...n, snippet: e.target.value }))} placeholder="Short preview paragraph..." rows={3} style={{ ...inp, resize: 'vertical' }} />
+          </div>
+          <div style={{ marginBottom: '16px' }}><span style={lbl}>Full Article (paste from ChatGPT — formatting preserved!)</span>
+            <RichTextEditor value={newBlog.readMoreText} onChange={v => setNewBlog(n => ({ ...n, readMoreText: v }))} placeholder="Paste your full article here..." />
+          </div>
+          <div style={{ background: 'rgba(255,255,255,0.7)', border: '1px dashed rgba(204,199,185,0.6)', borderRadius: '10px', padding: '14px', marginBottom: '14px' }}>
+            <span style={lbl}>Cover Image</span>
+            <input ref={fileRefNew} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => { const f = e.target.files?.[0]; if (f) setNewBlog(n => ({ ...n, pendingFile: f })); e.target.value = null }} />
+            {newBlog.pendingFile && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                <img src={URL.createObjectURL(newBlog.pendingFile)} style={{ width: '60px', height: '75px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #ddd' }} alt="" />
+                <button onClick={() => setNewBlog(n => ({ ...n, pendingFile: null }))} style={{ background: 'rgba(200,50,50,0.1)', color: '#c83232', border: '1px solid rgba(200,50,50,0.2)', borderRadius: '6px', padding: '4px 8px', fontSize: '12px', cursor: 'pointer' }}>Remove</button>
+              </div>
+            )}
+            <button onClick={() => fileRefNew.current?.click()} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px', border: '1px solid rgba(204,199,185,0.5)', borderRadius: '8px', background: 'var(--white)', cursor: 'pointer', fontSize: '12px', fontWeight: 600, color: 'var(--dark)' }}>
+              <FiUpload size={13} /> Select Cover Image
+            </button>
+          </div>
+          <div style={{ marginBottom: '14px' }}><span style={lbl}>Display Order</span>
+            <input type="number" value={newBlog.order} onChange={e => setNewBlog(n => ({ ...n, order: Number(e.target.value) }))} style={{ width: '80px', padding: '8px 12px', border: '1.5px solid rgba(204,199,185,0.4)', borderRadius: '8px', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }} />
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={createBlog} disabled={uploading === 'new'} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'var(--dark)', color: 'white', border: 'none', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}><FiPlus size={12} /> {uploading === 'new' ? 'Creating...' : 'Create Blog'}</button>
+            <button onClick={() => { setAdding(false); setNewBlog({ title: '', subtitle: '', readMoreText: '', order: 0, pendingFile: null }) }} style={{ display: 'flex', alignItems: 'center', gap: '5px', background: 'var(--bg)', color: 'var(--secondary)', border: '1px solid rgba(204,199,185,0.4)', borderRadius: '8px', padding: '8px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}><FiX size={12} /> Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={() => setAdding(true)} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--bg)', border: '1px solid rgba(204,199,185,0.4)', borderRadius: '8px', padding: '9px 16px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', color: 'var(--secondary)', marginTop: '8px' }}>
+          <FiPlus size={13} /> Add New Blog Post
+        </button>
       )}
     </>
   )
@@ -1502,7 +1734,7 @@ function CtaManager() {
                   'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=400&q=80',
                   'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=400&q=80'
                 ][idx]
-                
+
                 return (
                   <div key={idx} style={{ position: 'relative', width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(204,199,185,0.4)', background: 'var(--bg)' }}>
                     {upImg ? (
@@ -1514,9 +1746,9 @@ function CtaManager() {
                       <>
                         <img src={fallbackImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3 }} />
                         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(250,248,245,0.5)' }}>
-                           <button onClick={() => imgRef.current?.click()} style={{ background: 'var(--white)', border: '1px solid var(--secondary)', borderRadius: '4px', padding: '4px 8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', color: 'var(--dark)' }}>
-                             Replace
-                           </button>
+                          <button onClick={() => imgRef.current?.click()} style={{ background: 'var(--white)', border: '1px solid var(--secondary)', borderRadius: '4px', padding: '4px 8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', color: 'var(--dark)' }}>
+                            Replace
+                          </button>
                         </div>
                       </>
                     )}
@@ -2580,7 +2812,7 @@ function AboutHeroMediaManager() {
   const [err, setErr] = useState('')
   const [uploadedImgs, setUploadedImgs] = useState([])
   const [uploadedVid, setUploadedVid] = useState(null)
-  
+
   const imgRef = useRef(null)
   const vidRef = useRef(null)
 
@@ -2691,7 +2923,7 @@ function AboutHeroMediaManager() {
                   'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=400',
                   'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?q=80&w=400'
                 ][idx]
-                
+
                 return (
                   <div key={idx} style={{ position: 'relative', width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(204,199,185,0.4)', background: 'var(--bg)' }}>
                     {upImg ? (
@@ -2703,9 +2935,9 @@ function AboutHeroMediaManager() {
                       <>
                         <img src={fallbackImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3 }} />
                         <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'rgba(250,248,245,0.5)' }}>
-                           <button onClick={() => imgRef.current?.click()} style={{ background: 'var(--white)', border: '1px solid var(--secondary)', borderRadius: '4px', padding: '4px 8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', color: 'var(--dark)' }}>
-                             Replace
-                           </button>
+                          <button onClick={() => imgRef.current?.click()} style={{ background: 'var(--white)', border: '1px solid var(--secondary)', borderRadius: '4px', padding: '4px 8px', fontSize: '10px', fontWeight: 700, cursor: 'pointer', color: 'var(--dark)' }}>
+                            Replace
+                          </button>
                         </div>
                       </>
                     )}
@@ -2911,15 +3143,7 @@ export default function EditTab() {
           </>
         ) : activePage === 'blogs' ? (
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '14px' }}>
-              <div style={{ width: '4px', height: '18px', background: 'var(--secondary)', borderRadius: '2px', flexShrink: 0 }} />
-              <h3 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '18px', fontWeight: 700, color: 'var(--dark)', margin: 0 }}>
-                Manage Blog Content
-              </h3>
-            </div>
-            <div style={{ background: 'var(--white)', padding: '20px', borderRadius: '12px', border: '1px solid rgba(204,199,185,0.3)', boxShadow: '0 4px 14px rgba(0,0,0,0.02)' }}>
-              <TechniquesManager category="healing" label="Blog Post" />
-            </div>
+            <BlogsManagerInline />
           </div>
         ) : (
           mergedGroups.map(group => (

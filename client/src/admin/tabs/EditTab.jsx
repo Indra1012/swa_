@@ -675,8 +675,8 @@ function BlogsManagerInline() {
     try {
       const now = Date.now()
       const [blogsRes, headRes] = await Promise.all([
-        axios.get(`${API}/api/sections/techniques/healing?t=${now}`),
-        axios.get(`${API}/api/content/healing?t=${now}`).catch(() => ({ data: [] }))
+        axios.get(`${API}/api/sections/techniques/insights?t=${now}`),
+        axios.get(`${API}/api/content/insights?t=${now}`).catch(() => ({ data: [] }))
       ])
       setBlogs((blogsRes.data.items || []).sort((a, b) => (a.order || 0) - (b.order || 0)))
       const cmap = {}
@@ -691,8 +691,8 @@ function BlogsManagerInline() {
   const saveHeadings = async () => {
     try {
       await Promise.all([
-        axios.put(`${API}/api/content`, { section: 'healing', key: 'title', value: headings.title }, { headers: authH() }),
-        axios.put(`${API}/api/content`, { section: 'healing', key: 'subtitle', value: headings.subtitle }, { headers: authH() })
+        axios.put(`${API}/api/content`, { section: 'insights', key: 'title', value: headings.title }, { headers: authH() }),
+        axios.put(`${API}/api/content`, { section: 'insights', key: 'subtitle', value: headings.subtitle }, { headers: authH() })
       ])
       setHeadingsSaved(true); setTimeout(() => setHeadingsSaved(false), 2500)
     } catch { setErr('Failed to save headings.') }
@@ -716,7 +716,7 @@ function BlogsManagerInline() {
     setUploading('new')
     try {
       const res = await axios.post(`${API}/api/sections/techniques`,
-        { title: newBlog.title, subtitle: newBlog.subtitle, snippet: newBlog.snippet, readMoreText: newBlog.readMoreText, order: Number(newBlog.order) || 0, category: 'healing' },
+        { title: newBlog.title, subtitle: newBlog.subtitle, snippet: newBlog.snippet, readMoreText: newBlog.readMoreText, order: Number(newBlog.order) || 0, category: 'insights' },
         { headers: authH() })
       if (newBlog.pendingFile) {
         const fd = new FormData(); fd.append('files', newBlog.pendingFile)

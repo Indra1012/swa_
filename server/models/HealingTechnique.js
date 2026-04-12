@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const healingTechniqueSchema = new mongoose.Schema(
   {
-    category: { type: String, enum: ['healing', 'wellbeing'], required: true, index: true },
+    category: { type: String, enum: ['healing', 'wellbeing', 'insights'], required: true, index: true },
     title:    { type: String, required: true, trim: true },
     subtitle: { type: String, default: '', trim: true },
     snippet:  { type: String, default: '', trim: true },

@@ -181,8 +181,8 @@ export default function BlogsPage() {
     const API = import.meta.env.VITE_API_URL || ''
     const now = Date.now()
 
-    // Fetch blogs from API (healing = Swa Insights)
-    axios.get(`${API}/api/sections/techniques/healing?t=${now}`)
+    // Fetch blogs from API (insights = Swa Insights)
+    axios.get(`${API}/api/sections/techniques/insights?t=${now}`)
       .then(res => {
         const apiBlogs = res.data.items || []
         if (apiBlogs.length > 0) {
@@ -203,7 +203,7 @@ export default function BlogsPage() {
       .catch(() => {})
 
     // Fetch page headings from API
-    axios.get(`${API}/api/content/healing?t=${now}`)
+    axios.get(`${API}/api/content/insights?t=${now}`)
       .then(res => {
         const cmap = {}
         const arr = res.data.items || res.data || []

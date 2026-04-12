@@ -99,7 +99,7 @@ const uploadTechniqueImages = async (req, res, next) => {
     } else {
       item.mediaMode = 'image'
       
-      if (item.category === 'healing') {
+      if (['healing', 'insights'].includes(item.category)) {
         // Enforce max 1 editable image: delete any old ones when adding a new one
         if (item.images && item.images.length > 0) {
           for (const img of item.images) {

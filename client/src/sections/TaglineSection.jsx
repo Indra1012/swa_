@@ -159,7 +159,7 @@ export default function TaglineSection() {
             className="tagline-subtext"
             style={{
               color: 'var(--dark)',
-              maxWidth: '560px',
+              maxWidth: '740px',
               margin: '0 auto',
               fontWeight: 500,
               fontFamily: 'DM Sans, sans-serif'
@@ -172,12 +172,12 @@ export default function TaglineSection() {
           {logoVisible && (
           <div style={{ marginTop: '60px', width: '100%', overflow: 'hidden' }}>
             <p style={{
-              fontSize: '14px',
+              fontSize: 'clamp(20px, 3vw, 26px)',
               color: 'var(--dark)',
               fontWeight: 600,
               fontStyle: 'italic',
               marginBottom: '32px',
-              fontFamily: 'DM Sans, sans-serif'
+              fontFamily: 'Cormorant Garamond, serif'
             }}>
               {logoTagline}
             </p>

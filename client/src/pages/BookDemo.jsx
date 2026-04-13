@@ -157,6 +157,16 @@ export default function BookDemo() {
   const [bookingDetails, setBookingDetails] = useState(null)
   const [isVideoExpanded, setIsVideoExpanded] = useState(false)
   const [showCalendar, setShowCalendar] = useState(false)
+  const [content, setContent] = useState({})
+
+  useEffect(() => {
+    axios.get(`${API}/api/content/book_demo`).then(res => {
+      const cmap = {}
+      ;(res.data.items || res.data || []).forEach(i => cmap[i.key] = i.value)
+      setContent(cmap)
+    }).catch(()=>{})
+  }, [])
+
 
   const [form, setForm] = useState({
     name: '',
@@ -270,7 +280,7 @@ export default function BookDemo() {
           {/* ── HEADER & VIDEO SECTION ── */}
           <section style={{
             background: 'transparent',
-            padding: '80px 60px 20px',
+            padding: '40px 60px 20px',
             margin: 0,
             textAlign: 'center'
           }}>
@@ -278,64 +288,82 @@ export default function BookDemo() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              style={{ maxWidth: '800px', margin: '0 auto', marginBottom: isVideoExpanded ? '40px' : '40px' }}
+              style={{ maxWidth: '800px', margin: '0 auto', marginBottom: isVideoExpanded ? '40px' : '0' }}
             >
-              <h1 style={{
-                fontFamily: 'DM Sans, sans-serif',
-                fontSize: 'clamp(36px, 5vw, 56px)',
-                fontWeight: 400, color: 'var(--dark)',
-                lineHeight: 1.1, letterSpacing: '-1.5px',
-                marginBottom: '32px'
-              }}>
-                Experience <span style={{ fontWeight: 600, color: 'var(--dark)' }}>SWA Wellbeing</span>
-              </h1>
+              <h1 
+                dangerouslySetInnerHTML={{
+                  __html: (content.title || 'Experience <i>SWA Wellbeing</i>').replace(
+                    /<i>(.*?)<\/i>/g, 
+                    '<span style="font-style: italic; font-weight: 500; color: var(--dark2)">$1</span>'
+                  )
+                }}
+                style={{
+                  fontFamily: 'Cormorant Garamond, serif',
+                  fontSize: 'clamp(36px, 5vw, 56px)',
+                  fontWeight: 700, color: 'var(--dark)',
+                  lineHeight: 1.1, letterSpacing: '-0.5px',
+                  marginBottom: '32px'
+                }}
+              />
 
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(8px, 2vw, 16px)', flexWrap: 'nowrap' }}>
-                <span style={{ fontSize: 'clamp(13px, 3.5vw, 15px)', fontWeight: 500, color: 'var(--secondary)', whiteSpace: 'nowrap' }}>
-                  Want a quick preview?
-                </span>
-                <button
-                  onClick={() => setIsVideoExpanded(!isVideoExpanded)}
-                  style={{
-                    padding: 'clamp(8px, 2vw, 10px) clamp(16px, 4vw, 24px)', background: 'var(--dark)', color: 'var(--white)',
-                    borderRadius: '50px', fontSize: 'clamp(12px, 3.5vw, 13px)', fontWeight: 600, border: 'none',
-                    transition: 'all 0.3s ease', whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--dark2)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'var(--dark)'}
-                >
-                  {isVideoExpanded ? 'Hide Video' : 'Watch Demo Video'}
-                </button>
-              </div>
+              {content.showVideo !== 'false' && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 'clamp(12px, 3vw, 24px)', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '17px', fontWeight: 500, color: 'var(--dark)', fontFamily: 'DM Sans, sans-serif' }}>
+                    {content.subtitle || 'Want a quick preview?'}
+                  </span>
+                  <button
+                    onClick={() => setIsVideoExpanded(!isVideoExpanded)}
+                    style={{
+                      padding: '12px 28px', background: 'var(--dark)', color: 'var(--white)',
+                      borderRadius: '50px', fontSize: '15px', fontWeight: 600, border: 'none',
+                      transition: 'all 0.3s ease', whiteSpace: 'nowrap', fontFamily: 'DM Sans, sans-serif',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--accent)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'var(--dark)'}
+                  >
+                    {isVideoExpanded ? 'Hide Video' : (content.btnText || 'Watch Demo Video')}
+                  </button>
+                </div>
+              )}
             </motion.div>
 
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: isVideoExpanded ? 'auto' : 0, opacity: isVideoExpanded ? 1 : 0 }}
-              transition={{ duration: 0.5, ease: 'easeInOut' }}
-              style={{ overflow: 'hidden' }}
-            >
-              <div style={{
-                width: '100vw',
-                position: 'relative',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                aspectRatio: '16/9',
-                maxHeight: '85vh',
-                background: '#000',
-                marginTop: '40px'
-              }}>
-                {isVideoExpanded && (
-                  <iframe
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                    title="SWA Wellbeing Demo"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                    style={{ width: '100%', height: '100%', border: 'none' }}
-                  />
-                )}
+            {content.showVideo !== 'false' && (
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateRows: isVideoExpanded ? '1fr' : '0fr',
+                  transition: 'grid-template-rows 0.5s cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              >
+                <div style={{ overflow: 'hidden' }}>
+                  <div style={{
+                    width: '100%',
+                    maxWidth: '800px',
+                    margin: '24px auto 0',
+                    position: 'relative',
+                  aspectRatio: '16/9',
+                  background: '#000',
+                  borderRadius: '24px',
+                  overflow: 'hidden',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+                  opacity: isVideoExpanded ? 1 : 0,
+                  transition: 'opacity 0.4s ease, transform 0.4s ease',
+                  transform: isVideoExpanded ? 'translateY(0)' : 'translateY(-10px)'
+                }}>
+                  {isVideoExpanded && (
+                    <iframe
+                      src={content.videoUrl ? `${content.videoUrl}?autoplay=1` : "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"}
+                      title="SWA Wellbeing Demo"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                      style={{ width: '100%', height: '100%', border: 'none' }}
+                    />
+                  )}
+                </div>
               </div>
-            </motion.div>
+            </div>
+            )}
           </section>
 
           {/* ── SECTION 3: Booking Form ── */}
@@ -350,18 +378,23 @@ export default function BookDemo() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-50px' }}
                 transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                style={{ marginBottom: '40px' }}
+                style={{ marginBottom: '32px', textAlign: 'center' }}
               >
-                <h2 style={{
-                  fontFamily: 'Cormorant Garamond, serif',
-                  fontSize: 'clamp(20px, 5.5vw, 42px)',
-                  fontWeight: 700, color: 'var(--dark)', marginBottom: '12px', letterSpacing: '-0.5px',
-                  whiteSpace: 'nowrap'
-                }}>
-                  Book a 30-Min <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--dark2)' }}>Google Meet</span>
-                </h2>
-                <p style={{ fontSize: '15px', color: 'var(--secondary)', lineHeight: 1.6 }}>
-                  Schedule a focused 1-on-1 video call session. Our team will speak with you directly to understand your needs and demonstrate exactly how SWA can elevate your organization.
+                <h2 
+                  dangerouslySetInnerHTML={{
+                    __html: (content.formTitle || 'Book a 30-Min <i>Google Meet</i>').replace(
+                      /<i>(.*?)<\/i>/g, 
+                      '<span style="font-style: italic; font-weight: 500; color: var(--accent)">$1</span>'
+                    )
+                  }}
+                  style={{
+                    fontFamily: 'Cormorant Garamond, serif',
+                    fontSize: 'clamp(24px, 3.5vw, 36px)',
+                    fontWeight: 700, color: 'var(--dark)', marginBottom: '12px', letterSpacing: '-0.5px',
+                  }}
+                />
+                <p style={{ fontSize: '15px', color: 'var(--secondary)', lineHeight: 1.6, fontWeight: 500, margin: '0 auto', maxWidth: '680px' }}>
+                  {content.formDesc || 'Schedule a focused 1-on-1 video call session. Our team will speak with you directly to understand your needs and demonstrate exactly how SWA can elevate your organization.'}
                 </p>
               </motion.div>
 

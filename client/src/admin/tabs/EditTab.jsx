@@ -720,7 +720,7 @@ function BlogsManagerInline() {
         { headers: authH() })
       if (newBlog.pendingFile) {
         const fd = new FormData(); fd.append('files', newBlog.pendingFile)
-        await axios.post(`${API}/api/sections/techniques/${res.data.item._id}/images`, fd, { headers: { ...authH(), 'Content-Type': 'multipart/form-data' } }).catch(() => {})
+        await axios.post(`${API}/api/sections/techniques/${res.data.item._id}/images`, fd, { headers: { ...authH(), 'Content-Type': 'multipart/form-data' } }).catch(() => { })
       }
       setNewBlog({ title: '', subtitle: '', snippet: '', readMoreText: '', order: 0, pendingFile: null })
       setAdding(false); setMsg('Blog created!'); setTimeout(() => setMsg(''), 2500); load()
@@ -2042,6 +2042,7 @@ function ContentField({ field, section }) {
   const [error, setError] = useState('')
   const isArrayField = ['offerings', 'formats', 'outcomes'].includes(field.key)
   const isLong = value.length > 80 || isArrayField
+  const isBool = field.type === 'boolean'
 
   const handleSave = async () => {
     setSaving(true); setError('')
@@ -2051,6 +2052,47 @@ function ContentField({ field, section }) {
       setTimeout(() => setSaved(false), 2500)
     } catch { setError('Failed to save.') }
     finally { setSaving(false) }
+  }
+
+  const handleToggle = async () => {
+    setSaving(true); setError('')
+    try {
+      const nextVal = value === 'true' ? 'false' : 'true'
+      await axios.put(`${API}/api/content`, { section, key: field.key, value: nextVal }, { headers: authH() })
+      setValue(nextVal)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch { setError('Failed to toggle.') }
+    finally { setSaving(false) }
+  }
+
+  if (isBool) {
+    const isVisible = value !== 'false' // default true
+    return (
+      <div style={{ background: 'var(--white)', borderRadius: '12px', padding: '18px 22px', border: '1.5px solid rgba(204,199,185,0.2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>
+            <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', fontWeight: 600, marginBottom: '2px' }}>{field.label}</p>
+            <p style={{ fontSize: '10px', color: 'rgba(60,47,47,0.3)', fontFamily: 'monospace' }}>{section}.{field.key}</p>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {saved && <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: 'green', fontWeight: 500 }}><FiCheck size={13} /> Saved</div>}
+            <button
+              onClick={handleToggle}
+              disabled={saving}
+              style={{
+                padding: '8px 16px', borderRadius: '20px', border: 'none',
+                background: isVisible ? 'rgba(80,160,80,0.12)' : 'rgba(200,60,60,0.12)',
+                color: isVisible ? '#3a9a3a' : '#c83c3c',
+                fontWeight: 700, fontSize: '12px', cursor: 'pointer', transition: 'all 0.2s ease'
+              }}
+            >
+              {isVisible ? 'Currently Visible (Hide)' : 'Currently Hidden (Show)'}
+            </button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -2163,7 +2205,24 @@ const PAGE_CONTENT = {
       ]
     },
   ],
-  blogs: []
+  blogs: [],
+  book_demo: [
+    {
+      group: 'Header & Video Section', section: 'book_demo', fields: [
+        { key: 'showVideo', label: 'Toggle Video Button & Video Display', value: 'true', type: 'boolean' },
+        { key: 'title', label: 'Main Title', value: 'Experience <i>SWA Wellbeing</i>' },
+        { key: 'subtitle', label: 'Subtitle', value: 'Want a quick preview?' },
+        { key: 'btnText', label: 'Watch Video Button Text', value: 'Watch Demo Video' },
+        { key: 'videoUrl', label: 'YouTube Embed URL', value: 'https://www.youtube.com/embed/dQw4w9WgXcQ' },
+      ]
+    },
+    {
+      group: 'Booking Form Section', section: 'book_demo', fields: [
+        { key: 'formTitle', label: 'Form Section Title', value: 'Book a 30-Min <i>Google Meet</i>' },
+        { key: 'formDesc', label: 'Form Section Description', value: 'Schedule a focused 1-on-1 video call session. Our team will speak with you directly to understand your needs and demonstrate exactly how SWA can elevate your organization.' },
+      ]
+    }
+  ]
 }
 
 const PAGES = [
@@ -2171,6 +2230,7 @@ const PAGES = [
   { id: 'services', label: 'Programs' },
   { id: 'about', label: 'About' },
   { id: 'blogs', label: 'Blogs' },
+  { id: 'book_demo', label: 'Book Demo' },
 ]
 
 // ─── CLIENT LOGOS MANAGER ──────────────────────────────────────────────────

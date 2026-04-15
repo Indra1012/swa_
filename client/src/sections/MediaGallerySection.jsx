@@ -55,55 +55,34 @@ function GalleryCard({ item, onClick, stagger }) {
     >
       {/* Media */}
       {item.type === 'video' ? (
-        <>
-          <video
-            src={item.url}
-            muted loop playsInline autoPlay
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-          />
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: hovered ? 'rgba(0,0,0,0.1)' : 'transparent',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'background 0.3s ease'
-          }}>
-            <div style={{
-              width: '48px', height: '48px', borderRadius: '50%',
-              background: 'rgba(255,255,255,0.7)',
-              backdropFilter: 'blur(4px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transform: hovered ? 'scale(1.12)' : 'scale(1)',
-              transition: 'transform 0.3s ease, opacity 0.3s ease',
-              opacity: hovered ? 1 : 0.4
-            }}>
-              <FiPlay size={18} color="var(--dark)" style={{ marginLeft: '3px' }} />
-            </div>
-          </div>
-        </>
+        <video
+          src={item.url}
+          muted loop playsInline autoPlay
+          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+        />
       ) : (
-        <>
-          <img
-            src={cloudinaryImg(item.url, 700)}
-            alt=""
-            loading="lazy"
-            decoding="async"
-            style={{
-              width: '100%', height: '100%', objectFit: 'cover',
-              transform: hovered ? 'scale(1.06)' : 'scale(1)',
-              transition: 'transform 0.6s ease'
-            }}
-          />
-          {/* Subtle gradient for image readability, darkens slightly when expanded */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: hovered || expanded
-              ? 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)'
-              : 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)',
-            transition: 'background 0.5s ease',
-            pointerEvents: 'none'
-          }} />
-        </>
+        <img
+          src={cloudinaryImg(item.url, 700)}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          style={{
+            width: '100%', height: '100%', objectFit: 'cover',
+            transform: hovered ? 'scale(1.06)' : 'scale(1)',
+            transition: 'transform 0.6s ease'
+          }}
+        />
       )}
+
+      {/* Subtle gradient for text readability, darkens slightly when expanded */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: hovered || expanded
+          ? 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)'
+          : 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)',
+        transition: 'background 0.5s ease',
+        pointerEvents: 'none'
+      }} />
 
       {/* Content Container positioned exactly like WellbeingCard */}
       {(item.title || item.subtitle || hasDesc) && (
@@ -277,10 +256,8 @@ function ScrollRow({ items, direction, paused, onPause, onResume, staggerFlip })
     }
   }
 
-  // Multiply items for smooth illusion
-  const loopItems = items.length < 8
-    ? [...items, ...items, ...items, ...items, ...items]
-    : [...items, ...items, ...items]
+  // Use items array directly without duplication
+  const loopItems = items
 
   return (
     <div style={{ position: 'relative', width: '100%' }} onMouseEnter={onPause} onMouseLeave={onResume}>
@@ -367,7 +344,7 @@ export default function MediaGallerySection() {
           if (cmap.visible !== undefined) setSectionVisible(cmap.visible !== 'false')
         }
         const fetched = res.data.items || []
-        setItems(fetched.length > 0 ? fetched : FALLBACK_GALLERY)
+        setItems(fetched.length > 0 ? fetched.sort((a, b) => (a.order || 0) - (b.order || 0)) : FALLBACK_GALLERY)
       } catch {
         setItems(FALLBACK_GALLERY)
       } finally {
@@ -382,10 +359,10 @@ export default function MediaGallerySection() {
   // Full section hidden from admin toggle
   if (!sectionVisible) return null
 
-  // ≤5 items → single row, >5 → split into 2 rows
-  const twoRows = items.length > 5
-  const row1 = twoRows ? items.slice(0, Math.ceil(items.length / 2)) : items
-  const row2 = twoRows ? items.slice(Math.ceil(items.length / 2)) : []
+  // Group items by rowNumber assigned in the Admin panel
+  const row1 = items.filter(item => item.rowNumber === 1 || !item.rowNumber)
+  const row2 = items.filter(item => item.rowNumber === 2)
+  const twoRows = row2.length > 0
 
   return (
     <section
@@ -405,10 +382,10 @@ export default function MediaGallerySection() {
       >
         <h2 style={{
           fontFamily: 'Cormorant Garamond, serif',
-          fontSize: 'clamp(32px, 6vw, 76px)',
+          fontSize: 'clamp(24px, 5vw, 76px)',
           fontWeight: 700, color: 'var(--dark)',
           lineHeight: 1.1, letterSpacing: '-0.5px',
-          marginBottom: '0', whiteSpace: 'normal'
+          marginBottom: '0', whiteSpace: 'nowrap'
         }}>
           {headings.title.split(' ').length > 1 ? (
             <>

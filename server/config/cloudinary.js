@@ -27,10 +27,13 @@ const cloudinaryStorage = new CloudinaryStorage({
 
 // ── FILE FILTER ──
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
+  const allowedExts = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'mp4', 'mov', 'avi', 'mkv', 'webm']
+  const ext = (file.originalname || '').split('.').pop().toLowerCase()
+  
+  if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/') || allowedExts.includes(ext)) {
     cb(null, true)
   } else {
-    console.error('❌ File rejected: only images and videos allowed. Got:', file.mimetype)
+    console.error('❌ File rejected: only images and videos allowed. Got:', file.mimetype, 'Ext:', ext)
     cb(new Error(`Unsupported file type: ${file.mimetype}. Only images and videos are allowed.`), false)
   }
 }

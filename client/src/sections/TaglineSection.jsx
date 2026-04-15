@@ -170,30 +170,41 @@ export default function TaglineSection() {
 
           {/* Client Logos Marquee */}
           {logoVisible && (
-          <div style={{ marginTop: '60px', width: '100%', overflow: 'hidden' }}>
-            <p style={{
-              fontSize: 'clamp(20px, 3vw, 26px)',
-              color: 'var(--dark)',
-              fontWeight: 600,
-              fontStyle: 'italic',
-              marginBottom: '32px',
-              fontFamily: 'Cormorant Garamond, serif'
-            }}>
-              {logoTagline}
-            </p>
+            <div style={{ marginTop: '60px', width: '100%', overflow: 'hidden' }}>
+              <p style={{
+                fontSize: 'clamp(20px, 3vw, 26px)',
+                color: 'var(--dark)',
+                fontWeight: 600,
+                fontStyle: 'italic',
+                marginBottom: '32px',
+                fontFamily: 'Cormorant Garamond, serif'
+              }}>
+                {logoTagline}
+              </p>
 
-            <div className="logo-marquee-container" style={{
-              position: 'relative',
-              width: '100%',
-              overflow: 'hidden',
-              WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
-              maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
-            }}>
-              <div className="logo-marquee-track">
-                {[...clientLogos, ...clientLogos, ...clientLogos, ...clientLogos].map((logo, i) => (
-                  <div key={i} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 30px' }}>
-                    {logo.link ? (
-                      <a href={logo.link} target="_blank" rel="noopener noreferrer" style={{ display: 'flex' }}>
+              <div className="logo-marquee-container" style={{
+                position: 'relative',
+                width: '100%',
+                overflow: 'hidden',
+                WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+                maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)'
+              }}>
+                <div className="logo-marquee-track">
+                  {[...clientLogos, ...clientLogos, ...clientLogos, ...clientLogos].map((logo, i) => (
+                    <div key={i} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', padding: '0 30px' }}>
+                      {logo.link ? (
+                        <a href={logo.link} target="_blank" rel="noopener noreferrer" style={{ display: 'flex' }}>
+                          <img
+                            src={logo.url}
+                            alt={logo.name}
+                            className="client-logo-img"
+                            style={{
+                              height: logo.name === 'Deloitte' || logo.name === 'Amazon' ? '28px' : '40px',
+                              objectFit: 'contain'
+                            }}
+                          />
+                        </a>
+                      ) : (
                         <img
                           src={logo.url}
                           alt={logo.name}
@@ -203,23 +214,12 @@ export default function TaglineSection() {
                             objectFit: 'contain'
                           }}
                         />
-                      </a>
-                    ) : (
-                      <img
-                        src={logo.url}
-                        alt={logo.name}
-                        className="client-logo-img"
-                        style={{
-                          height: logo.name === 'Deloitte' || logo.name === 'Amazon' ? '28px' : '40px',
-                          objectFit: 'contain'
-                        }}
-                      />
-                    )}
-                  </div>
-                ))}
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
           )}
         </motion.div>
         <style>{`

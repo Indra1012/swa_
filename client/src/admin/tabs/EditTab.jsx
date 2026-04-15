@@ -1842,7 +1842,7 @@ function GalleryManager() {
         if (cmap.visible !== undefined) setSectionVisible(cmap.visible !== 'false')
       }
 
-      setItems(res.data.items || [])
+      setItems((res.data.items || []).sort((a, b) => (a.order || 0) - (b.order || 0)))
       setLoaded(true)
     } catch { setErr('Failed to load.') }
   }, [])
@@ -1987,6 +1987,10 @@ function GalleryManager() {
                     <Field label="Name / Title" value={draft.title ?? item.title ?? ''} onChange={v => setDraft(d => ({ ...d, title: v }))} placeholder="Alina R." />
                     <Field label="Subtitle / Role" value={draft.subtitle ?? item.subtitle ?? ''} onChange={v => setDraft(d => ({ ...d, subtitle: v }))} placeholder="Senior Therapist" />
                   </div>
+                  <div style={{ marginBottom: '12px', marginTop: '12px' }}>
+                    <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', fontWeight: 600, marginBottom: '6px' }}>Display Order</p>
+                    <input type="number" value={draft.order !== undefined ? draft.order : (item.order ?? 0)} onChange={e => setDraft(d => ({ ...d, order: Number(e.target.value) }))} style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid rgba(204,199,185,0.4)', background: 'var(--bg)', fontSize: '14px', fontFamily: 'DM Sans, sans-serif', boxSizing: 'border-box' }} />
+                  </div>
                   <div style={{ marginBottom: '12px' }}>
                     <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', fontWeight: 600, marginBottom: '6px' }}>Description (optional — shows Read More)</p>
                     <textarea
@@ -2002,11 +2006,20 @@ function GalleryManager() {
                       }}
                     />
                   </div>
-                  <div style={{ marginBottom: '12px' }}>
-                    <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', fontWeight: 600, marginBottom: '6px' }}>Card Size Orientation</p>
-                    <select value={draft.sizeVariant ?? item.sizeVariant} onChange={e => setDraft(d => ({ ...d, sizeVariant: e.target.value }))} style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid rgba(204,199,185,0.4)', background: 'var(--bg)', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }}>
-                      {SIZE_VARIANTS.map(s => <option key={s} value={s}>{s}</option>)}
-                    </select>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
+                    <div>
+                      <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', fontWeight: 600, marginBottom: '6px' }}>Card Size</p>
+                      <select value={draft.sizeVariant ?? item.sizeVariant} onChange={e => setDraft(d => ({ ...d, sizeVariant: e.target.value }))} style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid rgba(204,199,185,0.4)', background: 'var(--bg)', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }}>
+                        {SIZE_VARIANTS.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <p style={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '1px', color: 'var(--secondary)', fontWeight: 600, marginBottom: '6px' }}>Display Row</p>
+                      <select value={draft.rowNumber ?? item.rowNumber ?? 1} onChange={e => setDraft(d => ({ ...d, rowNumber: Number(e.target.value) }))} style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1.5px solid rgba(204,199,185,0.4)', background: 'var(--bg)', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }}>
+                        <option value={1}>Row 1</option>
+                        <option value={2}>Row 2</option>
+                      </select>
+                    </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
                     <SBtn onClick={() => save(item._id)}><FiCheck size={12} /> Save</SBtn>
@@ -2016,7 +2029,7 @@ function GalleryManager() {
               ) : (
                 <>
                   <p style={{ margin: 0, fontSize: '15px', fontWeight: 600, color: 'var(--dark)' }}>{item.title || 'No Title Provided'}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--secondary)' }}>{item.subtitle || 'No Subtitle'} • {item.sizeVariant}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'var(--secondary)' }}>Row {item.rowNumber || 1} • Order: {item.order || 0} • {item.subtitle || 'No Subtitle'} • {item.sizeVariant}</p>
                   <div style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
                     <SBtn onClick={() => { setEditId(item._id); setDraft({}) }} variant="ghost" style={{ padding: '6px 10px' }}><FiEdit3 size={12} /></SBtn>
                     <SBtn onClick={() => del(item._id)} variant="danger" style={{ padding: '6px 10px' }}><FiTrash2 size={12} /></SBtn>

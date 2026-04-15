@@ -136,12 +136,12 @@ export default function Footer() {
                   >
                     <FiMail size={14} /> hello@swaspaces.com
                   </a>
-                  <a href="mailto:Wellbeing@swaspaces.com" className="footer-email"
+                  <a href="mailto:wellbeing@swaspaces.com" className="footer-email"
                     style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--dark2)', fontWeight: 600 }}
                     onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--dark2)'}
                   >
-                    <FiMail size={14} /> Wellbeing@swaspaces.com
+                    <FiMail size={14} /> wellbeing@swaspaces.com
                   </a>
                 </div>
               </div>

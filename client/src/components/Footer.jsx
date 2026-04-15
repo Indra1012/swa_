@@ -129,19 +129,19 @@ export default function Footer() {
                 </div>
                 {/* Email links */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <a href="mailto:dhruvi@swaspaces.com" className="footer-email"
+                  <a href="mailto:hello@swaspaces.com" className="footer-email"
                     style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--dark2)', fontWeight: 600 }}
                     onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--dark2)'}
                   >
-                    <FiMail size={14} /> dhruvi@swaspaces.com
+                    <FiMail size={14} /> hello@swaspaces.com
                   </a>
-                  <a href="mailto:well-begin@swaspaces.com" className="footer-email"
+                  <a href="mailto:Wellbeing@swaspaces.com" className="footer-email"
                     style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--dark2)', fontWeight: 600 }}
                     onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'}
                     onMouseLeave={e => e.currentTarget.style.color = 'var(--dark2)'}
                   >
-                    <FiMail size={14} /> well-begin@swaspaces.com
+                    <FiMail size={14} /> Wellbeing@swaspaces.com
                   </a>
                 </div>
               </div>

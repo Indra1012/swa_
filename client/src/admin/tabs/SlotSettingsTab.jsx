@@ -11,8 +11,11 @@ const API = import.meta.env.VITE_API_URL
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 const TIME_SLOTS = [
-  '9:00 AM', '10:00 AM', '11:00 AM', '12:00 PM',
-  '2:00 PM', '3:00 PM', '4:00 PM', '5:00 PM'
+  '10:00 AM', '10:30 AM', '11:00 AM', '11:30 AM',
+  '12:00 PM', '12:30 PM',
+  '2:00 PM', '2:30 PM', '3:00 PM', '3:30 PM',
+  '4:00 PM', '4:30 PM', '5:00 PM', '5:30 PM',
+  '6:00 PM', '6:30 PM', '7:00 PM', '7:30 PM'
 ]
 
 // Generate next 4 weeks of dates (Mon-Sat only, no Sundays)
@@ -176,7 +179,7 @@ export default function SlotSettingsTab() {
           Availability & Holidays
         </h2>
         <p style={{ fontSize: '13px', color: 'var(--secondary)' }}>
-          Standard working hours (9 AM - 5 PM) are available by default. Exclude specific days by adding Holidays.
+          Standard working hours (10 AM - 7:30 PM) are available by default. Exclude specific days by adding Holidays.
         </p>
       </div>
 

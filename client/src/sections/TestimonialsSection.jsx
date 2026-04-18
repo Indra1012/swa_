@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { HR_TESTIMONIALS, EMPLOYEE_TESTIMONIALS } from '../constants/testimonials'
-import { motion, AnimatePresence, useScroll, useTransform, useInView } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import axios from 'axios'
 
 const API = import.meta.env.VITE_API_URL
@@ -21,14 +20,16 @@ function TestimonialCard({ testimonial }) {
         justifyContent: 'center',
         flexShrink: 0,
         position: 'relative',
-        background: hovered ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.04)',
+        background: hovered ? 'rgba(0, 0, 0, 0.25)' : 'rgba(0, 0, 0, 0.15)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
         border: '1px solid',
-        borderColor: hovered ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
+        borderColor: hovered ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.05)',
         borderRadius: '24px',
         padding: '48px 32px',
         transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
         transform: hovered ? 'translateY(-12px)' : 'translateY(0)',
-        boxShadow: hovered ? '0 30px 60px rgba(0,0,0,0.3)' : 'none',
+        boxShadow: hovered ? '0 30px 60px rgba(0,0,0,0.4)' : '0 10px 30px rgba(0,0,0,0.1)',
         overflow: 'hidden'
       }}
     >
@@ -52,7 +53,7 @@ function TestimonialCard({ testimonial }) {
           style={{
             fontFamily: 'Cormorant Garamond, serif',
             fontSize: '20px', fontWeight: 600,
-            color: 'var(--primary)',
+            color: 'var(--white)',
             marginBottom: '12px',
             letterSpacing: '0.5px'
           }}>
@@ -72,20 +73,22 @@ function TestimonialCard({ testimonial }) {
           ))}
         </div>
 
-        <p
-          className="testimonial-quote"
-          style={{
-            fontFamily: 'Cormorant Garamond, serif',
-            fontSize: '19px', fontWeight: 600,
-            color: 'var(--white)',
-            marginBottom: '14px',
-            lineHeight: 1.4,
-            letterSpacing: '-0.3px',
-            wordWrap: 'break-word',
-            overflowWrap: 'break-word'
-          }}>
-          "{testimonial.quote}"
-        </p>
+        {testimonial.quote && (
+          <p
+            className="testimonial-quote"
+            style={{
+              fontFamily: 'Cormorant Garamond, serif',
+              fontSize: '19px', fontWeight: 600,
+              color: 'var(--white)',
+              marginBottom: '14px',
+              lineHeight: 1.4,
+              letterSpacing: '-0.3px',
+              wordWrap: 'break-word',
+              overflowWrap: 'break-word'
+            }}>
+            "{testimonial.quote}"
+          </p>
+        )}
 
         <p
           className="testimonial-text"
@@ -141,8 +144,8 @@ function MarqueeTrack({ testimonials }) {
       style={{
         overflowX: 'auto', padding: '20px 0 80px',
         msOverflowStyle: 'none', scrollbarWidth: 'none',
-        WebkitMaskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
-        maskImage: 'linear-gradient(to right, transparent, black 5%, black 95%, transparent)',
+        WebkitMaskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+        maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
         cursor: isHovered ? 'grab' : 'default'
       }}
     >
@@ -159,8 +162,8 @@ export default function TestimonialsSection() {
   const sectionRef = useRef(null)
   const [testimonials, setTestimonials] = useState([])
   const [headings, setHeadings] = useState({
-    title: 'Voices of SWA',
-    subtitle: 'Hear directly from the organizations and individuals experiencing the profound shifts of a mindful workplace.'
+    title: 'Our Network & Impact',
+    subtitle: 'We are honored to have collaborated with and empowered these prestigious institutions, organizations, and civic bodies.'
   })
 
   useEffect(() => {
@@ -171,7 +174,6 @@ export default function TestimonialsSection() {
           axios.get(`${API}/api/content/testimonials`).catch(() => ({ data: [] }))
         ])
 
-        // Map Headings
         const cmap = {}
           ; (contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
         if (Object.keys(cmap).length > 0) {
@@ -183,24 +185,9 @@ export default function TestimonialsSection() {
 
         if (testRes.data.items && testRes.data.items.length > 0) {
           setTestimonials(testRes.data.items)
-        } else {
-          // Fallback to constants mapped to match DB model structure
-          const combined = [...HR_TESTIMONIALS, ...EMPLOYEE_TESTIMONIALS].map(t => ({
-            name: t.company, // maps company to name
-            rating: 5,
-            quote: t.quote,
-            text: t.text
-          }))
-          setTestimonials(combined)
         }
       } catch (err) {
-        const combined = [...HR_TESTIMONIALS, ...EMPLOYEE_TESTIMONIALS].map(t => ({
-          name: t.company,
-          rating: 5,
-          quote: t.quote,
-          text: t.text
-        }))
-        setTestimonials(combined)
+        console.error('Failed to load testimonials:', err)
       }
     }
     fetchTestimonials()
@@ -244,7 +231,8 @@ export default function TestimonialsSection() {
             y: headerY,
             opacity: headerOpacity,
             scale: headerScale,
-            transformOrigin: 'center bottom'
+            transformOrigin: 'center bottom',
+            padding: '0 20px'
           }}
         >
           <h2 style={{
@@ -265,7 +253,7 @@ export default function TestimonialsSection() {
             color: 'rgba(255,255,255,0.55)',
             marginBottom: '32px',
             fontWeight: 400,
-            maxWidth: '600px',
+            maxWidth: '640px',
             whiteSpace: 'pre-line'
           }}>
             {headings.subtitle}

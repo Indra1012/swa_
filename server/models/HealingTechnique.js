@@ -14,6 +14,7 @@ const healingTechniqueSchema = new mongoose.Schema(
       default: []
     },
     readMoreText: { type: String, default: '' },
+    publishDate: { type: String, default: '' },
     focus: { type: String, default: '' },
     purpose: { type: String, default: '' },
     order:    { type: Number, default: 0 },

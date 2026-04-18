@@ -664,7 +664,7 @@ function BlogsManagerInline() {
   const [editId, setEditId] = useState(null)
   const [draft, setDraft] = useState({})
   const [adding, setAdding] = useState(false)
-  const [newBlog, setNewBlog] = useState({ title: '', subtitle: '', snippet: '', readMoreText: '', order: 0, pendingFile: null })
+  const [newBlog, setNewBlog] = useState({ title: '', subtitle: '', snippet: '', readMoreText: '', order: 0, pendingFile: null, publishDate: '' })
   const [uploading, setUploading] = useState(null)
   const [err, setErr] = useState('')
   const [msg, setMsg] = useState('')
@@ -815,6 +815,10 @@ function BlogsManagerInline() {
                 </button>
                 <p style={{ fontSize: '11px', color: 'rgba(101,50,57,0.5)', marginTop: '6px' }}>Portrait format recommended (e.g. 900×1400 px)</p>
               </div>
+              <div style={{ marginBottom: '14px' }}>
+                <span style={lbl}>Publish Info / Number (Optional)</span>
+                <input type="text" value={draft.publishDate ?? blog.publishDate ?? ''} onChange={e => setDraft(d => ({ ...d, publishDate: e.target.value }))} placeholder="e.g. Vol 1, Issue 42" style={{ width: '100%', padding: '10px 13px', border: '1.5px solid rgba(204,199,185,0.35)', borderRadius: '8px', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }} />
+              </div>
               <div style={{ marginBottom: '14px' }}><span style={lbl}>Display Order</span>
                 <input type="number" value={draft.order ?? blog.order ?? 0} onChange={e => setDraft(d => ({ ...d, order: Number(e.target.value) }))} style={{ width: '80px', padding: '8px 12px', border: '1.5px solid rgba(204,199,185,0.4)', borderRadius: '8px', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }} />
               </div>
@@ -847,6 +851,10 @@ function BlogsManagerInline() {
           <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--secondary)', marginBottom: '16px', textTransform: 'uppercase', letterSpacing: '1px' }}>New Blog Post</p>
           <div style={{ marginBottom: '12px' }}><span style={lbl}>Title</span>
             <input value={newBlog.title} onChange={e => setNewBlog(n => ({ ...n, title: e.target.value }))} placeholder="Blog post title" style={inp} />
+          </div>
+          <div style={{ marginBottom: '14px' }}>
+            <span style={lbl}>Publish Info / Number (Optional)</span>
+            <input type="text" value={newBlog.publishDate} onChange={e => setNewBlog(n => ({ ...n, publishDate: e.target.value }))} placeholder="e.g. Vol 1, Issue 42" style={{ width: '100%', padding: '10px 13px', border: '1.5px solid rgba(204,199,185,0.35)', borderRadius: '8px', fontSize: '14px', fontFamily: 'DM Sans, sans-serif' }} />
           </div>
           <div style={{ marginBottom: '12px' }}><span style={lbl}>Subtitle (e.g. "Mind" or tag)</span>
             <input value={newBlog.subtitle} onChange={e => setNewBlog(n => ({ ...n, subtitle: e.target.value }))} placeholder="Subtitle or tag..." style={inp} />
@@ -2198,23 +2206,16 @@ const PAGE_CONTENT = {
       ]
     },
     {
-      group: 'Vision & Mission', section: 'about', fields: [
+      group: 'Vision, Mission & Philosophy', section: 'about', fields: [
         { key: 'visionTitle', label: 'Vision Card Title', value: 'OUR VISION' },
         { key: 'visionQuote', label: 'Vision Highlight Quote', value: '"To build a world where emotional wellbeing and resilience are the foundation of human performance."' },
         { key: 'visionBullets', label: 'Vision Bullets (One per line)', value: 'Workplaces that are not just productive, but mentally strong\nInstitutions that nurture intellect and emotional balance\nIndividuals who don\'t just survive — but truly thrive' },
         { key: 'missionTitle', label: 'Mission Card Title', value: 'OUR MISSION' },
         { key: 'missionQuote', label: 'Mission Highlight Quote', value: '"To move people beyond awareness — into real, lasting transformation."' },
         { key: 'missionBullets', label: 'Mission Bullets (One per line)', value: 'Manage stress before it manages them\nBuild emotional strength that holds under pressure\nSustain high performance without burning out\nCultivate deep self-awareness to lead with unwavering clarity' },
-      ]
-    },
-    {
-      group: 'Core Philosophy', section: 'about_philosophy', fields: [
-        { key: 'philosophyTitle', label: 'Section Title', value: 'Core Philosophy' },
-        { key: 'philosophySubtitle', label: 'Section Subtitle', value: 'We move past quick fixes to provide structured, practical wellbeing programs that create real, lasting changes in your environment.' },
-        { key: 'pillar1', label: 'Pillar 1', value: 'Performance is driven by inner stability, not external pressure.' },
-        { key: 'pillar2', label: 'Pillar 2', value: 'Wellbeing is a skill that can be developed.' },
-        { key: 'pillar3', label: 'Pillar 3', value: 'Transformation happens through consistent experiential learning.' },
-        { key: 'pillar4', label: 'Pillar 4', value: 'Emotional awareness leads to better decisions and outcomes.' },
+        { key: 'corePhilosophyTitle', label: 'Philosophy Card Title', value: 'CORE PHILOSOPHY' },
+        { key: 'corePhilosophyQuote', label: 'Philosophy Highlight Quote', value: '"We move past quick fixes to provide structured, practical wellbeing programs that create real, lasting changes in your environment."' },
+        { key: 'corePhilosophyBullets', label: 'Philosophy Bullets (One per line)', value: 'Performance is driven by inner stability, not external pressure.\nWellbeing is a skill that can be developed.\nTransformation happens through consistent experiential learning.\nEmotional awareness leads to better decisions and outcomes.' },
       ]
     },
   ],

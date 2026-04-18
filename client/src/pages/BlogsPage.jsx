@@ -1,7 +1,7 @@
 
 
 import { useEffect, useRef, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import axios from 'axios'
 import useScrollFade from '../hooks/useScrollFade'
@@ -144,7 +144,7 @@ function TechniqueEditorial({ tech, index, onReadMore }) {
           )}
 
           <div
-            onClick={() => onReadMore && onReadMore(tech)}
+            onClick={(e) => { e.stopPropagation(); onReadMore && onReadMore(tech) }}
             style={{
               marginTop: '16px',
               display: 'inline-flex',
@@ -161,6 +161,13 @@ function TechniqueEditorial({ tech, index, onReadMore }) {
             }}>
             Read More
           </div>
+          {(tech.publishDate || tech.createdAt) && (
+            <div style={{ marginTop: '8px', fontSize: '9px', color: 'var(--secondary)', opacity: 0.6, letterSpacing: '1px', textTransform: 'uppercase', alignSelf: 'flex-start' }}>
+              {tech.publishDate 
+                ? tech.publishDate 
+                : `Published: ${new Date(tech.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}`}
+            </div>
+          )}
         </div>
       </motion.div>
     </motion.div>
@@ -169,6 +176,8 @@ function TechniqueEditorial({ tech, index, onReadMore }) {
 
 export default function BlogsPage() {
   const { hash } = useLocation()
+  const { blogId } = useParams()
+  const navigate = useNavigate()
 
   const [blogs, setBlogs] = useState(TECHNIQUES)
   const [selectedTech, setSelectedTech] = useState(null)
@@ -194,6 +203,8 @@ export default function BlogsPage() {
               subtitle: b.subtitle || b.focus || '',
               snippet: b.snippet || b.subtitle || b.focus || '',
               readMoreText: b.readMoreText || '',
+              createdAt: b.createdAt,
+              publishDate: b.publishDate,
               images: b.images?.length > 0 ? b.images.map(img => typeof img === 'string' ? img : img.url) : b.image ? [b.image] : [],
               image: b.image || (b.images?.[0] ? (typeof b.images[0] === 'string' ? b.images[0] : b.images[0].url) : '')
             })))
@@ -217,6 +228,16 @@ export default function BlogsPage() {
       })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (blogs.length > 0 && blogId) {
+      const found = blogs.find(b => b.id === blogId)
+      if (found) setSelectedTech(found)
+      else setSelectedTech(null)
+    } else {
+      setSelectedTech(null)
+    }
+  }, [blogId, blogs])
 
   // Hash scrolling logic, highly precise with setTimeout
   useEffect(() => {
@@ -332,7 +353,7 @@ export default function BlogsPage() {
                   key={tech.id}
                   tech={tech}
                   index={i}
-                  onReadMore={(t) => setSelectedTech(t)}
+                  onReadMore={(t) => navigate(`/blogs/${t.id}`)}
                 />
               ))}
             </div>
@@ -342,7 +363,7 @@ export default function BlogsPage() {
                 <BlogModal
                   isOpen={!!selectedTech}
                   blog={selectedTech}
-                  onClose={() => setSelectedTech(null)}
+                  onClose={() => navigate('/blogs')}
                 />
               )}
             </AnimatePresence>

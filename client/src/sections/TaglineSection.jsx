@@ -93,7 +93,7 @@ export default function TaglineSection() {
           zIndex: 2,
           overflow: 'hidden',
           margin: 0,
-          marginTop: -20
+          marginTop: -30
         }}
       >
         <motion.div
@@ -223,7 +223,7 @@ export default function TaglineSection() {
           )}
         </motion.div>
         <style>{`
-        .tagline-section { padding: 40px 0 80px; }
+        .tagline-section { padding: 10px 0 80px; }
         .tagline-subtext { font-size: 17px; line-height: 1.7; padding: 0 20px; }
         .client-logo-img { transition: opacity 0.3s ease; opacity: 0.85; filter: grayscale(20%); border-radius: 12px; }
         .client-logo-img:hover { opacity: 1; filter: grayscale(0%); }
@@ -245,7 +245,7 @@ export default function TaglineSection() {
         }
         
         @media (max-width: 768px) {
-          .tagline-section { padding: 40px 0 60px; }
+          .tagline-section { padding: 10px 0 60px; }
           .tagline-subtext { font-size: 16px; line-height: 1.6; }
         }
       `}</style>

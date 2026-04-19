@@ -6,34 +6,18 @@ import axios from 'axios'
 
 const API = import.meta.env.VITE_API_URL
 
-const FALLBACK_SLIDES = [
-  {
-    image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=1400&q=80',
-    title: "It's time to bring the SWA Magic to your place and people"
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1515187029135-18ee286d815b?w=1400&q=80',
-    title: 'Transform your organization with the power of wellbeing'
-  },
-  {
-    image: 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=1400&q=80',
-    title: 'Join forward-thinking organizations on the journey to lasting wellbeing'
-  }
-]
+
 
 export default function CTABanner() {
   const [current, setCurrent] = useState(0)
   const [hovered, setHovered] = useState(false)
   const navigate = useNavigate()
   
-  const [slides, setSlides] = useState([
-    { title: '', image: '' },
-    { title: '', image: '' },
-    { title: '', image: '' }
-  ])
+  const [slides, setSlides] = useState([])
   const [mediaMode, setMediaMode] = useState('image')
   const [videoUrl, setVideoUrl] = useState('')
   const [hasData, setHasData] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const sectionRef = useRef(null)
   useScrollFade(sectionRef)
@@ -63,29 +47,38 @@ export default function CTABanner() {
 
         if (vid) setVideoUrl(vid.url)
 
-        const finalSlides = [
-          { title: texts[0] ?? FALLBACK_SLIDES[0].title, image: imgs[0] || FALLBACK_SLIDES[0].image },
-          { title: texts[1] ?? FALLBACK_SLIDES[1].title, image: imgs[1] || FALLBACK_SLIDES[1].image },
-          { title: texts[2] ?? FALLBACK_SLIDES[2].title, image: imgs[2] || FALLBACK_SLIDES[2].image }
-        ]
+        const finalSlides = []
+        if(texts[0] && imgs[0]) finalSlides.push({ title: texts[0], image: imgs[0] })
+        if(texts[1] && imgs[1]) finalSlides.push({ title: texts[1], image: imgs[1] })
+        if(texts[2] && imgs[2]) finalSlides.push({ title: texts[2], image: imgs[2] })
         setSlides(finalSlides)
-        setHasData(true)
+        setHasData(finalSlides.length > 0)
       } catch {
-        setSlides(FALLBACK_SLIDES)
-        setHasData(true)
+        console.error('Failed to load CTA slides')
+      } finally {
+        setIsLoading(false)
       }
     }
     load()
   }, [])
 
   useEffect(() => {
+    if (slides.length <= 1) return
     const timer = setInterval(() => {
-      setCurrent(prev => (prev + 1) % 3)
+      setCurrent(prev => (prev + 1) % slides.length)
     }, 5000)
     return () => clearInterval(timer)
-  }, [])
+  }, [slides.length])
 
   const goToSlide = useCallback((i) => setCurrent(i), [])
+
+  if (isLoading) return (
+    <section ref={sectionRef} className="cta-section" style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: '40px', height: '40px', border: '3px solid rgba(175, 122, 109, 0.2)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+    </section>
+  )
+
+  if (slides.length === 0 && mediaMode === 'image') return null
 
   return (
     <section

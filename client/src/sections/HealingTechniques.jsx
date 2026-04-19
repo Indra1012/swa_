@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, useInView, useScroll, useTransform, AnimatePresence } from 'framer-motion'
 import { FiArrowUpRight, FiChevronDown } from 'react-icons/fi'
-import { TECHNIQUES as FALLBACK_TECHNIQUES } from '../constants/techniques'
 import { cloudinaryImg } from '../utils/imageUrl'
 import axios from 'axios'
 
@@ -19,6 +18,7 @@ export default function HealingTechniques() {
   const headerOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
   const isInView = useInView(sectionRef, { once: true, margin: '-100px 0px' })
   const [isHovered, setIsHovered] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [techniques, setTechniques] = useState([])
   const [headings, setHeadings] = useState({
     title: 'Healing Techniques',
@@ -36,7 +36,7 @@ export default function HealingTechniques() {
         ])
 
         const cmap = {}
-        ;(contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
+          ; (contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
         if (Object.keys(cmap).length > 0) {
           setHeadings(h => ({
             title: cmap.title || h.title,
@@ -55,11 +55,11 @@ export default function HealingTechniques() {
             readMoreText: t.readMoreText || '',
             images: t.images && t.images.length > 0 ? t.images.map(img => img.url) : [t.image].filter(Boolean)
           })))
-        } else {
-          setTechniques(FALLBACK_TECHNIQUES.map(t => ({ ...t, readMoreText: t.purpose || t.readMoreText || '' })))
         }
       } catch {
-        setTechniques(FALLBACK_TECHNIQUES.map(t => ({ ...t, readMoreText: t.purpose || t.readMoreText || '' })))
+        console.error('Failed to load techniques')
+      } finally {
+        setIsLoading(false)
       }
     }
     load()
@@ -93,11 +93,11 @@ export default function HealingTechniques() {
         style={{ background: 'transparent', margin: 0 }}
       >
         <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
-          <motion.div 
+          <motion.div
             ref={headerRef}
-            className="healing-header float-subtle" 
-            style={{ 
-              marginBottom: '60px', 
+            className="healing-header float-subtle"
+            style={{
+              marginBottom: '60px',
               textAlign: 'center',
               y: headerY,
               scale: headerScale,
@@ -109,7 +109,7 @@ export default function HealingTechniques() {
             <h2
               style={{
                 fontFamily: 'Cormorant Garamond, serif',
-                fontSize: 'clamp(48px, 6vw, 76px)',
+                fontSize: 'clamp(32px, 8.5vw, 76px)',
                 fontWeight: 700,
                 color: 'var(--dark)',
                 marginBottom: '16px',
@@ -159,7 +159,11 @@ export default function HealingTechniques() {
             }}
             className="hide-scrollbar healing-scroll-container"
           >
-            {techniques.map((technique) => (
+            {isLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px', width: '100vw' }}>
+                <div style={{ width: '40px', height: '40px', border: '3px solid rgba(175, 122, 109, 0.2)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              </div>
+            ) : techniques.length === 0 ? null : techniques.map((technique) => (
               <SimpleCard
                 key={technique.id}
                 technique={technique}

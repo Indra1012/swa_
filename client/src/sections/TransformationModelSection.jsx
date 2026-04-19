@@ -179,6 +179,14 @@ export default function TransformationModelSection() {
   const sectionRef = useRef(null);
   const headerRef = useRef(null);
   const [centerHovered, setCenterHovered] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMob = () => setIsMobile(window.innerWidth <= 768);
+    checkMob();
+    window.addEventListener('resize', checkMob);
+    return () => window.removeEventListener('resize', checkMob);
+  }, []);
 
   const { scrollYProgress: headerScroll } = useScroll({
     target: headerRef,
@@ -204,14 +212,17 @@ export default function TransformationModelSection() {
     >
       {/* Background Video */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0, overflow: 'hidden' }}>
-        <motion.video className="video-desktop" autoPlay muted loop playsInline
-          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}>
-          <source src="/video.mp4" type="video/mp4" />
-        </motion.video>
-        <motion.video className="video-mobile" autoPlay muted loop playsInline
-          style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}>
-          <source src="/video1.mp4" type="video/mp4" />
-        </motion.video>
+        {!isMobile ? (
+          <motion.video className="video-desktop" autoPlay muted loop playsInline
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}>
+            <source src="/video.mp4" type="video/mp4" />
+          </motion.video>
+        ) : (
+          <motion.video className="video-mobile" autoPlay muted loop playsInline
+            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }}>
+            <source src="/video1.mp4" type="video/mp4" />
+          </motion.video>
+        )}
         <div style={{ position: 'absolute', inset: 0, background: 'rgba(250, 247, 242, 0.4)' }} />
       </div>
 
@@ -224,7 +235,7 @@ export default function TransformationModelSection() {
         >
           <h2 style={{
             fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(16px, 3.5vw, 64px)',
+            fontSize: isMobile ? 'clamp(24px, 6vw, 36px)' : 'clamp(24px, 3.5vw, 64px)',
             fontWeight: 700,
             color: 'var(--dark)',
             marginBottom: '16px',
@@ -233,7 +244,7 @@ export default function TransformationModelSection() {
             textTransform: 'uppercase',
             whiteSpace: 'nowrap'
           }}>
-            SWA Core <span style={{ fontStyle: 'italic', fontWeight: 600, textTransform: 'none' }}>Transformation</span> Framework
+            SWA Core <span style={{ fontStyle: 'italic', fontWeight: 600, textTransform: 'none' }}>Transformation</span> {isMobile && <br />}Framework
           </h2>
         </motion.div>
 

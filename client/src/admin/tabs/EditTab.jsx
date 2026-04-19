@@ -2605,6 +2605,8 @@ function TeamManager() {
   const [loading, setLoading] = useState(true)
   const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
+  const [teamVisible, setTeamVisible] = useState(true)
+  const [expertsVisible, setExpertsVisible] = useState(true)
 
   // Add form state
   const [adding, setAdding] = useState(false)
@@ -2638,6 +2640,29 @@ function TeamManager() {
   }
 
   useEffect(() => { loadMembers() }, [])
+
+  const loadVisibility = async () => {
+    try {
+      const res = await axios.get(`${API}/api/content/about`)
+      const items = res.data.items || res.data || []
+      items.forEach(i => {
+        if (i.key === 'teamVisible') setTeamVisible(i.value !== 'false')
+        if (i.key === 'expertsVisible') setExpertsVisible(i.value !== 'false')
+      })
+    } catch {}
+  }
+  
+  useEffect(() => { loadVisibility() }, [])
+
+  const toggleVisibility = async (key, currentVal) => {
+    try {
+      const newVal = !currentVal
+      await axios.put(`${API}/api/content`, { section: 'about', key, value: String(newVal) }, { headers: authH() })
+      if(key === 'teamVisible') setTeamVisible(newVal)
+      if(key === 'expertsVisible') setExpertsVisible(newVal)
+      flash(`Section ${newVal ? 'Visible' : 'Hidden'}`)
+    } catch { flash('Toggle failed', true) }
+  }
 
   const filtered = members.filter(m => m.category === view).sort((a, b) => a.order - b.order)
 
@@ -2732,17 +2757,31 @@ function TeamManager() {
 
   return (
     <>
-      {/* Category Toggle */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-        {[{ id: 'team', label: '🧑‍💼 Our Team' }, { id: 'expert', label: '🌐 Global Experts' }].map(tab => (
-          <button key={tab.id} onClick={() => setView(tab.id)} style={{
-            padding: '8px 20px', borderRadius: '50px', border: 'none', cursor: 'pointer',
-            fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 600,
-            background: view === tab.id ? 'var(--dark)' : 'rgba(204,199,185,0.2)',
-            color: view === tab.id ? 'var(--white)' : 'var(--secondary)',
-            transition: 'all 0.2s'
-          }}>{tab.label}</button>
-        ))}
+      {/* Category Toggle & Visibility */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {[{ id: 'team', label: '🧑‍💼 Our Team' }, { id: 'expert', label: '🌐 Global Experts' }].map(tab => (
+            <button key={tab.id} onClick={() => setView(tab.id)} style={{
+              padding: '8px 20px', borderRadius: '50px', border: 'none', cursor: 'pointer',
+              fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 600,
+              background: view === tab.id ? 'var(--dark)' : 'rgba(204,199,185,0.2)',
+              color: view === tab.id ? 'var(--white)' : 'var(--secondary)',
+              transition: 'all 0.2s'
+            }}>{tab.label}</button>
+          ))}
+        </div>
+        <button
+          onClick={() => toggleVisibility(view === 'team' ? 'teamVisible' : 'expertsVisible', view === 'team' ? teamVisible : expertsVisible)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '8px 16px', borderRadius: '8px', border: '1px solid rgba(204,199,185,0.4)',
+            fontFamily: 'DM Sans, sans-serif', fontSize: '13px', fontWeight: 600, cursor: 'pointer',
+            background: 'var(--bg)', color: 'var(--dark)'
+          }}
+        >
+          {view === 'team' ? (teamVisible ? <FiToggleRight color="green" size={18} /> : <FiToggleLeft color="gray" size={18} />) : (expertsVisible ? <FiToggleRight color="green" size={18} /> : <FiToggleLeft color="gray" size={18} />)}
+          {view === 'team' ? (teamVisible ? 'Hide Team Section' : 'Show Team Section') : (expertsVisible ? 'Hide Experts Section' : 'Show Experts Section')}
+        </button>
       </div>
 
       {/* Status messages */}

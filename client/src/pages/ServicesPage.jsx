@@ -187,8 +187,7 @@ function ServiceFullWidthSection({ data, index }) {
     offset: ["start 90%", "end start"]
   })
 
-  // Smooth Kinetic Spring to avoid lagging and strict popping
-  const smoothScroll = useSpring(scrollYProgress, { stiffness: 60, damping: 20, restDelta: 0.001 })
+  const smoothScroll = scrollYProgress
 
   // Deep Parallax Effect on scrolling
   const sectionY = useTransform(smoothScroll, [0, 1], [40, -40])
@@ -267,12 +266,12 @@ function ServiceFullWidthSection({ data, index }) {
         className="services-parallax-img"
         style={{
           width: '100%', borderRadius: 'clamp(16px, 4vw, 32px)', overflow: 'hidden', position: 'relative',
-          marginBottom: '48px', boxShadow: '0 30px 60px rgba(0,0,0,0.08)'
+          marginBottom: '48px', boxShadow: '0 30px 60px rgba(0,0,0,0.08)', willChange: 'transform'
         }}
       >
         <motion.img
           src={data.image} alt={data.headlinePre}
-          style={{ width: '100%', height: '130%', objectFit: 'cover', y: imgY }}
+          style={{ width: '100%', height: '130%', objectFit: 'cover', y: imgY, willChange: 'transform' }}
         />
       </motion.div>
 
@@ -522,7 +521,7 @@ export default function ServicesPage() {
             style={{
               position: 'fixed', top: '-10%', left: '-10%', width: '60vw', height: '60vw',
               background: 'radial-gradient(circle, rgba(200, 160, 140, 0.08) 0%, rgba(255,255,255,0) 70%)',
-              filter: 'blur(90px)', zIndex: 0, pointerEvents: 'none'
+              filter: 'blur(90px)', zIndex: 0, pointerEvents: 'none', transform: 'translateZ(0)'
             }}
           />
           <motion.div
@@ -531,7 +530,7 @@ export default function ServicesPage() {
             style={{
               position: 'fixed', bottom: '-10%', right: '-5%', width: '70vw', height: '70vw',
               background: 'radial-gradient(circle, rgba(140, 160, 180, 0.07) 0%, rgba(255,255,255,0) 70%)',
-              filter: 'blur(100px)', zIndex: 0, pointerEvents: 'none'
+              filter: 'blur(100px)', zIndex: 0, pointerEvents: 'none', transform: 'translateZ(0)'
             }}
           />
 

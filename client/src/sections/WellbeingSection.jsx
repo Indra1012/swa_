@@ -6,23 +6,10 @@ import { cloudinaryImg } from '../utils/imageUrl'
 
 const API = import.meta.env.VITE_API_URL
 
-const FALLBACK_WELLBEING = [
-  { id: '1', title: 'Breath Awareness', subtitle: 'Foundation of calm', image: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80', readMoreText: 'Breath awareness is the foundation of all mindfulness practices. By simply noticing the natural rhythm of your breath, you create a powerful anchor to the present moment.' },
-  { id: '2', title: 'Body Scan', subtitle: 'Deep somatic release', image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&q=80', readMoreText: 'A systematic practice of bringing attention to each part of the body, releasing tension and cultivating deep body awareness.' },
-  { id: '3', title: 'Mindful Movement', subtitle: 'Flow in awareness', image: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&q=80', readMoreText: 'Integrating mindfulness with gentle movement to enhance body-mind connection and reduce physical tension.' },
-  { id: '4', title: 'Emotional Mapping', subtitle: 'Inner landscape', image: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=400&q=80', readMoreText: 'Learning to identify, name, and understand your emotional states with compassion and clarity.' },
-  { id: '5', title: 'Gratitude Practice', subtitle: 'Shift in perspective', image: 'https://images.unsplash.com/photo-1528715471579-d1bcf0ba5e83?w=400&q=80', readMoreText: 'Systematic cultivation of appreciation for life\'s gifts, proven to elevate mood and overall wellbeing.' },
-  { id: '6', title: 'Stress Release', subtitle: 'Tension dissolving', image: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=400&q=80', readMoreText: 'Evidence-based techniques to identify stress triggers and systematically release their hold on your nervous system.' },
-  { id: '7', title: 'Sleep Hygiene', subtitle: 'Restorative rest', image: 'https://images.unsplash.com/photo-1511295742362-92c96b1cf484?w=400&q=80', readMoreText: 'Building healthy sleep rituals and routines that support deep, restorative rest and waking vitality.' },
-  { id: '8', title: 'Mindful Nutrition', subtitle: 'Conscious eating', image: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80', readMoreText: 'Developing a healthy relationship with food through awareness, presence, and intuitive eating principles.' },
-  { id: '9', title: 'Digital Detox', subtitle: 'Reclaim presence', image: 'https://images.unsplash.com/photo-1473091534298-04dcbce3278c?w=400&q=80', readMoreText: 'Intentional practices for creating healthy boundaries with technology to restore attention and inner peace.' },
-  { id: '10', title: 'Social Wellbeing', subtitle: 'Authentic connection', image: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&q=80', readMoreText: 'Cultivating meaningful relationships and community bonds that nourish the soul and support resilience.' },
-  { id: '11', title: 'Purpose Clarity', subtitle: 'Your inner compass', image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=400&q=80', readMoreText: 'Deep inquiry practices to uncover your authentic values and align daily actions with deeper purpose.' },
-  { id: '12', title: 'Inner Resilience', subtitle: 'Bouncing forward', image: 'https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=400&q=80', readMoreText: 'Building the psychological flexibility and inner strength to navigate life\'s challenges with grace.' },
-]
 
 export default function WellbeingSection() {
   const [items, setItems] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
   const [headings, setHeadings] = useState({
     title: '12 Wellbeing Processes',
     subtitle: 'A comprehensive framework for holistic transformation — mind, body and soul.'
@@ -49,7 +36,7 @@ export default function WellbeingSection() {
         if (visRes.data.visible === false) setVisible(false)
 
         const cmap = {}
-        ;(contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
+          ; (contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
         if (Object.keys(cmap).length > 0) {
           setHeadings(h => ({
             title: cmap.title || h.title,
@@ -58,12 +45,13 @@ export default function WellbeingSection() {
         }
 
         const fetched = itemsRes.data.items || []
-        setItems(fetched.length > 0
-          ? fetched.map(t => ({ id: t._id, title: t.title, subtitle: t.subtitle, image: t.image, readMoreText: t.readMoreText || '' }))
-          : FALLBACK_WELLBEING
-        )
+        if(fetched.length > 0) {
+          setItems(fetched.map(t => ({ id: t._id, title: t.title, subtitle: t.subtitle, image: t.image, readMoreText: t.readMoreText || '' })))
+        }
       } catch {
-        setItems(FALLBACK_WELLBEING)
+        console.error('Failed to load wellbeing processes')
+      } finally {
+        setIsLoading(false)
       }
     }
     load()
@@ -100,11 +88,11 @@ export default function WellbeingSection() {
       >
         <div style={{ maxWidth: '1440px', margin: '0 auto' }}>
           {/* Header */}
-          <motion.div 
+          <motion.div
             ref={headerRef}
-            className="healing-header" 
-            style={{ 
-              textAlign: 'center', 
+            className="healing-header"
+            style={{
+              textAlign: 'center',
               marginBottom: '60px',
               y: headerY,
               scale: headerScale,
@@ -141,7 +129,7 @@ export default function WellbeingSection() {
             </p>
           </motion.div>
 
-          <motion.div 
+          <motion.div
             ref={containerRef}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -161,17 +149,25 @@ export default function WellbeingSection() {
             }}
             className="hide-scrollbar healing-scroll-container"
           >
-            <div style={{ display: 'flex', gap: '32px', width: 'max-content', minHeight: '460px', flexShrink: 0 }}>
-              {items.slice(0, 6).map((item) => (
-                <WellbeingCard key={item.id} item={item} />
-              ))}
-            </div>
-            {items.length > 6 && (
-              <div style={{ display: 'flex', gap: '32px', width: 'max-content', minHeight: '460px', flexShrink: 0 }}>
-                {items.slice(6).map((item) => (
-                  <WellbeingCard key={item.id} item={item} />
-                ))}
+            {isLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', width: '100vw' }}>
+                <div style={{ width: '40px', height: '40px', border: '3px solid rgba(175, 122, 109, 0.2)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
               </div>
+            ) : items.length === 0 ? null : (
+              <>
+                <div style={{ display: 'flex', gap: '32px', width: 'max-content', minHeight: '460px', flexShrink: 0 }}>
+                  {items.slice(0, 6).map((item) => (
+                    <WellbeingCard key={item.id} item={item} />
+                  ))}
+                </div>
+                {items.length > 6 && (
+                  <div style={{ display: 'flex', gap: '32px', width: 'max-content', minHeight: '460px', flexShrink: 0 }}>
+                    {items.slice(6).map((item) => (
+                      <WellbeingCard key={item.id} item={item} />
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </motion.div>
         </div>
@@ -201,7 +197,7 @@ function WellbeingCard({ item }) {
   const currentImageSrc = item.image || ''
 
   return (
-    <div 
+    <div
       className="healing-card"
       style={{
         flexShrink: 0,
@@ -236,7 +232,7 @@ function WellbeingCard({ item }) {
 
         <div style={{
           position: 'absolute', inset: 0,
-          background: hovered 
+          background: hovered
             ? 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)'
             : 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 60%)',
           transition: 'background 0.5s ease'
@@ -257,16 +253,16 @@ function WellbeingCard({ item }) {
             {item.subtitle}
           </p>
           {expanded && item.readMoreText && (
-            <div style={{ 
-               marginTop: '12px', marginBottom: '16px'
+            <div style={{
+              marginTop: '12px', marginBottom: '16px'
             }}>
-               <p style={{
-                  fontSize: '14px', color: 'rgba(255,255,255,0.95)', lineHeight: 1.6,
-                  fontFamily: 'DM Sans, sans-serif', margin: 0,
-                  textShadow: '0 1px 3px rgba(0,0,0,0.6)'
-               }}>
-                  {item.readMoreText}
-               </p>
+              <p style={{
+                fontSize: '14px', color: 'rgba(255,255,255,0.95)', lineHeight: 1.6,
+                fontFamily: 'DM Sans, sans-serif', margin: 0,
+                textShadow: '0 1px 3px rgba(0,0,0,0.6)'
+              }}>
+                {item.readMoreText}
+              </p>
             </div>
           )}
 

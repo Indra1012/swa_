@@ -5,7 +5,6 @@ import { useLocation, useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import axios from 'axios'
 import useScrollFade from '../hooks/useScrollFade'
-import { TECHNIQUES } from '../constants/techniques'
 import BlogModal from '../components/BlogModal'
 
 // Pure Editorial Minimalist Approach (Blank Card Layout)
@@ -179,7 +178,8 @@ export default function BlogsPage() {
   const { blogId } = useParams()
   const navigate = useNavigate()
 
-  const [blogs, setBlogs] = useState(TECHNIQUES)
+  const [blogs, setBlogs] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
   const [selectedTech, setSelectedTech] = useState(null)
   const [headings, setHeadings] = useState({
     title: 'Swa Insights',
@@ -190,8 +190,7 @@ export default function BlogsPage() {
     const API = import.meta.env.VITE_API_URL || ''
     const now = Date.now()
 
-    // Fetch blogs from API (insights = Swa Insights)
-    axios.get(`${API}/api/sections/techniques/insights?t=${now}`)
+    const fetchBlogs = axios.get(`${API}/api/sections/techniques/insights?t=${now}`)
       .then(res => {
         const apiBlogs = res.data.items || []
         if (apiBlogs.length > 0) {
@@ -209,12 +208,10 @@ export default function BlogsPage() {
               image: b.image || (b.images?.[0] ? (typeof b.images[0] === 'string' ? b.images[0] : b.images[0].url) : '')
             })))
         }
-        // else: keep TECHNIQUES static fallback
       })
       .catch(() => {})
 
-    // Fetch page headings from API
-    axios.get(`${API}/api/content/insights?t=${now}`)
+    const fetchHeadings = axios.get(`${API}/api/content/insights?t=${now}`)
       .then(res => {
         const cmap = {}
         const arr = res.data.items || res.data || []
@@ -227,6 +224,10 @@ export default function BlogsPage() {
         }
       })
       .catch(() => {})
+
+    Promise.all([fetchBlogs, fetchHeadings]).finally(() => {
+      setIsLoading(false)
+    })
   }, [])
 
   useEffect(() => {
@@ -347,16 +348,22 @@ export default function BlogsPage() {
             </motion.section>
 
             {/* Techniques Scrolling Blocks */}
-            <div className="techniques-grid">
-              {blogs.map((tech, i) => (
-                <TechniqueEditorial
-                  key={tech.id}
-                  tech={tech}
-                  index={i}
-                  onReadMore={(t) => navigate(`/blogs/${t.id}`)}
-                />
-              ))}
-            </div>
+            {isLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px', width: '100vw' }}>
+                <div style={{ width: '40px', height: '40px', border: '3px solid rgba(175, 122, 109, 0.2)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              </div>
+            ) : blogs.length === 0 ? null : (
+              <div className="techniques-grid">
+                {blogs.map((tech, i) => (
+                  <TechniqueEditorial
+                    key={tech.id}
+                    tech={tech}
+                    index={i}
+                    onReadMore={(t) => navigate(`/blogs/${t.id}`)}
+                  />
+                ))}
+              </div>
+            )}
 
             <AnimatePresence>
               {selectedTech && (

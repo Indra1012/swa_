@@ -5,19 +5,9 @@ import axios from 'axios'
 import { cloudinaryImg } from '../utils/imageUrl'
 
 const API = import.meta.env.VITE_API_URL
-
-const FALLBACK_GALLERY = [
-  { _id: '1', url: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=800&q=80', type: 'image', sizeVariant: 'medium' },
-  { _id: '2', url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', type: 'image', sizeVariant: 'large' },
-  { _id: '3', url: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&q=80', type: 'image', sizeVariant: 'medium' },
-  { _id: '4', url: 'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=800&q=80', type: 'image', sizeVariant: 'large' },
-  { _id: '5', url: 'https://images.unsplash.com/photo-1528715471579-d1bcf0ba5e83?w=800&q=80', type: 'image', sizeVariant: 'medium' },
-  { _id: '6', url: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?w=800&q=80', type: 'image', sizeVariant: 'large' },
-]
-
 const SIZE_MAP = {
-  medium:    { width: '300px', height: '240px' },
-  large:     { width: '400px', height: '280px' },
+  medium: { width: '300px', height: '240px' },
+  large: { width: '400px', height: '280px' },
 }
 
 // ─── Gallery Card ────────────────────────────────────────────────────────────
@@ -101,7 +91,7 @@ function GalleryCard({ item, onClick, stagger }) {
               {item.title}
             </h3>
           )}
-          
+
           {/* Subtitle */}
           {item.subtitle && (
             <p style={{ fontSize: '13px', fontStyle: 'italic', opacity: 0.9, marginBottom: '8px', textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
@@ -224,14 +214,14 @@ function ScrollRow({ items, direction, paused, onPause, onResume, staggerFlip })
           if (el.scrollLeft >= el.scrollWidth - el.clientWidth - 2) {
             el.scrollLeft = 0 // Instant reset
           } else {
-            el.scrollLeft += 1
+            el.scrollLeft += 1.25
           }
         } else {
           // Rightward scrolling setup
           if (el.scrollLeft <= 2) {
-             el.scrollLeft = el.scrollWidth - el.clientWidth
+            el.scrollLeft = el.scrollWidth - el.clientWidth
           } else {
-             el.scrollLeft -= 1
+            el.scrollLeft -= 1.25
           }
         }
       }
@@ -243,16 +233,16 @@ function ScrollRow({ items, direction, paused, onPause, onResume, staggerFlip })
 
   const handleScrollLeft = () => {
     if (containerRef.current) {
-       containerRef.current.style.scrollBehavior = 'smooth'
-       containerRef.current.scrollBy({ left: -400 })
-       setTimeout(() => { if(containerRef.current) containerRef.current.style.scrollBehavior = 'auto' }, 400)
+      containerRef.current.style.scrollBehavior = 'smooth'
+      containerRef.current.scrollBy({ left: -400 })
+      setTimeout(() => { if (containerRef.current) containerRef.current.style.scrollBehavior = 'auto' }, 400)
     }
   }
   const handleScrollRight = () => {
     if (containerRef.current) {
-       containerRef.current.style.scrollBehavior = 'smooth'
-       containerRef.current.scrollBy({ left: 400 })
-       setTimeout(() => { if(containerRef.current) containerRef.current.style.scrollBehavior = 'auto' }, 400)
+      containerRef.current.style.scrollBehavior = 'smooth'
+      containerRef.current.scrollBy({ left: 400 })
+      setTimeout(() => { if (containerRef.current) containerRef.current.style.scrollBehavior = 'auto' }, 400)
     }
   }
 
@@ -261,9 +251,9 @@ function ScrollRow({ items, direction, paused, onPause, onResume, staggerFlip })
 
   return (
     <div style={{ position: 'relative', width: '100%' }} onMouseEnter={onPause} onMouseLeave={onResume}>
-      
+
       {/* Scroll Left Btn */}
-      <button 
+      <button
         onClick={handleScrollLeft}
         style={{
           position: 'absolute', left: '20px', top: '50%', transform: 'translateY(-50%)',
@@ -290,12 +280,12 @@ function ScrollRow({ items, direction, paused, onPause, onResume, staggerFlip })
         }}
       >
         {loopItems.map((item, i) => (
-          <GalleryCard key={`${direction}-${i}`} item={item} onClick={() => {}} stagger={staggerFlip ? i % 2 !== 0 : i % 2 === 0} />
+          <GalleryCard key={`${direction}-${i}`} item={item} onClick={() => { }} stagger={staggerFlip ? i % 2 !== 0 : i % 2 === 0} />
         ))}
       </div>
 
       {/* Scroll Right Btn */}
-      <button 
+      <button
         onClick={handleScrollRight}
         style={{
           position: 'absolute', right: '20px', top: '50%', transform: 'translateY(-50%)',
@@ -316,19 +306,19 @@ function ScrollRow({ items, direction, paused, onPause, onResume, staggerFlip })
 
 // ─── Main Section ─────────────────────────────────────────────────────────────
 export default function MediaGallerySection() {
-  const [items, setItems]       = useState([])
+  const [items, setItems] = useState([])
   const [lightbox, setLightbox] = useState(null)
-  const [paused, setPaused]     = useState(false)
-  const [loaded, setLoaded]     = useState(false)
+  const [paused, setPaused] = useState(false)
+  const [loaded, setLoaded] = useState(false)
   const [sectionVisible, setSectionVisible] = useState(true)
   const [headings, setHeadings] = useState({ tagline: 'Our World', title: 'Moments of transformation' })
   const sectionRef = useRef(null)
   const headerRef = useRef(null)
 
   const { scrollYProgress } = useScroll({ target: headerRef, offset: ['start 95%', 'start 15%'] })
-  const headerY       = useTransform(scrollYProgress, [0, 1], [80, 0])
+  const headerY = useTransform(scrollYProgress, [0, 1], [80, 0])
   const headerOpacity = useTransform(scrollYProgress, [0, 1], [0, 1])
-  const headerScale   = useTransform(scrollYProgress, [0, 1], [0.5, 1])
+  const headerScale = useTransform(scrollYProgress, [0, 1], [0.5, 1])
 
   useEffect(() => {
     const load = async () => {
@@ -338,15 +328,17 @@ export default function MediaGallerySection() {
           axios.get(`${API}/api/content/gallery`).catch(() => ({ data: [] }))
         ])
         const cmap = {}
-        ;(contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
+          ; (contRes.data.items || contRes.data || []).forEach(i => cmap[i.key] = i.value)
         if (Object.keys(cmap).length > 0) {
           setHeadings(h => ({ tagline: cmap.tagline || h.tagline, title: cmap.title || h.title }))
           if (cmap.visible !== undefined) setSectionVisible(cmap.visible !== 'false')
         }
         const fetched = res.data.items || []
-        setItems(fetched.length > 0 ? fetched.sort((a, b) => (a.order || 0) - (b.order || 0)) : FALLBACK_GALLERY)
+        if (fetched.length > 0) {
+          setItems(fetched.sort((a, b) => (a.order || 0) - (b.order || 0)))
+        }
       } catch {
-        setItems(FALLBACK_GALLERY)
+        console.error('Failed to load gallery')
       } finally {
         setLoaded(true)
       }
@@ -354,8 +346,12 @@ export default function MediaGallerySection() {
     load()
   }, [])
 
-  // Don't render anything until data is loaded — prevents hooks-order crash
-  if (!loaded) return null
+  // Show Spinner until data is loaded
+  if (!loaded) return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '300px', width: '100vw' }}>
+      <div style={{ width: '40px', height: '40px', border: '3px solid rgba(175, 122, 109, 0.2)', borderTopColor: 'var(--accent)', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+    </div>
+  )
   // Full section hidden from admin toggle
   if (!sectionVisible) return null
 
@@ -380,12 +376,11 @@ export default function MediaGallerySection() {
           transformOrigin: 'center bottom'
         }}
       >
-        <h2 style={{
+        <h2 className="gallery-header-text" style={{
           fontFamily: 'Cormorant Garamond, serif',
-          fontSize: 'clamp(24px, 5vw, 76px)',
           fontWeight: 700, color: 'var(--dark)',
           lineHeight: 1.1, letterSpacing: '-0.5px',
-          marginBottom: '0', whiteSpace: 'nowrap'
+          marginBottom: '0'
         }}>
           {headings.title.split(' ').length > 1 ? (
             <>
@@ -448,10 +443,20 @@ export default function MediaGallerySection() {
         .gallery-desc-scroll::-webkit-scrollbar { width: 3px; }
         .gallery-desc-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
         .gallery-desc-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.4); border-radius: 4px; }
+        
+        .gallery-header-text {
+          font-size: clamp(24px, 5vw, 76px);
+          white-space: nowrap;
+        }
+
         @media (max-width: 768px) {
           :root { --gallery-scale: 0.8; }
           .media-gallery-section { padding: 20px 0 60px 0; }
           .gallery-nav-btn { display: none !important; }
+          .gallery-header-text {
+            font-size: clamp(48px, 9vw, 110px);
+            white-space: normal;
+          }
         }
       `}</style>
     </section>

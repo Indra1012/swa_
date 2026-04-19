@@ -13,13 +13,13 @@ const KineticWrap = ({ children, yStart = 80, yEnd = -40, scaleStart = 0.90, sty
     target: ref,
     offset: ["start 95%", "end start"]
   })
-  const smooth = useSpring(scrollYProgress, { stiffness: 60, damping: 20 })
+  const smooth = scrollYProgress
   const y = useTransform(smooth, [0, 0.4, 1], [yStart, 0, yEnd])
   const scale = useTransform(smooth, [0, 0.3, 1], [scaleStart, 1, 1])
   const opacity = useTransform(smooth, [0, 0.25, 1], [0, 1, 1])
 
   return (
-    <motion.div ref={ref} style={{ ...style, y, scale, opacity }}>
+    <motion.div ref={ref} style={{ ...style, y, scale, opacity, willChange: 'transform' }}>
       {children}
     </motion.div>
   )
@@ -170,11 +170,10 @@ export default function About() {
 
   // Scroll bindings specifically for the top Hero parallax where viewport is initially 0
   const { scrollY } = useScroll()
-  const smoothY = useSpring(scrollY, { stiffness: 60, damping: 20 })
-  const heroY = useTransform(smoothY, [0, 800], [0, 300])
-  const heroTextOpacity = useTransform(smoothY, [0, 400], [1, 0])
-  const heroTextScale = useTransform(smoothY, [0, 400], [1, 0.95])
-  const heroTextY = useTransform(smoothY, [0, 400], [0, 100])
+  const heroY = useTransform(scrollY, [0, 800], [0, 300])
+  const heroTextOpacity = useTransform(scrollY, [0, 400], [1, 0])
+  const heroTextScale = useTransform(scrollY, [0, 400], [1, 0.95])
+  const heroTextY = useTransform(scrollY, [0, 400], [0, 100])
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
@@ -186,7 +185,7 @@ export default function About() {
           display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
           overflow: 'hidden', background: '#4A2530', margin: 0
         }}>
-          <motion.div style={{ position: 'absolute', inset: -150, zIndex: 0, y: heroY }}>
+          <motion.div style={{ position: 'absolute', inset: -150, zIndex: 0, y: heroY, willChange: 'transform' }}>
             {heroMediaMode === 'video' && heroVideoUrl ? (
               <video
                 src={heroVideoUrl}
@@ -479,6 +478,7 @@ export default function About() {
 
 
         {/* 4. THE TEAM GALLERY WITH CONSTANT FLOATING ANIMATIONS */}
+        {pageData.teamVisible !== 'false' && (
         <section style={{ background: 'transparent', padding: '80px 0 20px 0', margin: 0 }}>
           <motion.div
             initial="hidden"
@@ -539,8 +539,10 @@ export default function About() {
             ))}
           </div>
         </section>
+        )}
 
         {/* 5. THE EXTERNAL EXPERTS GALLERY WITH CONSTANT FLOATING ANIMATIONS */}
+        {pageData.expertsVisible !== 'false' && (
         <section style={{ background: 'transparent', padding: '20px 0 20px 0', margin: 0 }}>
           <motion.div
             initial="hidden"
@@ -598,6 +600,7 @@ export default function About() {
             ))}
           </div>
         </section>
+        )}
 
 
 

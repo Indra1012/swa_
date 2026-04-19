@@ -1,23 +1,47 @@
 import { useRef } from 'react'
 import { motion, useScroll, useTransform, useInView } from 'framer-motion'
-import { FiAlertCircle, FiZap, FiTarget, FiActivity } from 'react-icons/fi'
+import { FiLayers, FiHeart, FiUsers, FiLifeBuoy, FiCheckCircle } from 'react-icons/fi'
 
-const PAIN_POINTS = [
+const FEATURES = [
   {
-    title: "Burnout",
-    icon: FiAlertCircle
+    title: "Our Integrated Approach",
+    icon: FiLayers,
+    points: [
+      "Psychological Methods",
+      "Ancient Wisdom",
+      "Alternate Healing Techniques",
+    ],
+    footer: "Unifying Mind, Body, & Soul"
   },
   {
-    title: "Stress",
-    icon: FiZap
+    title: "Customized Healing",
+    icon: FiHeart,
+    points: [
+      "Identify roots & provide solutions",
+      "Tailored therapeutic interventions",
+      "Personalized growth pathways"
+    ],
+    footer: "Tailored For True Change"
   },
   {
-    title: "Lack of focus",
-    icon: FiTarget
+    title: "Workshop Approach",
+    icon: FiUsers,
+    points: [
+      "Solution-driven & Activity-based",
+      "70% Experiential Activity",
+      "30% Model Technique"
+    ],
+    footer: "100% Practical Learning"
   },
   {
-    title: "Emotional imbalance",
-    icon: FiActivity
+    title: "Continuous Support",
+    icon: FiLifeBuoy,
+    points: [
+      "Post-workshop integration strategies",
+      "Regular check-ins & reviews",
+      "Dedicated follow-up sessions"
+    ],
+    footer: "Guiding You At Every Step"
   }
 ]
 
@@ -34,7 +58,7 @@ export default function WhySwaExistsSection() {
   const headerScale = useTransform(scrollYProgress, [0, 1], [0.5, 1])
 
   return (
-    <section 
+    <section
       ref={sectionRef}
       className="why-swa-exists"
       style={{
@@ -49,7 +73,7 @@ export default function WhySwaExistsSection() {
 
 
       {/* Main Content */}
-      <motion.div 
+      <motion.div
         style={{
           position: 'relative',
           zIndex: 2,
@@ -61,7 +85,7 @@ export default function WhySwaExistsSection() {
         }}
         className="swa-exists-content"
       >
-        
+
         {/* Header Section */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
           <motion.div
@@ -87,18 +111,18 @@ export default function WhySwaExistsSection() {
               lineHeight: 1.7,
               fontWeight: 400,
             }}>
-              <strong style={{ color: 'var(--dark)', fontWeight: 600 }}>People are not machines.</strong> They feel, break, heal, and grow.<br/>
-              Today’s environments demand performance but ignore emotional foundations, leading to:
+              <strong style={{ color: 'var(--dark)', fontWeight: 600 }}>People are not machines. They feel, break, heal, and grow.</strong><br />
+              Today’s environments demand performance but ignore emotional foundations. We bridge this gap by providing:
             </p>
           </motion.div>
         </div>
 
         {/* Grid Section */}
         <div className="pain-points-grid">
-          {PAIN_POINTS.map((point, index) => {
-            const Icon = point.icon;
+          {FEATURES.map((feature, index) => {
+            const Icon = feature.icon;
             return (
-              <motion.div 
+              <motion.div
                 key={index}
                 className="pain-point-card"
                 initial={{ opacity: 0, y: 40 }}
@@ -106,10 +130,40 @@ export default function WhySwaExistsSection() {
                 viewport={{ once: true, margin: "-50px" }}
                 transition={{ duration: 0.6, delay: index * 0.15, ease: "easeOut" }}
               >
-                <div className="pain-point-icon">
-                  <Icon size={24} strokeWidth={1.5} />
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%', height: '100%' }}>
+                  <div className="pain-point-icon">
+                    <Icon size={24} strokeWidth={1.5} />
+                  </div>
+                  <h3 className="pain-point-title" style={{ marginBottom: '24px' }}>{feature.title}</h3>
+
+                  <ul style={{
+                    listStyle: 'none', padding: 0, margin: '0 auto',
+                    display: 'flex', flexDirection: 'column', gap: '14px',
+                    width: 'max-content', maxWidth: '100%', flexGrow: 1
+                  }}>
+                    {feature.points.map((pt, i) => (
+                      <li key={i} style={{
+                        fontSize: '14px', color: 'var(--dark3)', lineHeight: 1.4,
+                        fontFamily: 'DM Sans, sans-serif',
+                        display: 'flex', alignItems: 'flex-start', justifyContent: 'flex-start', textAlign: 'left', gap: '8px'
+                      }}>
+                        <FiCheckCircle size={14} color="var(--accent)" style={{ flexShrink: 0, marginTop: '2px' }} />
+                        <span>{pt}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {feature.footer && (
+                    <div style={{
+                      marginTop: '24px', paddingTop: '16px', borderTop: '1px solid rgba(175, 122, 109, 0.15)',
+                      fontFamily: 'Cormorant Garamond, serif', fontStyle: 'italic',
+                      color: 'var(--accent)', fontWeight: 600, fontSize: '15.5px',
+                      width: '100%', textAlign: 'center'
+                    }}>
+                      {feature.footer}
+                    </div>
+                  )}
                 </div>
-                <h3 className="pain-point-title">{point.title}</h3>
               </motion.div>
             )
           })}
@@ -131,7 +185,7 @@ export default function WhySwaExistsSection() {
             fontFamily: 'Cormorant Garamond, serif',
             fontSize: 'clamp(24px, 3vw, 36px)',
             color: 'var(--dark)',
-            fontWeight: 500,
+            fontWeight: 700,
             fontStyle: 'italic',
             lineHeight: 1.3,
             maxWidth: '1000px',
@@ -156,11 +210,11 @@ export default function WhySwaExistsSection() {
           background: var(--bg);
           border: 1px solid rgba(175, 122, 109, 0.1);
           border-radius: 20px;
-          padding: 40px 30px;
+          padding: 44px 24px;
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
+          justify-content: flex-start;
           text-align: center;
           transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
           position: relative;
@@ -168,6 +222,7 @@ export default function WhySwaExistsSection() {
           box-shadow: 0 4px 20px rgba(101, 50, 57, 0.03);
           transform: translateY(0) scale(1);
           cursor: pointer;
+          height: 100%;
         }
 
         .pain-point-card::after {
@@ -236,21 +291,39 @@ export default function WhySwaExistsSection() {
         
         @media (max-width: 768px) {
           .why-swa-exists {
-            padding: 60px 20px 20px !important;
+            padding: 60px 20px 60px !important;
           }
           .pain-points-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 20px;
+            width: 94%;
+            margin: 0 auto;
           }
           .pain-point-card {
-            padding: 24px 16px;
+            padding: 32px 20px;
+            position: sticky;
+            height: auto;
+            min-height: 200px;
+            box-shadow: 0 -8px 24px rgba(0,0,0,0.04);
           }
+          /* Sticky stack offsets using tighter stacking to fit normal height */
+          .pain-point-card:nth-child(1) { top: 90px; z-index: 10; transform: translateY(0); }
+          .pain-point-card:nth-child(2) { top: 110px; z-index: 11; transform: translateY(0); }
+          .pain-point-card:nth-child(3) { top: 130px; z-index: 12; transform: translateY(0); }
+          .pain-point-card:nth-child(4) { top: 150px; z-index: 13; transform: translateY(0); }
+          
+          .pain-point-card:hover {
+            transform: none !important;
+          }
+
           .pain-point-title {
-            font-size: 16px;
+            font-size: 18px;
           }
           .pain-point-icon {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             margin-bottom: 16px;
           }
         }

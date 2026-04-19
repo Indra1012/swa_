@@ -121,7 +121,7 @@ export default function HeroSection() {
         background: '#4A2530'
       }}
     >
-      <motion.div style={{ position: 'absolute', inset: -150, zIndex: 0, y: bgY }}>
+      <motion.div style={{ position: 'absolute', inset: -150, zIndex: 0, y: bgY, willChange: 'transform' }}>
 
         {/* VIDEO background (uploaded or link) */}
         {mediaType === 'video' && mediaUrls.length > 0 ? (
@@ -175,7 +175,7 @@ export default function HeroSection() {
         transform: 'translate(-50%, -50%)',
         textAlign: 'center', width: '100%', padding: '0 20px', zIndex: 1
       }}>
-        <motion.div style={{ y: textDriftY, opacity: scrollFade }}>
+        <motion.div style={{ y: textDriftY, opacity: scrollFade, willChange: 'transform' }}>
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}

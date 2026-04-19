@@ -493,10 +493,10 @@ export default function BookDemo() {
                     <div className="form-grid" style={{
                       display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0 24px'
                     }}>
-                      <InputField icon={<FiUser size={16} />} label="Full Name" value={form.name} onChange={e => handleFormChange('name', e.target.value)} placeholder="Dhruvi Shah" required />
-                      <InputField icon={<FiMail size={16} />} label="Work Email" type="email" value={form.email} onChange={e => handleFormChange('email', e.target.value)} placeholder="dhruvi@company.com" required />
-                      <InputField icon={<FiPhone size={16} />} label="Phone Number" type="tel" value={form.phone} onChange={e => handleFormChange('phone', e.target.value)} placeholder="+91 98765 43210" required />
-                      <InputField icon={<FiBriefcase size={16} />} label="Company Name" value={form.company} onChange={e => handleFormChange('company', e.target.value)} placeholder="Your Organization" required />
+                      <InputField icon={<FiUser size={16} />} label="Full Name" value={form.name} onChange={e => handleFormChange('name', e.target.value)} placeholder="Enter your " required />
+                      <InputField icon={<FiMail size={16} />} label="Work Email" type="email" value={form.email} onChange={e => handleFormChange('email', e.target.value)} placeholder="your@company.com" required />
+                      <InputField icon={<FiPhone size={16} />} label="Phone Number" type="tel" value={form.phone} onChange={e => handleFormChange('phone', e.target.value)} placeholder="e.g. +91 934 *** ****" required />
+                      <InputField icon={<FiBriefcase size={16} />} label="Company Name" value={form.company} onChange={e => handleFormChange('company', e.target.value)} placeholder="Enter your company name" required />
                     </div>
 
                     <div style={{ marginBottom: '24px', marginTop: '8px' }}>

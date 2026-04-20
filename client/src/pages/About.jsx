@@ -479,127 +479,127 @@ export default function About() {
 
         {/* 4. THE TEAM GALLERY WITH CONSTANT FLOATING ANIMATIONS */}
         {pageData.teamVisible !== 'false' && (
-        <section style={{ background: 'transparent', padding: '80px 0 20px 0', margin: 0 }}>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: false, amount: 0.15 }}
-            variants={{
-              hidden: {},
-              visible: { transition: { staggerChildren: 0.25 } }
-            }}
-            style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px', textAlign: 'center', marginBottom: '80px' }}
-          >
-
-            <motion.h2
+          <section style={{ background: 'transparent', padding: '80px 0 20px 0', margin: 0 }}>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.15 }}
               variants={{
-                hidden: { opacity: 0, x: 30 },
-                visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.25 } }
               }}
-              style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 5vw, 56px)', color: 'var(--dark)', margin: '16px 0 24px', fontWeight: 700, letterSpacing: '-0.5px' }}
+              style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px', textAlign: 'center', marginBottom: '80px' }}
             >
-              Our <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>Team</span>
-            </motion.h2>
-            <motion.p
-              variants={{
-                hidden: { opacity: 0, x: -30 },
-                visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
-              }}
-              style={{ fontSize: '18px', color: 'var(--secondary)', maxWidth: '600px', margin: '0 auto' }}
-            >
-              The dedicated professionals driving organizational transformation and emotional resilience from within.
-            </motion.p>
-          </motion.div>
 
-          <div className="team-grid" style={{
-            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '32px', maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(20px, 4vw, 40px)'
-          }}>
-            {teamList.map((member, i) => (
-              <motion.div
-                key={member._id || i}
-                initial={{ opacity: 0, y: 60 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.8, delay: i * 0.15 }}
-                animate={{ y: [0, (i % 2 === 0 ? -15 : 15), 0] }}
-                style={{
-                  borderRadius: '24px', overflow: 'hidden', position: 'relative', height: i % 2 === 0 ? '320px' : '420px',
-                  marginTop: i % 2 !== 0 ? '80px' : '0', boxShadow: '0 30px 60px rgba(0,0,0,0.08)'
+              <motion.h2
+                variants={{
+                  hidden: { opacity: 0, x: 30 },
+                  visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
                 }}
+                style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 5vw, 56px)', color: 'var(--dark)', margin: '16px 0 24px', fontWeight: 700, letterSpacing: '-0.5px' }}
               >
-                <img src={member.url} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{
-                  position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)'
-                }} />
-                <div style={{ position: 'absolute', bottom: '30px', left: '30px', color: 'var(--white)' }}>
-                  <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '28px', marginBottom: '4px' }}>{member.name}</h4>
-                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600, margin: 0 }}>{member.role}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+                Our <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>Team</span>
+              </motion.h2>
+              <motion.p
+                variants={{
+                  hidden: { opacity: 0, x: -30 },
+                  visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
+                }}
+                style={{ fontSize: '18px', color: 'var(--secondary)', maxWidth: '600px', margin: '0 auto' }}
+              >
+                The dedicated professionals driving organizational transformation and emotional resilience from within.
+              </motion.p>
+            </motion.div>
+
+            <div className="team-grid" style={{
+              display: 'grid', gridTemplateColumns: teamList.length < 4 ? 'repeat(auto-fit, minmax(min(100%, 280px), 380px))' : 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', justifyContent: 'center', gap: '32px', maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(20px, 4vw, 40px)'
+            }}>
+              {teamList.map((member, i) => (
+                <motion.div
+                  key={member._id || i}
+                  initial={{ opacity: 0, y: 60 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.8, delay: i * 0.15 }}
+                  animate={{ y: [0, (i % 2 === 0 ? -15 : 15), 0] }}
+                  style={{
+                    borderRadius: '24px', overflow: 'hidden', position: 'relative', height: i % 2 === 0 ? '320px' : '420px',
+                    marginTop: i % 2 !== 0 ? '80px' : '0', boxShadow: '0 30px 60px rgba(0,0,0,0.08)'
+                  }}
+                >
+                  <img src={member.url} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{
+                    position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)'
+                  }} />
+                  <div style={{ position: 'absolute', bottom: '30px', left: '30px', color: 'var(--white)' }}>
+                    <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '28px', marginBottom: '4px' }}>{member.name}</h4>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600, margin: 0 }}>{member.role}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* 5. THE EXTERNAL EXPERTS GALLERY WITH CONSTANT FLOATING ANIMATIONS */}
         {pageData.expertsVisible !== 'false' && (
-        <section style={{ background: 'transparent', padding: '20px 0 20px 0', margin: 0 }}>
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: false, amount: 0.15 }}
-            variants={{
-              hidden: {},
-              visible: { transition: { staggerChildren: 0.25 } }
-            }}
-            style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px', textAlign: 'center', marginBottom: '80px' }}
-          >
-            <motion.h2
+          <section style={{ background: 'transparent', padding: '20px 0 20px 0', margin: 0 }}>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: false, amount: 0.15 }}
               variants={{
-                hidden: { opacity: 0, x: 30 },
-                visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
+                hidden: {},
+                visible: { transition: { staggerChildren: 0.25 } }
               }}
-              style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 5vw, 56px)', color: 'var(--dark)', margin: '16px 0 24px', fontWeight: 700, letterSpacing: '-0.5px' }}
+              style={{ maxWidth: '1400px', margin: '0 auto', padding: '0 40px', textAlign: 'center', marginBottom: '80px' }}
             >
-              Our Global <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>Experts</span>
-            </motion.h2>
-            <motion.p
-              variants={{
-                hidden: { opacity: 0, x: -30 },
-                visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
-              }}
-              style={{ fontSize: '18px', color: 'var(--secondary)', maxWidth: '600px', margin: '0 auto' }}
-            >
-              A meticulously curated network of external psychological professionals, senior advisors, and distinguished healers offering specialized guidance.
-            </motion.p>
-          </motion.div>
-
-          <div className="team-grid" style={{
-            display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: '32px', maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(20px, 4vw, 40px)'
-          }}>
-            {expertsList.map((member, i) => (
-              <motion.div
-                key={member._id || i}
-                initial={{ opacity: 0, y: 60 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: '-50px' }}
-                transition={{ duration: 0.8, delay: i * 0.15 }}
-                animate={{ y: [0, (i % 2 === 0 ? -15 : 15), 0] }}
-                style={{
-                  borderRadius: '24px', overflow: 'hidden', position: 'relative', height: i % 2 === 0 ? '320px' : '420px',
-                  marginTop: i % 2 !== 0 ? '80px' : '0', boxShadow: '0 30px 60px rgba(0,0,0,0.08)'
+              <motion.h2
+                variants={{
+                  hidden: { opacity: 0, x: 30 },
+                  visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
                 }}
+                style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 'clamp(40px, 5vw, 56px)', color: 'var(--dark)', margin: '16px 0 24px', fontWeight: 700, letterSpacing: '-0.5px' }}
               >
-                <img src={member.url} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)' }} />
-                <div style={{ position: 'absolute', bottom: '30px', left: '30px', color: 'var(--white)' }}>
-                  <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '28px', marginBottom: '4px' }}>{member.name}</h4>
-                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600, margin: 0 }}>{member.role}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </section>
+                Our Global <span style={{ fontStyle: 'italic', fontWeight: 500, color: 'var(--accent)' }}>Experts</span>
+              </motion.h2>
+              <motion.p
+                variants={{
+                  hidden: { opacity: 0, x: -30 },
+                  visible: { opacity: 1, x: 0, transition: { duration: 1.4, ease: [0.16, 1, 0.3, 1] } }
+                }}
+                style={{ fontSize: '18px', color: 'var(--secondary)', maxWidth: '600px', margin: '0 auto' }}
+              >
+                A meticulously curated network of external psychological professionals, senior advisors, and distinguished healers offering specialized guidance.
+              </motion.p>
+            </motion.div>
+
+            <div className="team-grid" style={{
+              display: 'grid', gridTemplateColumns: expertsList.length < 4 ? 'repeat(auto-fit, minmax(min(100%, 280px), 380px))' : 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', justifyContent: 'center', gap: '32px', maxWidth: '1400px', margin: '0 auto', padding: '0 clamp(20px, 4vw, 40px)'
+            }}>
+              {expertsList.map((member, i) => (
+                <motion.div
+                  key={member._id || i}
+                  initial={{ opacity: 0, y: 60 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: '-50px' }}
+                  transition={{ duration: 0.8, delay: i * 0.15 }}
+                  animate={{ y: [0, (i % 2 === 0 ? -15 : 15), 0] }}
+                  style={{
+                    borderRadius: '24px', overflow: 'hidden', position: 'relative', height: i % 2 === 0 ? '320px' : '420px',
+                    marginTop: i % 2 !== 0 ? '80px' : '0', boxShadow: '0 30px 60px rgba(0,0,0,0.08)'
+                  }}
+                >
+                  <img src={member.url} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%)' }} />
+                  <div style={{ position: 'absolute', bottom: '30px', left: '30px', color: 'var(--white)' }}>
+                    <h4 style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: '28px', marginBottom: '4px' }}>{member.name}</h4>
+                    <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 600, margin: 0 }}>{member.role}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </section>
         )}
 
 

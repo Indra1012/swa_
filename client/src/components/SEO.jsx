@@ -6,7 +6,7 @@ const SEO = ({
   description = "Science-backed wellbeing programs for organizations, institutions and communities in Ahmedabad, Gujarat, India, and worldwide. Specializing in mental health healing and holistic wellness.", 
   keywords = "wellness, mental health healing, mental health support, corporate wellbeing, holistic wellness, emotional health, wellbeing programs, Ahmedabad, Gujarat, India, SWA Wellbeing",
   type = "website",
-  url = "https://swawellbeing.com/"
+  url = "https://swaspaces.com/"
 }) => {
   return (
     <Helmet>

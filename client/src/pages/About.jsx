@@ -182,7 +182,7 @@ export default function About() {
         <SEO 
           title="About SWA Wellbeing | Our Story & Mental Health Experts in Ahmedabad"
           description="Learn about SWA Wellbeing's mission to transform emotional resilience and mental health healing in Ahmedabad, Gujarat, India. Meet our dedicated team of experts."
-          url="https://swawellbeing.com/about"
+          url="https://swaspaces.com/about"
         />
         {/* 1. EPIC LIGHT AESTHETIC HERO BANNER */}
         <section className="about-hero-section" style={{

@@ -263,7 +263,7 @@ export default function BlogsPage() {
       <SEO 
         title="Mental Health Healing Insights & Blogs | Ahmedabad | SWA Wellbeing"
         description="Read SWA Wellbeing's insights and articles on mental health healing, emotional resilience, and personal growth. Based in Ahmedabad, Gujarat, India."
-        url="https://swawellbeing.com/blogs"
+        url="https://swaspaces.com/blogs"
       />
       <div style={{ position: 'relative', zIndex: 1 }}>
         <main style={{

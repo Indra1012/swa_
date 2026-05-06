@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin/
 Disallow: /*?token=
 
-Sitemap: https://swawellbeing.com/sitemap.xml
+Sitemap: https://swaspaces.com/sitemap.xml

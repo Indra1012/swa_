@@ -511,7 +511,7 @@ export default function ServicesPage() {
       <SEO 
         title="Wellbeing Programs & Services | Mental Health Healing in Ahmedabad | SWA"
         description="Explore SWA Wellbeing's tailored programs for corporate, educational, community, and government sectors. Specializing in mental health healing in Ahmedabad."
-        url={`https://swawellbeing.com/services/${activeTab || ''}`}
+        url={`https://swaspaces.com/services/${activeTab || ''}`}
       />
       <div style={{ position: 'relative', zIndex: 1 }}>
         <main style={{

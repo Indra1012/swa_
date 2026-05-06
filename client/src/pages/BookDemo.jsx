@@ -276,8 +276,8 @@ export default function BookDemo() {
   return (
     <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
       <SEO 
-        title="Book a Demo | Mental Health Healing Programs | SWA Wellbeing"
-        description="Schedule a consultation with SWA Wellbeing to discuss tailored mental health healing and corporate wellness programs in Ahmedabad, India."
+        title="Book a Demo | Mental Health Healing Programs | SWA Wellbeing | Ahmedabad & India"
+        description="Schedule a consultation with SWA Wellbeing to discuss tailored mental health healing, occupational burnout prevention, and corporate wellness programs in Ahmedabad, Gandhinagar, Surat, Vadodara, Gujarat, and across India."
         url="https://swaspaces.com/book-demo"
       />
       <div style={{ position: 'relative', zIndex: 1 }}>

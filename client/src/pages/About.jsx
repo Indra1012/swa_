@@ -180,8 +180,8 @@ export default function About() {
     <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
       <main ref={pageRef} className="about-page" style={{ margin: 0, padding: 0, minHeight: '100vh', overflow: 'hidden' }}>
         <SEO 
-          title="About SWA Wellbeing | Our Story & Mental Health Experts in Ahmedabad"
-          description="Learn about SWA Wellbeing's mission to transform emotional resilience and mental health healing in Ahmedabad, Gujarat, India. Meet our dedicated team of experts."
+          title="About SWA Wellbeing | Our Story & Mental Health Experts in Ahmedabad & India"
+          description="Learn about SWA Wellbeing's mission to transform emotional resilience and mental health healing in Ahmedabad, Gandhinagar, Surat, Vadodara, Gujarat, and across India. Meet our dedicated team of experts."
           url="https://swaspaces.com/about"
         />
         {/* 1. EPIC LIGHT AESTHETIC HERO BANNER */}

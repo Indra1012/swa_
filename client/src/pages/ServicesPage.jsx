@@ -509,8 +509,8 @@ export default function ServicesPage() {
   return (
     <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
       <SEO 
-        title="Wellbeing Programs & Services | Mental Health Healing in Ahmedabad | SWA"
-        description="Explore SWA Wellbeing's tailored programs for corporate, educational, community, and government sectors. Specializing in mental health healing in Ahmedabad."
+        title="Wellbeing Programs & Services | Mental Health Healing in Ahmedabad, Gujarat & India | SWA"
+        description="Explore SWA Wellbeing's tailored programs for corporate, educational, community, and government sectors. Specializing in mental health healing, emotional resilience workshops, and stress management in Ahmedabad, Gandhinagar, Surat, Vadodara, Gujarat, and nationwide."
         url={`https://swaspaces.com/services/${activeTab || ''}`}
       />
       <div style={{ position: 'relative', zIndex: 1 }}>

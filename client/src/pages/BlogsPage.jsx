@@ -261,8 +261,8 @@ export default function BlogsPage() {
   return (
     <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
       <SEO 
-        title="Mental Health Healing Insights & Blogs | Ahmedabad | SWA Wellbeing"
-        description="Read SWA Wellbeing's insights and articles on mental health healing, emotional resilience, and personal growth. Based in Ahmedabad, Gujarat, India."
+        title="Mental Health Healing Insights & Blogs | Ahmedabad, Gujarat & India | SWA Wellbeing"
+        description="Read SWA Wellbeing's insights and articles on mental health healing, emotional resilience, holistic transformation, and personal growth. Based in Ahmedabad, Gandhinagar, Surat, Vadodara, Gujarat, and serving all of India."
         url="https://swaspaces.com/blogs"
       />
       <div style={{ position: 'relative', zIndex: 1 }}>

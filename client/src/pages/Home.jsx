@@ -16,8 +16,8 @@ export default function Home() {
   return (
     <main style={{ overflowX: 'hidden' }}>
       <SEO 
-        title="SWA Wellbeing | Mental Health Healing & Corporate Wellness in Ahmedabad"
-        description="Discover SWA Wellbeing's science-backed programs for mental health healing, corporate wellbeing, and emotional resilience in Ahmedabad, Gujarat, India."
+        title="SWA Wellbeing | Mental Health Healing & Corporate Wellness in Ahmedabad & Gujarat"
+        description="Discover SWA Wellbeing's science-backed programs for mental health healing, corporate wellbeing, and emotional resilience in Ahmedabad, Gandhinagar, Surat, Vadodara, Gujarat, and across India."
       />
       <HeroSection />
       <TaglineSection />

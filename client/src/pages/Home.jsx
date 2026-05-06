@@ -10,10 +10,15 @@ import TestimonialsSection from '../sections/TestimonialsSection'
 import TransformationModelSection from '../sections/TransformationModelSection'
 import WellbeingSection from '../sections/WellbeingSection'
 import CTABanner from '../sections/CTABanner'
+import SEO from '../components/SEO'
 
 export default function Home() {
   return (
     <main style={{ overflowX: 'hidden' }}>
+      <SEO 
+        title="SWA Wellbeing | Mental Health Healing & Corporate Wellness in Ahmedabad"
+        description="Discover SWA Wellbeing's science-backed programs for mental health healing, corporate wellbeing, and emotional resilience in Ahmedabad, Gujarat, India."
+      />
       <HeroSection />
       <TaglineSection />
       <ServicesSection />

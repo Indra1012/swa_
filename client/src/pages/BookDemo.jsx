@@ -7,6 +7,7 @@ import {
   FiClock, FiCheckCircle, FiAlertCircle,
   FiChevronLeft, FiChevronRight
 } from 'react-icons/fi'
+import SEO from '../components/SEO'
 
 const API = import.meta.env.VITE_API_URL
 
@@ -274,6 +275,11 @@ export default function BookDemo() {
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
+      <SEO 
+        title="Book a Demo | Mental Health Healing Programs | SWA Wellbeing"
+        description="Schedule a consultation with SWA Wellbeing to discuss tailored mental health healing and corporate wellness programs in Ahmedabad, India."
+        url="https://swawellbeing.com/book-demo"
+      />
       <div style={{ position: 'relative', zIndex: 1 }}>
         <main className="bookdemo-page" style={{ margin: 0, padding: 0, paddingTop: '72px', background: 'transparent', minHeight: '100vh' }}>
 

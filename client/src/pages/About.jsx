@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion, useScroll, useTransform, useSpring, AnimatePresence } from 'framer-motion'
 import { FiArrowRight, FiChevronDown } from 'react-icons/fi'
 import axios from 'axios'
+import SEO from '../components/SEO'
 
 const API = import.meta.env.VITE_API_URL
 
@@ -178,7 +179,11 @@ export default function About() {
   return (
     <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
       <main ref={pageRef} className="about-page" style={{ margin: 0, padding: 0, minHeight: '100vh', overflow: 'hidden' }}>
-
+        <SEO 
+          title="About SWA Wellbeing | Our Story & Mental Health Experts in Ahmedabad"
+          description="Learn about SWA Wellbeing's mission to transform emotional resilience and mental health healing in Ahmedabad, Gujarat, India. Meet our dedicated team of experts."
+          url="https://swawellbeing.com/about"
+        />
         {/* 1. EPIC LIGHT AESTHETIC HERO BANNER */}
         <section className="about-hero-section" style={{
           position: 'relative', width: '100%',

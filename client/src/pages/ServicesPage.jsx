@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform, useSpring } from 'framer-motion'
 import { FiArrowRight, FiCheckCircle, FiChevronDown } from 'react-icons/fi'
 import axios from 'axios'
+import SEO from '../components/SEO'
 
 const API = import.meta.env.VITE_API_URL
 
@@ -507,6 +508,11 @@ export default function ServicesPage() {
 
   return (
     <div style={{ position: 'relative', overflow: 'hidden', minHeight: '100vh' }}>
+      <SEO 
+        title="Wellbeing Programs & Services | Mental Health Healing in Ahmedabad | SWA"
+        description="Explore SWA Wellbeing's tailored programs for corporate, educational, community, and government sectors. Specializing in mental health healing in Ahmedabad."
+        url={`https://swawellbeing.com/services/${activeTab || ''}`}
+      />
       <div style={{ position: 'relative', zIndex: 1 }}>
         <main style={{
           position: 'relative',
